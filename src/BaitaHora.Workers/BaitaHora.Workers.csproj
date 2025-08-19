@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>dotnet-BaitaHora.Workers-92ff2722-c357-43ac-a53f-297983cee069</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BaitaHora.Application\BaitaHora.Application.csproj" />
+    <ProjectReference Include="..\BaitaHora.Infrastructure\BaitaHora.Infrastructure.csproj" />
+    <ProjectReference Include="..\BaitaHora.Shared\BaitaHora.Shared.csproj" />
+  </ItemGroup>
+</Project>
