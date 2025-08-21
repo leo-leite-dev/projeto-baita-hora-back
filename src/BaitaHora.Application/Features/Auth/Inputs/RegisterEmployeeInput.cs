@@ -1,6 +1,6 @@
-using BaitaHora.Application.Users.DTOs;
+using BaitaHora.Application.Features.Users.DTOs;
 
-namespace BaitaHora.Application.Auth.Inputs;
+namespace BaitaHora.Application.Features.Auth.Inputs;
 
 public sealed record RegisterEmployeeInput(
     Guid CompanyId,

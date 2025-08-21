@@ -2,7 +2,7 @@ using BaitaHora.Application.IServices.Auth;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
 
-namespace BaitaHora.Infrastructure.Services
+namespace BaitaHora.Infrastructure.Services.Auth
 {
     public class CookieService : ICookieService
     {

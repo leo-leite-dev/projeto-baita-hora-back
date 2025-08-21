@@ -1,9 +1,9 @@
-using BaitaHora.Domain.Entities.Companies;
 using BaitaHora.Domain.Companies.ValueObjects; 
-using BaitaHora.Domain.Commons.ValueObjects;    
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using BaitaHora.Domain.Features.Companies.Entities;
+using BaitaHora.Domain.Features.Commons.ValueObjects;
 
 namespace BaitaHora.Infrastructure.Data.Configurations;
 

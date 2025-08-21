@@ -1,14 +1,14 @@
-using BaitaHora.Application.Auth.DTOs.Responses;
-using BaitaHora.Application.Auth.Inputs;
 using BaitaHora.Application.Common;
+using BaitaHora.Application.Feature.Auth.DTOs.Responses;
+using BaitaHora.Application.Features.Auth.Inputs;
 using BaitaHora.Application.IRepositories.Users;
 using BaitaHora.Application.IServices.Auth;
-using BaitaHora.Domain.Commons.ValueObjects;
-using BaitaHora.Domain.Users.Entities;
-using BaitaHora.Domain.Users.ValueObjects;
+using BaitaHora.Domain.Features.Commons.ValueObjects;
+using BaitaHora.Domain.Features.Users.Entities;
+using BaitaHora.Domain.Features.Users.ValueObjects;
 using Microsoft.Extensions.Logging;
 
-namespace BaitaHora.Application.Auth.UseCases.Authenticate;
+namespace BaitaHora.Application.Features.Auth.UseCases;
 
 public sealed class AuthenticateUseCase
 {

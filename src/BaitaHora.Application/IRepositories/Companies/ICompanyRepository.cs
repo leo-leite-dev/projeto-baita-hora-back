@@ -1,6 +1,6 @@
-using BaitaHora.Domain.Commons.ValueObjects;
 using BaitaHora.Domain.Companies.ValueObjects;
-using BaitaHora.Domain.Entities.Companies;
+using BaitaHora.Domain.Features.Commons.ValueObjects;
+using BaitaHora.Domain.Features.Companies.Entities;
 
 namespace BaitaHora.Application.IRepositories
 {

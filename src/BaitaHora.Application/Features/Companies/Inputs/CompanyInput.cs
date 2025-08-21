@@ -1,6 +1,6 @@
-using BaitaHora.Application.Addresses.DTOs.Inputs;
+using BaitaHora.Application.Features.Commons.Inputs;
 
-namespace BaitaHora.Application.Companies.Inputs;
+namespace BaitaHora.Application.Features.Companies.Inputs;
 
 public sealed record CompanyInput(
     string CompanyName,

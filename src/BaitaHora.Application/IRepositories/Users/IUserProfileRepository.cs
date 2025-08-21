@@ -1,4 +1,4 @@
-using BaitaHora.Domain.Users.ValueObjects;
+using BaitaHora.Domain.Features.Users.ValueObjects;
 
 namespace BaitaHora.Application.IRepositories.Users;
 

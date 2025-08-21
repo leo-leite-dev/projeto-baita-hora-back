@@ -1,17 +1,20 @@
-using BaitaHora.Application.Auth.Commands;
-using BaitaHora.Application.Auth.DTO.Responses;
 using BaitaHora.Application.Common;
 using BaitaHora.Application.IRepositories;
 using BaitaHora.Application.IRepositories.Users;
 using BaitaHora.Application.IServices.Auth;
-using BaitaHora.Application.Users.DTOs;
-using BaitaHora.Application.Companies.Inputs;
-using BaitaHora.Domain.Commons.ValueObjects;
 using BaitaHora.Domain.Companies.ValueObjects;
-using BaitaHora.Domain.Users.Entities;
-using BaitaHora.Domain.Users.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using BaitaHora.Application.Feature.Auth.DTOs.Responses;
+using BaitaHora.Application.Features.Auth.Commands;
+using BaitaHora.Domain.Features.Users.Entities;
+using BaitaHora.Domain.Features.Companies.Entities;
+using BaitaHora.Domain.Features.Commons.ValueObjects;
+using BaitaHora.Domain.Features.Users.ValueObjects;
+using BaitaHora.Application.Features.Users.DTOs;
+using BaitaHora.Application.Features.Companies.Inputs;
+
+namespace BaitaHora.Application.Features.Auth.UseCases;
 
 public sealed class RegisterOwnerWithCompanyUseCase
 

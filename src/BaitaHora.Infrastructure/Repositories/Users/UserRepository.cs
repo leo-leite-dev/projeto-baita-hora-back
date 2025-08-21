@@ -1,11 +1,12 @@
 using BaitaHora.Application.IRepositories.Users;
-using BaitaHora.Domain.Commons.ValueObjects;
-using BaitaHora.Domain.Users.Entities;
-using BaitaHora.Domain.Users.ValueObjects;
+using BaitaHora.Domain.Features.Commons.ValueObjects;
+using BaitaHora.Domain.Features.Users.Entities;
+using BaitaHora.Domain.Features.Users.ValueObjects;
+using BaitaHora.Infrastructure.Commons.Repositories;
 using BaitaHora.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
-namespace BaitaHora.Infrastructure.Repositories;
+namespace BaitaHora.Infrastructure.Repositories.Users;
 
 public sealed class UserRepository : GenericRepository<User>, IUserRepository
 {

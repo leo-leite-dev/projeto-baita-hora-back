@@ -1,4 +1,4 @@
-namespace BaitaHora.Application.Auth.DTO.Responses;
+namespace BaitaHora.Application.Feature.Auth.DTOs.Responses;
 
 public sealed record RegisterEmployeeResponse
 {

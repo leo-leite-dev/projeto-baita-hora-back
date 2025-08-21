@@ -1,10 +1,9 @@
-using BaitaHora.Application.Address.Validators;
-using BaitaHora.Application.Common.Validation;
-using BaitaHora.Application.Companies.Inputs;
+using BaitaHora.Application.Features.Commons.Validators;
+using BaitaHora.Application.Features.Companies.Inputs;
 using BaitaHora.Domain.Companies.ValueObjects;
 using FluentValidation;
 
-namespace BaitaHora.Application.Companies.Validators;
+namespace BaitaHora.Application.Features.Companies.Validators;
 
 public sealed class CompanyInputValidator : AbstractValidator<CompanyInput>
 {

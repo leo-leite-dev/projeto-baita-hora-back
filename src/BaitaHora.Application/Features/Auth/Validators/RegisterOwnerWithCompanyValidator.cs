@@ -1,10 +1,10 @@
-using BaitaHora.Application.Auth.Validators;
-using BaitaHora.Application.Companies.Validators;
+using BaitaHora.Application.Features.Auth.Commands;
+using BaitaHora.Application.Features.Companies.Validators;
 using FluentValidation;
 
-namespace BaitaHora.Application.Auth.Commands;
+namespace BaitaHora.Application.Features.Auth.Validators;
 
-public sealed class RegisterOwnerWithCompanyCommandValidator 
+public sealed class RegisterOwnerWithCompanyCommandValidator
     : AbstractValidator<RegisterOwnerWithCompanyCommand>
 {
     public RegisterOwnerWithCompanyCommandValidator()

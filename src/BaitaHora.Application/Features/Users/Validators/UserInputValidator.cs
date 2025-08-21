@@ -1,11 +1,10 @@
 using System.Text.RegularExpressions;
-using BaitaHora.Application.Auth.Commands;
-using BaitaHora.Application.Common.Validation;
-using BaitaHora.Application.Users.DTOs;
-using BaitaHora.Domain.Users.ValueObjects;
+using BaitaHora.Application.Features.Commons.Validators;
+using BaitaHora.Application.Features.Users.DTOs;
+using BaitaHora.Domain.Features.Users.ValueObjects;
 using FluentValidation;
 
-namespace BaitaHora.Application.Auth.Validators;
+namespace BaitaHora.Application.Features.Auth.Validators;
 
 public sealed class UserInputValidator : AbstractValidator<UserInput>
 {

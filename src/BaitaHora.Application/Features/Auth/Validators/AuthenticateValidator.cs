@@ -1,7 +1,7 @@
-using BaitaHora.Application.Auth.Commands;
+using BaitaHora.Application.Features.Auth.Commands;
 using FluentValidation;
 
-namespace BaitaHora.Application.Auth.Validators;
+namespace BaitaHora.Application.Features.Auth.Validators;
 
 public sealed class AuthenticateValidator : AbstractValidator<AuthenticateCommand>
 {

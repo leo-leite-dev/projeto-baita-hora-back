@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using MediatR;
 using BaitaHora.Api.Helpers;
 using BaitaHora.Application.IServices.Auth;
-using BaitaHora.Application.Auth.Commands;
+using BaitaHora.Application.Features.Auth.Commands;
 
 namespace BaitaHora.Api.Controllers.Auth
 {

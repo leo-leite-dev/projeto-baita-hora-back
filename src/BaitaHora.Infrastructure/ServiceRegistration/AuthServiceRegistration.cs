@@ -2,19 +2,20 @@ using BaitaHora.Application.IRepositories.Auth;
 using BaitaHora.Application.IRepositories.Users;
 using BaitaHora.Application.IServices.Auth;
 using BaitaHora.Application.Ports;
-using BaitaHora.Application.Auth.UseCases.Authenticate;
 using BaitaHora.Infrastructure.Configuration;
 using BaitaHora.Infrastructure.Services.Auth;
 using BaitaHora.Infrastructure.Repositories.Auth;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using BaitaHora.Infrastructure.Repositories;
 using BaitaHora.Application.IRepositories;
 using BaitaHora.Application.Common;
 using BaitaHora.Infrastructure.Persistence;
 using BaitaHora.Infrastructure.Services;
+using BaitaHora.Application.Features.Auth.UseCases;
+using BaitaHora.Infrastructure.Repositories.Users;
+using BaitaHora.Infrastructure.Repositories.Companies;
 
-namespace BaitaHora.Infrastructure.Extensions;
+namespace BaitaHora.Infrastructure.ServiceRegistration;
 
 public static class AuthInfrastructureRegistration
 {

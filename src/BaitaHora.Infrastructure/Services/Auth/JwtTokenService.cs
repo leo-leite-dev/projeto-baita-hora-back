@@ -2,7 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using BaitaHora.Application.Auth.DTOs.Responses;
+using BaitaHora.Application.Feature.Auth.DTOs.Responses;
 using BaitaHora.Application.IRepositories.Auth;
 using BaitaHora.Application.IServices.Auth;
 using BaitaHora.Application.IServices.Auth.Models;

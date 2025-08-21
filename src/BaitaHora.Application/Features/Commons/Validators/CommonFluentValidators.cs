@@ -1,8 +1,8 @@
 using System.Text.RegularExpressions;
+using BaitaHora.Domain.Features.Commons.ValueObjects;
 using FluentValidation;
-using BaitaHora.Domain.Commons.ValueObjects;
 
-namespace BaitaHora.Application.Common.Validation;
+namespace BaitaHora.Application.Features.Commons.Validators;
 
 public static class CommonFluentValidators
 {

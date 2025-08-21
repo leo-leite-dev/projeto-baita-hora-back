@@ -1,8 +1,7 @@
-using BaitaHora.Application.Companies.DTOs;
-using BaitaHora.Application.Companies.Inputs;
-using BaitaHora.Application.Users.DTOs;
+using BaitaHora.Application.Features.Companies.Inputs;
+using BaitaHora.Application.Features.Users.DTOs;
 
-namespace BaitaHora.Application.Auth.Inputs;
+namespace BaitaHora.Application.Features.Auth.Inputs;
 
 public sealed record RegisterOwnerWithCompanyInput(
     UserInput User,

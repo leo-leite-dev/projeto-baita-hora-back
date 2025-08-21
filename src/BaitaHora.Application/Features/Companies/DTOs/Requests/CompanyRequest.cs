@@ -1,6 +1,6 @@
-using BaitaHora.Application.Addresses.DTOs.Requests;
+using BaitaHora.Application.Features.Commons.Requests;
 
-namespace BaitaHora.Application.Companies.DTOs.Requests;
+namespace BaitaHora.Application.Features.Companies.DTOs.Requests;
 
 public sealed record CompanyRequest(
     string Name,

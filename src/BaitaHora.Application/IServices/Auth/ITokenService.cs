@@ -1,5 +1,5 @@
 using System.Security.Claims;
-using BaitaHora.Application.Auth.DTOs.Responses;
+using BaitaHora.Application.Feature.Auth.DTOs.Responses;
 
 namespace BaitaHora.Application.IServices.Auth
 {

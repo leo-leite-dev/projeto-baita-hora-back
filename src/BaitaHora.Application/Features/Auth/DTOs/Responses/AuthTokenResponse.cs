@@ -1,4 +1,4 @@
-namespace BaitaHora.Application.Auth.DTOs.Responses;
+namespace BaitaHora.Application.Feature.Auth.DTOs.Responses;
 
 public sealed record AuthTokenResponse(
     string AccessToken,

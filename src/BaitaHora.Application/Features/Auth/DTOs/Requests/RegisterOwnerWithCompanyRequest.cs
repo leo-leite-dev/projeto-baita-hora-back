@@ -1,7 +1,7 @@
-using BaitaHora.Application.Companies.DTOs.Requests;
-using BaitaHora.Application.Users.DTOs;
+using BaitaHora.Application.Features.Companies.DTOs.Requests;
+using BaitaHora.Application.Features.Users.DTOs;
 
-namespace BaitaHora.Application.Auth.DTOs.Requests;
+namespace BaitaHora.Application.Features.Auth.DTOs.Requests;
 
 public sealed record RegisterOwnerWithCompanyRequest(
     UserRequest User,

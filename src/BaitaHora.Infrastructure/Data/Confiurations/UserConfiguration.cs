@@ -1,6 +1,6 @@
-using BaitaHora.Domain.Commons.ValueObjects; // Email
-using BaitaHora.Domain.Users.Entities;
-using BaitaHora.Domain.Users.ValueObjects;   // Username
+using BaitaHora.Domain.Features.Commons.ValueObjects;
+using BaitaHora.Domain.Features.Users.Entities;
+using BaitaHora.Domain.Features.Users.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;

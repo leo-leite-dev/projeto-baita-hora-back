@@ -1,6 +1,6 @@
-using BaitaHora.Application.Addresses.DTOs.Requests;
+using BaitaHora.Application.Features.Commons.Requests;
 
-namespace BaitaHora.Application.Users.DTOs;
+namespace BaitaHora.Application.Features.Users.DTOs;
 
 public sealed record UserProfileRequest(
     string FullName,

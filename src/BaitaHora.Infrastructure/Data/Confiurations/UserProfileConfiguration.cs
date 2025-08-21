@@ -1,5 +1,6 @@
-using BaitaHora.Domain.Users.Entities;
-using BaitaHora.Domain.Users.ValueObjects;          
+using BaitaHora.Domain.Features.Commons.ValueObjects;
+using BaitaHora.Domain.Features.Users.Entities;
+using BaitaHora.Domain.Features.Users.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
@@ -18,15 +19,16 @@ public sealed class UserProfileConfiguration : IEntityTypeConfiguration<UserProf
             .IsRequired();
 
         var cpfConverter = new ValueConverter<CPF, string>(
-            toProvider   => toProvider.Value,
+            toProvider => toProvider.Value,
             fromProvider => CPF.Parse(fromProvider)
         );
         var rgConverter = new ValueConverter<RG?, string?>(
-            toProvider   => toProvider.HasValue ? toProvider.Value.Value : null,
-            fromProvider => string.IsNullOrEmpty(fromProvider) ? (RG?)null : RG.Parse(fromProvider)
+            toProvider => toProvider.HasValue ? toProvider.Value.Value : null,
+            fromProvider => string.IsNullOrEmpty(fromProvider) ? null : RG.Parse(fromProvider)
         );
+     
         var phoneConverter = new ValueConverter<Phone, string>(
-            toProvider   => toProvider.Value,
+            toProvider => toProvider.Value,
             fromProvider => Phone.Parse(fromProvider)
         );
 

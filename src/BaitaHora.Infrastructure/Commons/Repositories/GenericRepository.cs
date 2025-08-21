@@ -1,7 +1,9 @@
 using BaitaHora.Application.IRepositories;
-using BaitaHora.Domain.Commons;
+using BaitaHora.Domain.Features.Commons;
 using BaitaHora.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+
+namespace BaitaHora.Infrastructure.Commons.Repositories;
 
 public class GenericRepository<T> : IGenericRepository<T> where T : Entity
 {

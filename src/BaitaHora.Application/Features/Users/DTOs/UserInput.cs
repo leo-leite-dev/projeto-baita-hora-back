@@ -1,4 +1,4 @@
-namespace BaitaHora.Application.Users.DTOs;
+namespace BaitaHora.Application.Features.Users.DTOs;
 
 public sealed record UserInput(
     string Email,

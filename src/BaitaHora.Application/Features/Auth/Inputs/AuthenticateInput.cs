@@ -1,4 +1,4 @@
-namespace BaitaHora.Application.Auth.Inputs;
+namespace BaitaHora.Application.Features.Auth.Inputs;
 
 public sealed record AuthenticateInput(
     string Identify,

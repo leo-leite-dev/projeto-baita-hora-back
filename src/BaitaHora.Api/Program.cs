@@ -1,9 +1,9 @@
-using BaitaHora.Application.Auth.Commands;
 using BaitaHora.Application.Common.Behaviors;
 using BaitaHora.Application.Common.Validation;
+using BaitaHora.Application.Features.Auth.Commands;
 using BaitaHora.Infrastructure.Configuration;
 using BaitaHora.Infrastructure.Data;
-using BaitaHora.Infrastructure.Extensions;
+using BaitaHora.Infrastructure.ServiceRegistration;
 using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;

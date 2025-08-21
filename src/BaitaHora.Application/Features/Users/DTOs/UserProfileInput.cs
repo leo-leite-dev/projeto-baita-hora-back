@@ -1,6 +1,6 @@
-using BaitaHora.Application.Addresses.DTOs.Inputs;
+using BaitaHora.Application.Features.Commons.Inputs;
 
-namespace BaitaHora.Application.Users.DTOs;
+namespace BaitaHora.Application.Features.Users.DTOs;
 
 public sealed record UserProfileInput(
     string FullName,

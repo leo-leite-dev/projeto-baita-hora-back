@@ -1,10 +1,10 @@
-using BaitaHora.Application.Auth.Commands;
-using BaitaHora.Application.Auth.DTOs.Responses;
-using BaitaHora.Application.Auth.UseCases.Authenticate;
 using BaitaHora.Application.Common;
+using BaitaHora.Application.Feature.Auth.DTOs.Responses;
+using BaitaHora.Application.Features.Auth.Commands;
+using BaitaHora.Application.Features.Auth.UseCases;
 using MediatR;
 
-namespace BaitaHora.Application.Auth.Handlers;
+namespace BaitaHora.Application.Features.Auth.Handlers;
 
 public sealed class AuthenticateHandler : IRequestHandler<AuthenticateCommand, Result<AuthTokenResponse>>
 {

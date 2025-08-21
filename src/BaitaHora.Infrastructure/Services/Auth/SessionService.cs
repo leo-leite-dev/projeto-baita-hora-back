@@ -21,16 +21,14 @@ public sealed class SessionService : ISessionService
         var dto = new LoginSessionDto(
             Id: Guid.NewGuid(),
             UserId: userId,
-            RefreshTokenHash: string.Empty, // será definido pelo TokenService quando emitir
-            RefreshTokenExpiresAtUtc: DateTime.UtcNow, // idem
+            RefreshTokenHash: string.Empty, 
+            RefreshTokenExpiresAtUtc: DateTime.UtcNow, 
             IsRevoked: false,
             Ip: ip ?? string.Empty,
             UserAgent: userAgent ?? string.Empty,
             CreatedAtUtc: DateTime.UtcNow
         );
 
-        // Muitas equipes registram o login em tabela separada (audit log).
-        // Aqui estamos usando a mesma entidade por simplicidade. Em prod, recomendo tabela AuditLogin.
         await _sessions.AddAsync(dto, ct);
         await _sessions.SaveChangesAsync(ct);
         _log.LogInformation("Login registrado. userId={UserId} ip={Ip}", userId, ip);

@@ -1,4 +1,4 @@
-using BaitaHora.Domain.Commons;
+using BaitaHora.Domain.Features.Commons;
 
 namespace BaitaHora.Application.IRepositories
 {

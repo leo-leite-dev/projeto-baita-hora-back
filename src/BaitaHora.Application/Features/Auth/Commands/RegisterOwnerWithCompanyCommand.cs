@@ -1,10 +1,10 @@
-using BaitaHora.Application.Auth.DTO.Responses;
 using BaitaHora.Application.Common;
-using BaitaHora.Application.Companies.Inputs;
-using BaitaHora.Application.Users.DTOs;
+using BaitaHora.Application.Feature.Auth.DTOs.Responses;
+using BaitaHora.Application.Features.Companies.Inputs;
+using BaitaHora.Application.Features.Users.DTOs;
 using MediatR;
 
-namespace BaitaHora.Application.Auth.Commands;
+namespace BaitaHora.Application.Features.Auth.Commands;
 
 public sealed record RegisterOwnerWithCompanyCommand
     : IRequest<Result<RegisterOwnerWithCompanyResponse>>
