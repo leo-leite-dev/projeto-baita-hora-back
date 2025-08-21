@@ -1,7 +1,7 @@
 namespace BaitaHora.Application.Features.Users.DTOs;
 
 public sealed record UserInput(
-    string Email,
+    string UserEmail,
     string Username,
     string RawPassword,
     UserProfileInput Profile

@@ -1,7 +1,7 @@
-using BaitaHora.Domain.Enums;
 using BaitaHora.Domain.Features.Commons;
 using BaitaHora.Domain.Features.Commons.Exceptions;
 using BaitaHora.Domain.Features.Commons.ValueObjects;
+using BaitaHora.Domain.Features.Companies.Enums;
 using BaitaHora.Domain.Features.Users.Validators;
 using BaitaHora.Domain.Features.Users.ValueObjects;
 
@@ -10,11 +10,11 @@ namespace BaitaHora.Domain.Features.Users.Entities;
 public sealed class User : Entity
 {
     public Username Username { get; private set; }
-    public Email Email { get; private set; }
+    public Email UserEmail { get; private set; }
     public string PasswordHash { get; private set; } = string.Empty;
 
     public bool IsActive { get; private set; } = true;
-    public SystemRole Role { get; private set; } = SystemRole.User;
+    public CompanyRole Role { get; private set; }
 
     public string? PasswordResetToken { get; private set; }
     public DateTime? PasswordResetTokenExpiresAt { get; private set; }
@@ -24,12 +24,12 @@ public sealed class User : Entity
 
     private User() { }
 
-    public static User Create(Email email, Username username, string rawPassword, UserProfile profile, Func<string, string> hashFunction)
+    public static User Create(Email UserEmail, Username username, string rawPassword, UserProfile profile, Func<string, string> hashFunction)
     {
         if (profile is null) throw new UserException("Perfil do usuário é obrigatório.");
 
         var user = new User();
-        user.SetEmail(email);
+        user.SetEmail(UserEmail);
         user.SetUsername(username);
 
         user.Profile = profile;
@@ -40,9 +40,9 @@ public sealed class User : Entity
         return user;
     }
 
-    public void SetRole(SystemRole newRole)
+    public void SetRole(CompanyRole newRole)
     {
-        if (newRole == SystemRole.Unknown)
+        if (newRole == CompanyRole.Unknown)
             throw new UserException("Role inválida.");
         Role = newRole;
         Touch();
@@ -50,8 +50,8 @@ public sealed class User : Entity
 
     public bool SetEmail(Email newEmail)
     {
-        if (Email.Equals(newEmail)) return false;
-        Email = newEmail;
+        if (UserEmail.Equals(newEmail)) return false;
+        UserEmail = newEmail;
         Touch();
         return true;
     }

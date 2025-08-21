@@ -1,27 +1,50 @@
 using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
 using BaitaHora.Application.Ports;
 using Microsoft.AspNetCore.Http;
 
-namespace BaitaHora.Infrastructure.Services.Auth
+public sealed class HttpContextUserIdentityAdapter : IUserIdentityPort
 {
-    public sealed class HttpContextUserIdentityAdapter : IUserIdentityPort
+    private readonly IHttpContextAccessor _http;
+
+    public HttpContextUserIdentityAdapter(IHttpContextAccessor httpContextAccessor)
+        => _http = httpContextAccessor;
+
+    public Guid GetUserId()
     {
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        var user = _http.HttpContext?.User
+            ?? throw new UnauthorizedAccessException("Usuário não autenticado.");
 
-        public HttpContextUserIdentityAdapter(IHttpContextAccessor httpContextAccessor)
-        {
-            _httpContextAccessor = httpContextAccessor;
-        }
+        var idClaim = user.FindFirst(ClaimTypes.NameIdentifier)
+                   ?? user.FindFirst(JwtRegisteredClaimNames.Sub)
+                   ?? throw new UnauthorizedAccessException("Claim de usuário não encontrada.");
 
-        public Task<(string Username, IEnumerable<string> Roles, bool IsActive)> GetIdentityAsync(Guid userId, CancellationToken ct)
-        {
-            var user = _httpContextAccessor.HttpContext?.User;
+        if (!Guid.TryParse(idClaim.Value, out var userId))
+            throw new UnauthorizedAccessException("Claim de usuário inválida.");
 
-            var username = user?.Identity?.Name ?? "unknown";
-            var roles = user?.FindAll(ClaimTypes.Role).Select(r => r.Value) ?? Enumerable.Empty<string>();
-            var isActive = true;
+        return userId;
+    }
 
-            return Task.FromResult((username, roles, isActive));
-        }
+    public Task<(string Username, IEnumerable<string> Roles, bool IsActive)>
+        GetIdentityAsync(Guid userId, CancellationToken ct)
+    {
+        var user = _http.HttpContext?.User
+            ?? throw new UnauthorizedAccessException("Usuário não autenticado.");
+
+        var sub = user.FindFirst(ClaimTypes.NameIdentifier)
+                   ?? user.FindFirst(JwtRegisteredClaimNames.Sub);
+        if (sub is null || !Guid.TryParse(sub.Value, out var tokenUserId) || tokenUserId != userId)
+            throw new UnauthorizedAccessException("Identidade solicitada não corresponde ao token atual.");
+
+        var username = user.FindFirst(ClaimTypes.Name)?.Value
+                    ?? user.FindFirst(JwtRegisteredClaimNames.UniqueName)?.Value
+                    ?? throw new UnauthorizedAccessException("Claim de nome de usuário não encontrada.");
+
+        IEnumerable<string> roles = user.FindAll(ClaimTypes.Role).Select(c => c.Value);
+
+        var isActiveClaim = user.FindFirst("is_active")?.Value;
+        var isActive = isActiveClaim is null ? true : bool.TryParse(isActiveClaim, out var b) && b;
+
+        return Task.FromResult((Username: username, Roles: roles, IsActive: isActive));
     }
 }

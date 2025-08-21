@@ -9,9 +9,7 @@ public abstract class Entity
 
     protected Entity()
     {
-        var now = DateTimeOffset.UtcNow;
-        CreatedAtUtc = now;
-        UpdatedAtUtc = now;
+        CreatedAtUtc = DateTimeOffset.UtcNow;
     }
 
     public void Touch() => UpdatedAtUtc = DateTimeOffset.UtcNow;

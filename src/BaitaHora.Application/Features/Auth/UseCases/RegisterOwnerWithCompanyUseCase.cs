@@ -13,6 +13,8 @@ using BaitaHora.Domain.Features.Commons.ValueObjects;
 using BaitaHora.Domain.Features.Users.ValueObjects;
 using BaitaHora.Application.Features.Users.DTOs;
 using BaitaHora.Application.Features.Companies.Inputs;
+using BaitaHora.Domain.Features.Companies.Enums;
+using BaitaHora.Application.IServices.Common;
 
 namespace BaitaHora.Application.Features.Auth.UseCases;
 
@@ -20,25 +22,22 @@ public sealed class RegisterOwnerWithCompanyUseCase
 
 {
     private readonly IUserRepository _userRepository;
-    private readonly IUserProfileRepository _userProfileRepository;
     private readonly ICompanyRepository _companyRepository;
     private readonly IPasswordService _passwordService;
-    private readonly IUnitOfWork _uow;
+    private readonly IUserUniquenessChecker _userUniquenessesChecker;
     private readonly ILogger<RegisterOwnerWithCompanyUseCase> _logger;
 
     public RegisterOwnerWithCompanyUseCase(
         IUserRepository userRepository,
-        IUserProfileRepository userProfileRepository,
         ICompanyRepository companyRepository,
         IPasswordService passwordService,
-        IUnitOfWork uow,
+        IUserUniquenessChecker userUniquenessesChecker,
         ILogger<RegisterOwnerWithCompanyUseCase> logger)
     {
         _userRepository = userRepository;
-        _userProfileRepository = userProfileRepository;
         _companyRepository = companyRepository;
         _passwordService = passwordService;
-        _uow = uow;
+        _userUniquenessesChecker = userUniquenessesChecker;
         _logger = logger;
     }
 
@@ -47,50 +46,53 @@ public sealed class RegisterOwnerWithCompanyUseCase
     {
         var (owner, company) = Assembler.From(request);
 
-        if (await _userRepository.IsUserEmailTakenAsync(owner.Email, null, ct))
-            return Result<RegisterOwnerWithCompanyResponse>.Conflict("E-mail de usuário já cadastrado.");
+        var uniqueness = await _userUniquenessesChecker.CheckAsync(
+            owner.UserEmail, owner.Username, owner.Cpf, owner.Rg, excludingUserId: null, ct);
 
-        if (await _userRepository.IsUsernameTakenAsync(owner.Username, null, ct))
-            return Result<RegisterOwnerWithCompanyResponse>.Conflict("Username já cadastrado.");
+        if (!uniqueness.IsOk)
+            return Result<RegisterOwnerWithCompanyResponse>.Conflict(
+                string.Join(" ", uniqueness.Violations.Select(v => $"{v.Field}: {v.Message}"))
+            );
 
-        if (await _userProfileRepository.IsCpfTakenAsync(owner.Cpf, null, ct))
-            return Result<RegisterOwnerWithCompanyResponse>.Conflict("Cpf já cadastrado.");
-
-        if (owner.Rg is not null && await _userProfileRepository.IsRgTakenAsync(owner.Rg.Value, null, ct))
-            return Result<RegisterOwnerWithCompanyResponse>.Conflict("RG já cadastrado.");
-
-        if (await _companyRepository.IsCompanyEmailTakenAsync(company.Email, null, ct))
-            return Result<RegisterOwnerWithCompanyResponse>.Conflict("Email de empresa já cadastrado.");
+        if (await _companyRepository.IsCompanyEmailTakenAsync(company.CompanyEmail, null, ct))
+            return Result<RegisterOwnerWithCompanyResponse>.Conflict("Email de empresa já cadastrado.",
+            ResultCodes.Conflict.UniqueViolation);
 
         if (await _companyRepository.IsCompanyNameTakenAsync(company.CompanyName, null, ct))
-            return Result<RegisterOwnerWithCompanyResponse>.Conflict("Razão social já cadastrado.");
+            return Result<RegisterOwnerWithCompanyResponse>.Conflict("Razão social já cadastrada.",
+             ResultCodes.Conflict.UniqueViolation);
 
         if (await _companyRepository.IsCnpjTakenAsync(company.Cnpj, null, ct))
-            return Result<RegisterOwnerWithCompanyResponse>.Conflict("CNPJ já cadastrado.");
+            return Result<RegisterOwnerWithCompanyResponse>.Conflict("CNPJ já cadastrado.",
+             ResultCodes.Conflict.UniqueViolation);
 
-        await using var tx = await _uow.BeginTransactionAsync(ct);
         try
         {
-            var profile = UserProfile.Create(owner.FullName, owner.Cpf, owner.Phone, owner.Address);
+            var profile = UserProfile.Create(owner.FullName, owner.Cpf, owner.UserPhone, owner.Address);
             if (owner.Rg is not null) profile.SetRg(owner.Rg.Value);
             if (owner.BirthDate is not null) profile.SetBirthDate(owner.BirthDate.Value);
 
-            var user = User.Create(owner.Email, owner.Username, owner.RawPassword, profile, _passwordService.Hash);
+            var user = User.Create(
+                owner.UserEmail,
+                owner.Username,
+                owner.RawPassword,
+                profile,
+                _passwordService.Hash);
 
             var comp = Company.Create(
-                companyName: company.CompanyName,
-                cnpj: company.Cnpj,
-                email: company.Email,
-                phone: company.Phone,
-                address: company.Address,
-                tradeName: company.TradeName
+                company.CompanyName,
+                company.Cnpj,
+                company.Address,
+                company.TradeName,
+                company.CompanyPhone,
+                company.CompanyEmail
             );
+
+            user.SetRole(CompanyRole.Owner);
+            comp.AddOwnerFounder(user.Id);
 
             await _userRepository.AddAsync(user, ct);
             await _companyRepository.AddAsync(comp, ct);
-
-            await _uow.SaveChangesAsync(ct);
-            await _uow.CommitTransactionAsync(tx, ct);
 
             var response = new RegisterOwnerWithCompanyResponse(user.Id, comp.Id);
             return Result<RegisterOwnerWithCompanyResponse>.Created(response);
@@ -98,10 +100,8 @@ public sealed class RegisterOwnerWithCompanyUseCase
         catch (DbUpdateException ex)
         {
             _logger.LogWarning(ex,
-                "Persistência falhou ao registrar dono/empresa. Email={Email}, Username={Username}, CNPJ={Cnpj}",
-                owner.Email, owner.Username, company.Cnpj);
-
-            await _uow.RollbackTransactionAsync(tx, ct);
+                "Violação de integridade ao registrar dono/empresa. Email={Email}, Username={Username}, CNPJ={Cnpj}",
+                owner.UserEmail, owner.Username, company.Cnpj);
 
             return Result<RegisterOwnerWithCompanyResponse>.Conflict("Violação de integridade (índice único).");
         }
@@ -109,9 +109,7 @@ public sealed class RegisterOwnerWithCompanyUseCase
         {
             _logger.LogError(ex,
                 "Erro inesperado ao registrar dono/empresa. Email={Email}, Username={Username}, CNPJ={Cnpj}",
-                owner.Email, owner.Username, company.Cnpj);
-
-            await _uow.RollbackTransactionAsync(tx, ct);
+                owner.UserEmail, owner.Username, company.Cnpj);
 
             return Result<RegisterOwnerWithCompanyResponse>.ServerError(
                 "Erro interno ao processar o cadastro do dono/empresa.");
@@ -125,10 +123,10 @@ public sealed class RegisterOwnerWithCompanyUseCase
 
         private static OwnerVO BuildOwner(UserInput u)
         {
-            var email = Email.Parse(u.Email);
+            var email = Email.Parse(u.UserEmail);
             var username = Username.Parse(u.Username);
             var cpf = CPF.Parse(u.Profile.Cpf);
-            var phone = Phone.Parse(u.Profile.Phone);
+            var phone = Phone.Parse(u.Profile.UserPhone);
 
             RG? rg = string.IsNullOrWhiteSpace(u.Profile.Rg) ? default : RG.Parse(u.Profile.Rg);
 
@@ -149,8 +147,8 @@ public sealed class RegisterOwnerWithCompanyUseCase
         {
             var name = CompanyName.Parse(c.CompanyName);
             var cnpj = CNPJ.Parse(c.Cnpj);
-            var email = Email.Parse(c.Email);
-            var phone = Phone.Parse(c.Phone);
+            var email = Email.Parse(c.CompanyEmail);
+            var phone = Phone.Parse(c.CompanyPhone);
 
             var addr = Address.Parse(
                 street: c.Address.Street,
@@ -168,8 +166,8 @@ public sealed class RegisterOwnerWithCompanyUseCase
 }
 
 public readonly record struct OwnerVO(
-    Email Email, Username Username, string RawPassword, string FullName,
-    CPF Cpf, RG? Rg, Phone Phone, DateTime? BirthDate, Address Address);
+    Email UserEmail, Username Username, string RawPassword, string FullName,
+    CPF Cpf, RG? Rg, Phone UserPhone, DateTime? BirthDate, Address Address);
 
 public readonly record struct CompanyVO(
-    CompanyName CompanyName, string? TradeName, CNPJ Cnpj, Email Email, Phone Phone, Address Address);
+    CompanyName CompanyName, string? TradeName, CNPJ Cnpj, Email CompanyEmail, Phone CompanyPhone, Address Address);

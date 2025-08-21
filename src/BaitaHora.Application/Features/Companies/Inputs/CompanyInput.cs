@@ -6,7 +6,7 @@ public sealed record CompanyInput(
     string CompanyName,
     string Cnpj,
     string? TradeName,
-    string Phone,
-    string Email,
+    string CompanyPhone,
+    string CompanyEmail,
     AddressInput Address
 );

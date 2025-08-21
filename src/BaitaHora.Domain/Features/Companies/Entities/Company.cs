@@ -11,8 +11,8 @@ public sealed class Company : Entity
     public CompanyName CompanyName { get; private set; }
     public CNPJ Cnpj { get; private set; }
     public Address Address { get; private set; } = default!;
-    public Phone Phone { get; private set; }
-    public Email Email { get; private set; }
+    public Phone CompanyPhone { get; private set; }
+    public Email CompanyEmail { get; private set; }
 
     public string? TradeName { get; private set; } = string.Empty;
     public bool IsActive { get; private set; } = true;
@@ -22,26 +22,25 @@ public sealed class Company : Entity
     private readonly List<CompanyMember> _members = new();
     public IReadOnlyCollection<CompanyMember> Members => _members.AsReadOnly();
 
-    private readonly List<CompanyPosition> _positions = new();
-    public IReadOnlyCollection<CompanyPosition> Positions => _positions.AsReadOnly();
+    private readonly List<CompanyPosition> _companyPositions = new();
+    public IReadOnlyCollection<CompanyPosition> Positions => _companyPositions.AsReadOnly();
 
     private Company() { }
 
-    public static Company Create(CompanyName companyName, CNPJ cnpj, Address address, string? tradeName, Phone phone, Email email)
+    public static Company Create(CompanyName companyName, CNPJ cnpj, Address address, string? tradeName, Phone CompanyPhone, Email CompanyEmail)
     {
         if (address is null) throw new CompanyException("Endereço é obrigatório.");
 
-        var company = new Company
-        {
-            CompanyName = companyName,
-            Cnpj = cnpj,
-            Address = address,
-            Phone = phone,
-            Email = email,
-            TradeName = string.IsNullOrWhiteSpace(tradeName) ? null : tradeName.Trim()
-        };
+        var company = new Company();
+        company.SetName(companyName);
+        company.SetCnpj(cnpj);
+        company.SetAddress(address);
+        company.SetTradeName(tradeName);
+        company.SetPhone(CompanyPhone);
+        company.SetEmail(CompanyEmail);
 
-        company.Touch();
+        // company.SetImage(image);
+
         return company;
     }
 
@@ -49,14 +48,13 @@ public sealed class Company : Entity
     {
         if (CompanyName.Equals(newCompanyName)) return false;
         CompanyName = newCompanyName;
-        Touch();
         return true;
     }
+
     public bool SetCnpj(CNPJ newCnpj)
     {
         if (Cnpj.Equals(newCnpj)) return false;
         Cnpj = newCnpj;
-        Touch();
         return true;
     }
 
@@ -66,23 +64,20 @@ public sealed class Company : Entity
         if (Address != null && Address.Equals(newAddress)) return false;
 
         Address = newAddress;
-        Touch();
         return true;
     }
 
     public bool SetPhone(Phone newPhone)
     {
-        if (Phone.Equals(newPhone)) return false;
-        Phone = newPhone;
-        Touch();
+        if (CompanyPhone.Equals(newPhone)) return false;
+        CompanyPhone = newPhone;
         return true;
     }
 
     public bool SetEmail(Email newEmail)
     {
-        if (Email.Equals(newEmail)) return false;
-        Email = newEmail;
-        Touch();
+        if (CompanyEmail.Equals(newEmail)) return false;
+        CompanyEmail = newEmail;
         return true;
     }
 
@@ -95,7 +90,6 @@ public sealed class Company : Entity
             throw new CompanyException("Nome fantasia deve ter no máximo 200 caracteres.");
 
         TradeName = normalized;
-        Touch();
         return true;
     }
 
@@ -105,66 +99,155 @@ public sealed class Company : Entity
         {
             if (Image is null) return false;
             Image = null;
-            Touch();
             return true;
         }
 
         if (Image is not null && Equals(Image, newImage)) return false;
         Image = newImage;
-        Touch();
         return true;
     }
 
-    public bool SetActive(bool newActive)
+    public CompanyMember AddOwnerFounder(Guid userId)
     {
-        if (IsActive == newActive) return false;
-        IsActive = newActive;
-        Touch();
-        return true;
+        if (_members.Any(m => m.Role == CompanyRole.Owner && m.IsActive))
+            throw new CompanyException("Já existe um Owner para esta empresa.");
+
+        var member = CompanyMember.Create(Id, userId, CompanyRole.Owner);
+
+        var founder = EnsurePositionByName(
+            name: "Fundador",
+            accessLevel: CompanyRole.Owner,
+            allowOwnerLevel: true,
+            isSystem: true
+        );
+        member.SetPrimaryPosition(founder);
+
+        _members.Add(member);
+
+        return member;
     }
 
-    public CompanyPosition CreatePosition(string name, CompanyRole level, bool allowOwnerLevel = false)
+    public CompanyMember AddMemberFromPosition(Guid userId, CompanyPosition position)
     {
-        var normalized = NormalizeNameRequired(name);
+        if (position is null)
+            throw new CompanyException("Posição é obrigatória.");
+        if (position.CompanyId != Id)
+            throw new CompanyException("Cargo não pertence a esta empresa.");
+        if (!position.IsActive)
+            throw new CompanyException("Não é possível atribuir um cargo inativo.");
+        if (position.AccessLevel == CompanyRole.Owner)
+            throw new CompanyException("Cargo de nível Owner só pode ser atribuído ao fundador.");
 
-        if (level == CompanyRole.Unknown)
-            throw new CompanyException("Nível de cargo inválido.");
+        var member = CompanyMember.Create(Id, userId, position.AccessLevel);
+        member.SetPrimaryPosition(position);
 
-        if (level == CompanyRole.Owner && !allowOwnerLevel)
-            throw new CompanyException("Cargo de Owner não permitido.");
+        _members.Add(member);
+        return member;
+    }
 
-        if (_positions.Any(p => string.Equals(p.Name, normalized, StringComparison.OrdinalIgnoreCase)))
-            throw new CompanyException($"Já existe cargo '{normalized}' nesta empresa.");
+    public CompanyMember ChangeMemberPosition(Guid userId, CompanyPosition newPosition, bool alignRoleToPosition = true)
+    {
+        if (newPosition is null)
+            throw new CompanyException("Posição é obrigatória.");
+        if (newPosition.CompanyId != Id)
+            throw new CompanyException("Cargo não pertence a esta empresa.");
+        if (!newPosition.IsActive) throw
+         new CompanyException("Não é possível atribuir um cargo inativo.");
+        if (newPosition.AccessLevel == CompanyRole.Owner)
+            throw new CompanyException("Cargo de nível Owner só pode ser atribuído ao fundador.");
 
-        var pos = new CompanyPosition(Id, normalized, level, allowOwnerLevel);
-        _positions.Add(pos);
-        Touch();
+        var member = _members.SingleOrDefault(m => m.UserId == userId && m.IsActive)
+            ?? throw new CompanyException("Membro não encontrado ou inativo.");
+
+        member.SetPrimaryPosition(newPosition);
+
+        if (alignRoleToPosition)
+            member.SetRole(newPosition.AccessLevel);
+
+        return member;
+    }
+
+    public CompanyPosition AddPosition(string name, CompanyRole accessLevel, bool isSystem = false)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new CompanyException("Nome do cargo é obrigatório.");
+
+        if (_companyPositions.Any(p => string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase)))
+            throw new CompanyException("Já existe um cargo com esse nome.");
+
+        if (accessLevel == CompanyRole.Owner)
+            throw new CompanyException("Cargo de nível Owner só pode ser criado pelo fluxo de fundador.");
+
+        var pos = CompanyPosition.Create(
+            companyId: Id,
+            name: name,
+            accessLevel: accessLevel,
+            allowOwnerLevel: false,
+            isSystem: isSystem
+        );
+
+        _companyPositions.Add(pos);
         return pos;
     }
 
     public bool RenamePosition(Guid positionId, string newName)
     {
-        var pos = _positions.FirstOrDefault(p => p.Id == positionId)
+        var pos = _companyPositions.SingleOrDefault(p => p.Id == positionId)
             ?? throw new CompanyException("Cargo não encontrado.");
 
-        var normalized = NormalizeNameRequired(newName);
+        if (_companyPositions.Any(p => p.Id != positionId &&
+                string.Equals(p.Name, newName, StringComparison.OrdinalIgnoreCase)))
+            throw new CompanyException("Já existe um cargo com esse nome.");
 
-        if (_positions.Any(p => p.Id != positionId &&
-                                string.Equals(p.Name, normalized, StringComparison.OrdinalIgnoreCase)))
-            throw new CompanyException($"Já existe cargo '{normalized}' nesta empresa.");
-
-        if (string.Equals(pos.Name, normalized, StringComparison.OrdinalIgnoreCase))
-            return false;
-
-        pos.Rename(normalized);
-        Touch();
-        return true;
+        return pos.SetName(newName);
     }
 
-    private static string NormalizeNameRequired(string? name)
+    public bool ChangePositionAccessLevel(Guid positionId, CompanyRole newLevel)
     {
-        var normalized = (name ?? string.Empty).Trim();
-        if (normalized.Length == 0) throw new CompanyException("Nome obrigatório.");
-        return normalized;
+        var pos = _companyPositions.SingleOrDefault(p => p.Id == positionId)
+            ?? throw new CompanyException("Cargo não encontrado.");
+
+        if (newLevel == CompanyRole.Owner)
+            throw new CompanyException("Nível Owner é reservado ao fundador.");
+
+        return pos.SetAccessLevel(newLevel);
+    }
+
+    public bool DeactivatePosition(Guid positionId)
+    {
+        var pos = _companyPositions.SingleOrDefault(p => p.Id == positionId)
+            ?? throw new CompanyException("Cargo não encontrado.");
+
+        if (_members.Any(m => m.PrimaryPositionId == pos.Id && m.IsActive))
+            throw new CompanyException("Não é possível desativar um cargo em uso.");
+
+        return pos.Deactivate();
+    }
+
+    public bool ActivatePosition(Guid positionId)
+    {
+        var pos = _companyPositions.SingleOrDefault(p => p.Id == positionId)
+            ?? throw new CompanyException("Cargo não encontrado.");
+
+        return pos.Activate();
+    }
+
+    private CompanyPosition EnsurePositionByName(string name, CompanyRole accessLevel, bool allowOwnerLevel = false, bool isSystem = false)
+    {
+        var pos = _companyPositions.FirstOrDefault(
+            p => string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase));
+
+        if (pos is not null) return pos;
+
+        pos = CompanyPosition.Create(
+            companyId: Id,
+            name: name,
+            accessLevel: accessLevel,
+            allowOwnerLevel: allowOwnerLevel,
+            isSystem: isSystem
+        );
+
+        _companyPositions.Add(pos);
+        return pos;
     }
 }

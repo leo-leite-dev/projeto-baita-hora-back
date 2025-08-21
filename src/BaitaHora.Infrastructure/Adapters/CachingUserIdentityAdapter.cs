@@ -15,6 +15,8 @@ public sealed class CachingUserIdentityAdapter : IUserIdentityPort
         _ttl = ttl ?? TimeSpan.FromSeconds(60);
     }
 
+    public Guid GetUserId() => _inner.GetUserId();
+
     public async Task<(string Username, IEnumerable<string> Roles, bool IsActive)> GetIdentityAsync(Guid userId, CancellationToken ct)
     {
         if (_cache.TryGetValue(userId, out var entry) && (DateTime.UtcNow - entry.When) < _ttl)

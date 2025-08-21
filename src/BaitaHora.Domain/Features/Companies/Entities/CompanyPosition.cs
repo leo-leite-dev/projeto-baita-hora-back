@@ -1,40 +1,56 @@
 using BaitaHora.Domain.Features.Commons;
+using BaitaHora.Domain.Features.Commons.Exceptions;
+using BaitaHora.Domain.Features.Companies.Entities;
 using BaitaHora.Domain.Features.Companies.Enums;
-
-namespace BaitaHora.Domain.Features.Companies.Entities;
 
 public class CompanyPosition : Entity
 {
     public Guid CompanyId { get; private set; }
     public string Name { get; private set; } = null!;
     public CompanyRole AccessLevel { get; private set; }
-    public bool IsActive { get; private set; } = true;
-
+    public bool IsActive { get; private set; }
+    public bool IsSystem { get; private set; }
     public Company Company { get; private set; } = null!;
 
     private CompanyPosition() { }
 
-    public CompanyPosition(Guid companyId, string name, CompanyRole accessLevel, bool allowOwnerLevel = false)
+    public static CompanyPosition Create(
+        Guid companyId, string name, CompanyRole accessLevel,
+        bool allowOwnerLevel = false, bool isSystem = false)
     {
-        if (companyId == Guid.Empty) throw new ArgumentException("CompanyId inválido.");
-        if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Nome do cargo é obrigatório.");
-
+        if (companyId == Guid.Empty) throw new CompanyException("CompanyId inválido.");
         if (accessLevel == CompanyRole.Owner && !allowOwnerLevel)
-            throw new InvalidOperationException("Cargo de nível Owner só pode ser criado no bootstrap da empresa (ex.: Fundador).");
+            throw new CompanyException("Cargo Owner só pode ser criado no fluxo do fundador.");
 
-        CompanyId = companyId;
-        Name = name.Trim();
-        AccessLevel = accessLevel;
-        IsActive = true;
+        var pos = new CompanyPosition
+        {
+            CompanyId = companyId,
+            AccessLevel = accessLevel,
+            IsActive = true,
+            IsSystem = isSystem
+        };
+
+        pos.SetName(name);               
+        return pos;
     }
 
-    public void Rename(string name)
+    public bool SetName(string newName)
     {
-        if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Nome do cargo é obrigatório.");
-        Name = name.Trim();
+        var normalized = newName?.Trim();
+        if (string.IsNullOrWhiteSpace(normalized))
+            throw new CompanyException("Nome do cargo é obrigatório.");
+        if (string.Equals(Name, normalized, StringComparison.Ordinal)) return false;
+        Name = normalized; Touch(); return true;
     }
 
+    public bool SetAccessLevel(CompanyRole newLevel, bool allowOwnerLevel = false)
+    {
+        if (newLevel == AccessLevel) return false;
+        if (newLevel == CompanyRole.Owner && !allowOwnerLevel)
+            throw new CompanyException("Nível Owner é reservado ao fundador.");
+        AccessLevel = newLevel; Touch(); return true;
+    }
 
-    public void SetAccessLevel(CompanyRole level) => AccessLevel = level;
-    public void Deactivate() => IsActive = false;
+    public bool Deactivate() { if (!IsActive) return false; IsActive = false; Touch(); return true; }
+    public bool Activate() { if (IsActive) return false; IsActive = true; Touch(); return true; }
 }

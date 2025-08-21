@@ -1,4 +1,5 @@
 using BaitaHora.Domain.Features.Commons;
+using BaitaHora.Domain.Features.Commons.Exceptions;
 using BaitaHora.Domain.Features.Companies.Enums;
 using BaitaHora.Domain.Features.Users.Entities;
 
@@ -22,66 +23,54 @@ public class CompanyMember : Entity
 
     protected CompanyMember() { }
 
-    public CompanyMember(Guid companyId, Guid userId, CompanyRole role, DateTime joinedAt, bool isActive)
+    public static CompanyMember Create(Guid companyId, Guid userId, CompanyRole role)
     {
-        CompanyId = companyId;
-        UserId = userId;
+        var companyMember = new CompanyMember
+        {
+            CompanyId = companyId,
+            UserId = userId,
+            JoinedAt = DateTime.UtcNow,
+            IsActive = true
+        };
+
+        companyMember.SetRole(role);
+        return companyMember;
+    }
+
+    public void PromoteTo(CompanyRole newRole)
+    {
+        Role = newRole;
+    }
+
+    public void SetRole(CompanyRole role)
+    {
         Role = role;
-        JoinedAt = joinedAt;
-        IsActive = isActive;
     }
 
-    public static CompanyMember Create(Guid companyId, Guid userId, CompanyRole role, DateTime? joinedAtUtc = null, bool allowOwnerRole = false)
+    public bool SetPrimaryPosition(CompanyPosition position)
     {
-        if (companyId == Guid.Empty) throw new ArgumentException("CompanyId inválido.", nameof(companyId));
-        if (userId == Guid.Empty) throw new ArgumentException("UserId inválido.", nameof(userId));
-        if (!Enum.IsDefined(typeof(CompanyRole), role)) throw new ArgumentException("Role inválido.", nameof(role));
+        if (position is null)
+            throw new CompanyException("Posição é obrigatória.");
 
-        if (role == CompanyRole.Owner && !allowOwnerRole)
-            throw new InvalidOperationException("Membro com nível Owner só pode ser criado com permissão explícita.");
+        if (!IsActive)
+            throw new CompanyException("Não é possível alterar cargo de membro inativo.");
 
-        return new CompanyMember(
-            companyId: companyId,
-            userId: userId,
-            role: role,
-            joinedAt: joinedAtUtc ?? DateTime.UtcNow,
-            isActive: true
-        );
+        if (!position.IsActive)
+            throw new CompanyException("Não é possível atribuir uma posição inativa.");
+
+        if (position.CompanyId != CompanyId)
+            throw new CompanyException("A posição deve pertencer à mesma empresa.");
+
+        if (position.AccessLevel == CompanyRole.Owner && Role != CompanyRole.Owner)
+            throw new CompanyException("Cargo de nível Owner só pode ser atribuído ao fundador.");
+
+        if (PrimaryPositionId == position.Id)
+            return false;
+
+        PrimaryPositionId = position.Id;
+
+        PrimaryPosition = position;
+
+        return true;
     }
-
-    public void Activate() => IsActive = true;
-
-    public void SetRole(CompanyRole role) => Role = role;
-
-    public void SetPrimaryPosition(CompanyPosition pos)
-    {
-        if (pos is null) throw new ArgumentNullException(nameof(pos));
-        if (!IsActive) throw new InvalidOperationException("Membro inativo.");
-        if (!pos.IsActive) throw new InvalidOperationException("Cargo inativo.");
-        if (pos.CompanyId != CompanyId) throw new InvalidOperationException("Cargo de outra empresa.");
-
-        if (pos.AccessLevel == CompanyRole.Owner && Role != CompanyRole.Owner)
-            throw new InvalidOperationException("Cargo de nível Owner só pode ser atribuído a membros Owner.");
-
-        if (PrimaryPositionId == pos.Id) return;
-
-        PrimaryPositionId = pos.Id;
-        PrimaryPosition = pos;
-    }
-
-    public void Deactivate() => IsActive = false;
-
-    public CompanyRole EffectiveLevel =>
-        PrimaryPosition is null
-            ? Role
-            : Rank(PrimaryPosition.AccessLevel) > Rank(Role) ? PrimaryPosition.AccessLevel : Role;
-
-    public static int Rank(CompanyRole r) => r switch
-    {
-        CompanyRole.Owner => 4,
-        CompanyRole.Manager => 3,
-        CompanyRole.Staff => 2,
-        CompanyRole.Viewer => 1,
-        _ => 0
-    };
 }

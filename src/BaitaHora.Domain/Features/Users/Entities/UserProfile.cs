@@ -13,13 +13,13 @@ public sealed class UserProfile : Entity
     public RG? Rg { get; private set; }
 
     public DateTime? BirthDate { get; private set; }
-    public Phone Phone { get; private set; }
+    public Phone UserPhone { get; private set; }
     public Address Address { get; private set; } = default!;
     public string? ProfileImageUrl { get; private set; }
 
     private UserProfile() { }
 
-    public static UserProfile Create(string fullName, CPF cpf, Phone phone, Address address)
+    public static UserProfile Create(string fullName, CPF cpf, Phone UserPhone, Address address)
     {
         if (address is null) throw new UserException("Endereço é obrigatório.");
 
@@ -27,7 +27,7 @@ public sealed class UserProfile : Entity
         profile.SetAddress(address);
         profile.SetFullName(fullName);
         profile.SetCpf(cpf);
-        profile.SetPhone(phone);
+        profile.SetPhone(UserPhone);
 
         return profile;
     }
@@ -91,8 +91,8 @@ public sealed class UserProfile : Entity
 
     public bool SetPhone(Phone newPhone)
     {
-        if (Phone.Equals(newPhone)) return false;
-        Phone = newPhone;
+        if (UserPhone.Equals(newPhone)) return false;
+        UserPhone = newPhone;
         Touch();
         return true;
     }

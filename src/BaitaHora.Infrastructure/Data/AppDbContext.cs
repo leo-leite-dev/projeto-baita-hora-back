@@ -54,7 +54,7 @@ public sealed class AppDbContext : DbContext
 
         // --------- Entidades ---------
         modelBuilder.Entity<User>()
-            .Property(u => u.Email)
+            .Property(u => u.UserEmail)
             .HasConversion(emailConverter)
             .HasColumnName("email")
             .HasMaxLength(255)

@@ -1,92 +1,138 @@
-// using BaitaHora.Application.Common;
-// using BaitaHora.Application.IRepositories;
-// using BaitaHora.Application.IServices.Auth;
-// using BaitaHora.Domain.Users.Entities;
-// using BaitaHora.Domain.Users.ValueObjects;
-// using Microsoft.Extensions.Logging;
+using BaitaHora.Application.Common;
+using BaitaHora.Application.Feature.Auth.DTOs.Responses;
+using BaitaHora.Application.Features.Auth.Commands;
+using BaitaHora.Application.Features.Users.DTOs;
+using BaitaHora.Application.IRepositories;
+using BaitaHora.Application.IRepositories.Users;
+using BaitaHora.Application.IServices.Auth;
+using BaitaHora.Application.IServices.Common;
+using BaitaHora.Application.Ports;
+using BaitaHora.Domain.Features.Commons.ValueObjects;
+using BaitaHora.Domain.Features.Companies.Enums;
+using BaitaHora.Domain.Features.Users.Entities;
+using BaitaHora.Domain.Features.Users.ValueObjects;
+using BaitaHora.Domain.Permissions;
+using Microsoft.Extensions.Logging;
 
-// namespace BaitaHora.Application.Auth.UseCases.RegisterEmployee;
+public sealed class RegisterEmployeeUseCase
+{
+    private readonly IUserRepository _userRepository;
+    private readonly ICompanyRepository _companyRepository;
+    private readonly IPasswordService _passwordService;
+    private readonly ICompanyPermissionService _permissionService;
+    private readonly IUserUniquenessChecker _userUniquenessChecker;
+    private readonly IUserIdentityPort _identity;
+    private readonly ILogger<RegisterEmployeeUseCase> _logger;
 
-// public sealed class RegisterEmployeeUseCase
-// {
-//     private readonly IUserRepository _userRepository;
-//     private readonly ICompanyRepository _companies;
-//     private readonly ICompanyPermissionService _permissions;
-//     private readonly ICompanyPositionRepository _positions;
-//     private readonly IPasswordService _passwords;
-//     private readonly IEmailService _emails;
-//     private readonly IUnitOfWork _uow;
-//     private readonly ILogger<RegisterEmployeeUseCase> _log;
+    public RegisterEmployeeUseCase(
+        IUserRepository userRepository,
+        ICompanyRepository companyRepository,
+        IPasswordService passwordService,
+        ICompanyPermissionService permissionService,
+        IUserUniquenessChecker userUniquenessChecker,
+        IUserIdentityPort identity,
+        ILogger<RegisterEmployeeUseCase> logger)
+    {
+        _userRepository = userRepository;
+        _companyRepository = companyRepository;
+        _passwordService = passwordService;
+        _permissionService = permissionService;
+        _userUniquenessChecker = userUniquenessChecker;
+        _identity = identity;
+        _logger = logger;
+    }
 
-//     public RegisterEmployeeUseCase(
-//         IUserRepository userRepository,
-//         ICompanyRepository companies,
-//         ICompanyPermissionService permissions,
-//         ICompanyPositionRepository positions,
-//         IPasswordService passwords,
-//         IEmailService emails,
-//         IUnitOfWork uow,
-//         ILogger<RegisterEmployeeUseCase> log)
-//     {
-//         _userRepository = userRepository;
-//         _companies = companies;
-//         _permissions = permissions;
-//         _positions = positions;
-//         _passwords = passwords;
-//         _emails = emails;
-//         _uow = uow;
-//         _log = log;
-//     }
+    public async Task<Result<RegisterEmployeeResponse>> HandleAsync(RegisterEmployeeCommand request, CancellationToken ct)
+    {
+        var currentUserId = _identity.GetUserId();
 
-//     public async Task<Result<Guid>> HandleAsync(RegisterEmployeeInput input, CancellationToken ct)
-//     {
-//         // 0) autorização de quem está criando
-//         var auth = await _permissions.DemandAsync(input.CompanyId, input.ActorUserId, CompanyPermission.AddMember, ct);
-//         if (auth.IsFailure) return Result<Guid>.From(auth, default!);
+        // var canAdd = await _permissionService.CanAsync(request.CompanyId, currentUserId, CompanyPermission.AddMember, ct);
+        // if (!canAdd)
+        //     return Result<RegisterEmployeeResponse>.Forbidden("Sem permissão para adicionar membros.");
 
-//         // 1) checagens base
-//         var company = await _companies.GetByIdAsync(input.CompanyId, ct);
-//         if (company is null)
-//             return Result<Guid>.NotFound("Empresa não encontrada.", ResultCodes.NotFound.Company);
+        var company = await _companyRepository.GetByIdWithMembersAndPositionsAsync(request.CompanyId, ct);
+        if (company is null)
+            return Result<RegisterEmployeeResponse>.NotFound("Empresa não encontrada.");
 
-//         var position = await _positions.GetByIdAsync(input.PositionId, ct);
-//         if (position is null || position.CompanyId != input.CompanyId)
-//             return Result<Guid>.BadRequest("Cargo inválido para a empresa.", ResultCodes.BadRequest.InvalidReference);
+        var isOwner = company.Members.Any(m => m.UserId == currentUserId && m.Role == CompanyRole.Owner);
+        if (!isOwner)
+            return Result<RegisterEmployeeResponse>.Forbidden("Apenas o Owner pode adicionar funcionários.");
 
-//         // 2) VOs e invariantes
-//         var email = Email.Parse(input.Email);
-//         var username = Username.TryParseOrNull(input.Username);
-//         var hash = _passwords.Hash(input.RawPassword);
+        var position = company.Positions.SingleOrDefault(p => p.Id == request.PositionId);
+        if (position is null)
+            return Result<RegisterEmployeeResponse>.BadRequest("Cargo inválido para esta empresa.");
 
-//         var cpf = string.IsNullOrWhiteSpace(input.Profile.Cpf) ? null : CPF.Parse(input.Profile.Cpf);
-//         var rg  = string.IsNullOrWhiteSpace(input.Profile.Rg)  ? null : RG.Parse(input.Profile.Rg);
+        var employee = Assembler.From(request.User, request.Role);
 
-//         // 3) unicidades
-//         if (await _userRepository.ExistsByEmailAsync(email, ct))
-//             return Result<Guid>.Conflict("E-mail já em uso.", ResultCodes.Conflict.User);
+        var uniqueness = await _userUniquenessChecker.CheckAsync(employee.UserEmail, employee.Username, employee.Cpf, employee.Rg, null, ct);
+        if (!uniqueness.IsOk)
+            return Result<RegisterEmployeeResponse>.Conflict(string.Join(" ", uniqueness.Violations.Select(v => $"{v.Field}: {v.Message}")));
 
-//         if (username is not null && await _users.ExistsByUsernameAsync(username, ct))
-//             return Result<Guid>.Conflict("Username já em uso.", ResultCodes.Conflict.User);
+        var profile = UserProfile.Create(
+            employee.FullName,
+            employee.Cpf,
+            employee.UserPhone,
+            employee.Address);
 
-//         var employee = User.CreateEmployee(
-//             email, username, hash,
-//             profile: UserProfile.FromInput(input.Profile, cpf, rg),
-//             role: input.Role);
+        if (employee.Rg is not null)
+            profile.SetRg(employee.Rg.Value);
 
-//         employee.AssignToCompany(position.CompanyId, position.Id);
+        if (employee.BirthDate is not null)
+            profile.SetBirthDate(employee.BirthDate.Value);
 
-//         await _userRepository.AddAsync(employee, ct);
-//         await _uow.SaveChangesAsync(ct);
+        var user = User.Create(
+            employee.UserEmail,
+            employee.Username,
+            employee.RawPassword,
+            profile,
+            _passwordService.Hash);
 
-//         try
-//         {
-//             await _emails.SendWelcomeEmployeeAsync(email.Value, employee.Username?.Value ?? employee.Id.ToString(), company.Name, ct);
-//         }
-//         catch (Exception ex)
-//         {
-//             _log.LogWarning(ex, "Falha ao enviar e-mail de boas-vindas ao colaborador. userId={UserId}", employee.Id);
-//         }
+        company.AddMemberFromPosition(user.Id, position);
 
-//         return Result<Guid>.Created(employee.Id, title: "Colaborador registrado.");
-//     }
-// }
+        await _userRepository.AddAsync(user, ct);
+        await _companyRepository.UpdateAsync(company, ct);
+
+        var response = new RegisterEmployeeResponse(user.Id);
+        return Result<RegisterEmployeeResponse>.Created(response);
+    }
+
+    private static class Assembler
+    {
+        public static EmployeeVO From(UserInput u, CompanyRole? role)
+        {
+            var email = Email.Parse(u.UserEmail);
+            var username = Username.Parse(u.Username);
+            var cpf = CPF.Parse(u.Profile.Cpf);
+            var phone = Phone.Parse(u.Profile.UserPhone);
+            RG? rg = string.IsNullOrWhiteSpace(u.Profile.Rg) ? default : RG.Parse(u.Profile.Rg);
+
+            var addr = Address.Parse(
+                street: u.Profile.Address.Street,
+                number: u.Profile.Address.Number,
+                neighborhood: u.Profile.Address.Neighborhood,
+                city: u.Profile.Address.City,
+                state: u.Profile.Address.State,
+                zipCode: u.Profile.Address.ZipCode,
+                complement: u.Profile.Address.Complement
+            );
+
+            return new EmployeeVO(
+                UserEmail: email,
+                Username: username,
+                RawPassword: u.RawPassword,
+                FullName: u.Profile.FullName,
+                Cpf: cpf,
+                Rg: rg,
+                UserPhone: phone,
+                BirthDate: u.Profile.BirthDate,
+                Address: addr,
+                Role: role
+            );
+        }
+    }
+}
+
+public readonly record struct EmployeeVO(
+    Email UserEmail, Username Username, string RawPassword, string FullName, CPF Cpf, RG? Rg,
+    Phone UserPhone, DateTime? BirthDate, Address Address, CompanyRole? Role
+);

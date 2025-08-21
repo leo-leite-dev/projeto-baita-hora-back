@@ -42,7 +42,7 @@ public sealed class UserProfileConfiguration : IEntityTypeConfiguration<UserProf
             .HasConversion(rgConverter)
             .HasMaxLength(20);
 
-        builder.Property(p => p.Phone)
+        builder.Property(p => p.UserPhone)
             .HasConversion(phoneConverter)
             .HasMaxLength(16)
             .IsRequired();

@@ -1,17 +1,19 @@
-// using BaitaHora.Application.Auth.Commands;
-// using BaitaHora.Application.Auth.DTO.Responses;
-// using BaitaHora.Application.Auth.UseCases.RegisterEmployee;
-// using BaitaHora.Application.Common;
-// using MediatR;
+using BaitaHora.Application.Common;
+using BaitaHora.Application.Feature.Auth.DTOs.Responses;
+using BaitaHora.Application.Features.Auth.Commands;
+using MediatR;
 
-// namespace BaitaHora.Application.Auth.Handlers;
+namespace BaitaHora.Application.Features.Auth.Handlers;
 
-// public sealed class RegisterEmployeeHandler
-//     : IRequestHandler<RegisterEmployeeCommand, Result<RegisterEmployeeResponse>>
-// {
-//     private readonly RegisterEmployeeUseCase _uc;
-//     public RegisterEmployeeHandler(RegisterEmployeeUseCase uc) => _uc = uc;
+public sealed class RegisterEmployeeHandler
+    : IRequestHandler<RegisterEmployeeCommand, Result<RegisterEmployeeResponse>>
+{
+    private readonly RegisterEmployeeUseCase _useCase;
 
-//     public Task<Result<RegisterEmployeeResponse>> Handle(RegisterEmployeeCommand cmd, CancellationToken ct)
-//         => _uc.HandleAsync(cmd.Input, ct);
-// }
+    public RegisterEmployeeHandler(RegisterEmployeeUseCase useCase)
+        => _useCase = useCase;
+
+    public Task<Result<RegisterEmployeeResponse>> Handle(
+        RegisterEmployeeCommand request, CancellationToken ct)
+        => _useCase.HandleAsync(request, ct);
+}

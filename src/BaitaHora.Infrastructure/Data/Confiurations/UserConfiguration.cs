@@ -15,13 +15,18 @@ public sealed class UserConfiguration : IEntityTypeConfiguration<User>
         builder.HasKey(u => u.Id);
 
         var usernameConverter = new ValueConverter<Username, string>(
-            toProvider   => toProvider.Value,
+            toProvider => toProvider.Value,
             fromProvider => Username.Parse(fromProvider)
         );
         var emailConverter = new ValueConverter<Email, string>(
-            toProvider   => toProvider.Value,
+            toProvider => toProvider.Value,
             fromProvider => Email.Parse(fromProvider)
         );
+
+        builder.Property(u => u.Role)
+            .HasConversion<string>()        
+            .HasMaxLength(50)               
+            .IsRequired();
 
         builder.Property(u => u.Username)
             .HasConversion(usernameConverter)
@@ -29,11 +34,11 @@ public sealed class UserConfiguration : IEntityTypeConfiguration<User>
             .IsRequired();
         builder.HasIndex(u => u.Username).IsUnique();
 
-        builder.Property(u => u.Email)
+        builder.Property(u => u.UserEmail)
             .HasConversion(emailConverter)
-            .HasMaxLength(256) 
+            .HasMaxLength(256)
             .IsRequired();
-        builder.HasIndex(u => u.Email).IsUnique();
+        builder.HasIndex(u => u.UserEmail).IsUnique();
 
         builder.Property(u => u.PasswordHash).IsRequired();
 

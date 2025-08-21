@@ -25,8 +25,8 @@ namespace BaitaHora.Infrastructure.Data.Migrations
                     Address_State = table.Column<string>(type: "character varying(2)", maxLength: 2, nullable: false),
                     Address_ZipCode = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: false),
                     Address_Complement = table.Column<string>(type: "character varying(120)", maxLength: 120, nullable: true),
-                    Phone = table.Column<string>(type: "character varying(16)", maxLength: 16, nullable: false),
-                    Email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: false),
+                    CompanyPhone = table.Column<string>(type: "character varying(16)", maxLength: 16, nullable: false),
+                    CompanyEmail = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: false),
                     TradeName = table.Column<string>(type: "character varying(120)", maxLength: 120, nullable: true),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false),
                     CreatedAtUtc = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
@@ -46,7 +46,7 @@ namespace BaitaHora.Infrastructure.Data.Migrations
                     Cpf = table.Column<string>(type: "character varying(11)", maxLength: 11, nullable: false),
                     Rg = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: true),
                     BirthDate = table.Column<DateTime>(type: "date", nullable: true),
-                    Phone = table.Column<string>(type: "character varying(16)", maxLength: 16, nullable: false),
+                    UserPhone = table.Column<string>(type: "character varying(16)", maxLength: 16, nullable: false),
                     Address_Street = table.Column<string>(type: "character varying(120)", maxLength: 120, nullable: false),
                     Address_Number = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
                     Address_Neighborhood = table.Column<string>(type: "character varying(80)", maxLength: 80, nullable: false),
@@ -61,6 +61,30 @@ namespace BaitaHora.Infrastructure.Data.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_user_profiles", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "company_positions",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    company_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    name = table.Column<string>(type: "character varying(200)", unicode: false, maxLength: 200, nullable: false),
+                    access_level = table.Column<string>(type: "character varying(50)", unicode: false, maxLength: 50, nullable: false),
+                    is_active = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
+                    is_system = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
+                    CreatedAtUtc = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAtUtc = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_company_positions", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_company_positions_companies_company_id",
+                        column: x => x.company_id,
+                        principalTable: "companies",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -84,29 +108,6 @@ namespace BaitaHora.Infrastructure.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "CompanyPositions",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    CompanyId = table.Column<Guid>(type: "uuid", nullable: false),
-                    Name = table.Column<string>(type: "character varying(200)", unicode: false, maxLength: 200, nullable: false),
-                    AccessLevel = table.Column<byte>(type: "smallint", nullable: false),
-                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
-                    CreatedAtUtc = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAtUtc = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_CompanyPositions", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_CompanyPositions_companies_CompanyId",
-                        column: x => x.CompanyId,
-                        principalTable: "companies",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "users",
                 columns: table => new
                 {
@@ -115,7 +116,7 @@ namespace BaitaHora.Infrastructure.Data.Migrations
                     email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: false),
                     PasswordHash = table.Column<string>(type: "text", nullable: false),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false),
-                    Role = table.Column<byte>(type: "smallint", nullable: false),
+                    Role = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     PasswordResetToken = table.Column<string>(type: "text", nullable: true),
                     PasswordResetTokenExpiresAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     ProfileId = table.Column<Guid>(type: "uuid", nullable: false),
@@ -151,16 +152,16 @@ namespace BaitaHora.Infrastructure.Data.Migrations
                 {
                     table.PrimaryKey("PK_CompanyMembers", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_CompanyMembers_CompanyPositions_PrimaryPositionId",
-                        column: x => x.PrimaryPositionId,
-                        principalTable: "CompanyPositions",
-                        principalColumn: "Id");
-                    table.ForeignKey(
                         name: "FK_CompanyMembers_companies_CompanyId",
                         column: x => x.CompanyId,
                         principalTable: "companies",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_CompanyMembers_company_positions_PrimaryPositionId",
+                        column: x => x.PrimaryPositionId,
+                        principalTable: "company_positions",
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_CompanyMembers_users_UserId",
                         column: x => x.UserId,
@@ -182,6 +183,11 @@ namespace BaitaHora.Infrastructure.Data.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_company_positions_company_id",
+                table: "company_positions",
+                column: "company_id");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_CompanyImages_CompanyId",
                 table: "CompanyImages",
                 column: "CompanyId",
@@ -201,11 +207,6 @@ namespace BaitaHora.Infrastructure.Data.Migrations
                 name: "IX_CompanyMembers_UserId",
                 table: "CompanyMembers",
                 column: "UserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_CompanyPositions_CompanyId",
-                table: "CompanyPositions",
-                column: "CompanyId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_user_profiles_Cpf",
@@ -242,7 +243,7 @@ namespace BaitaHora.Infrastructure.Data.Migrations
                 name: "CompanyMembers");
 
             migrationBuilder.DropTable(
-                name: "CompanyPositions");
+                name: "company_positions");
 
             migrationBuilder.DropTable(
                 name: "users");

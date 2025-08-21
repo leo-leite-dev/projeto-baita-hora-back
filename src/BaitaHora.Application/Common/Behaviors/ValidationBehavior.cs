@@ -1,11 +1,8 @@
-// BaitaHora.Application/Common/Behaviors/ValidationBehavior.cs
 using System.Reflection;
-using System.Linq;
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.Options;
-using BaitaHora.Application.Common;                 // Result / Result<T> / ResultCodes
-using BaitaHora.Application.Common.Validation;      // ValidationOptions / ValidationMode
+using BaitaHora.Application.Common.Validation;      
 
 namespace BaitaHora.Application.Common.Behaviors;
 

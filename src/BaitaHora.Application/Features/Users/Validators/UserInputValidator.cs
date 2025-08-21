@@ -10,7 +10,7 @@ public sealed class UserInputValidator : AbstractValidator<UserInput>
 {
     public UserInputValidator()
     {
-        RuleFor(x => x.Email).EmailVo();
+        RuleFor(x => x.UserEmail).EmailVo();
 
         RuleFor(x => x.Username)
             .NotEmpty().WithMessage("O username é obrigatório.")

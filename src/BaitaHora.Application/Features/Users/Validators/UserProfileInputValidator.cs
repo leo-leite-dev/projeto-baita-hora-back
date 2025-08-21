@@ -32,15 +32,15 @@ public sealed class UserProfileInputValidator : AbstractValidator<UserProfileInp
                     .WithMessage("RG inválido. Use apenas letras e números (pontos e traços serão ignorados).");
         });
 
-        RuleFor(x => x.Phone)
+        RuleFor(x => x.UserPhone)
             .NotEmpty().WithMessage("O telefone é obrigatório.")
             .Must(p => Phone.TryParse(p, out _))
                 .WithMessage("Telefone inválido. Informe DDD e número. Exemplos: 11 91234-5678 ou +55 11 91234-5678.");
 
-        RuleFor(x => x.Phone)
+        RuleFor(x => x.UserPhone)
             .Must(p => Digits(p) >= 8 && Digits(p) <= 15)
                 .WithMessage("Telefone deve conter entre 8 e 15 dígitos (desconsiderando pontuação).")
-            .When(x => !string.IsNullOrWhiteSpace(x.Phone));
+            .When(x => !string.IsNullOrWhiteSpace(x.UserPhone));
 
         RuleFor(x => x.BirthDate)
             .Must(d => d == null || d.Value.Date <= DateTime.UtcNow.Date)

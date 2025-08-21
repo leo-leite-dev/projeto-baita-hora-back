@@ -12,6 +12,17 @@ namespace BaitaHora.Infrastructure.Repositories.Companies
     {
         public CompanyRepository(AppDbContext context) : base(context) { }
 
+        public async Task<Company?> GetByIdWithMembersAndPositionsAsync(Guid companyId, CancellationToken ct)
+        {
+            return await _context.Companies
+                .Where(c => c.Id == companyId)
+                .Include(c => c.Members)
+                .ThenInclude(m => m.PrimaryPosition)  
+                .Include(c => c.Positions)
+                .AsSplitQuery()
+                .SingleOrDefaultAsync(ct);
+        }
+
         public Task<bool> IsCompanyNameTakenAsync(CompanyName companyName, Guid? excludingCompanyId, CancellationToken ct)
         {
             var q = _context.Set<Company>()
@@ -40,7 +51,7 @@ namespace BaitaHora.Infrastructure.Repositories.Companies
         {
             var q = _context.Set<Company>()
                 .AsNoTracking()
-                .Where(c => c.Email == email);
+                .Where(c => c.CompanyEmail == email);
 
             if (excludingCompanyId.HasValue)
                 q = q.Where(c => c.Id != excludingCompanyId.Value);

@@ -1,47 +1,74 @@
-using BaitaHora.Application.Common.Behaviors;
-using BaitaHora.Application.Common.Validation;
-using BaitaHora.Application.Features.Auth.Commands;
-using BaitaHora.Infrastructure.Configuration;
-using BaitaHora.Infrastructure.Data;
-using BaitaHora.Infrastructure.ServiceRegistration;
+using System.Text;
 using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
+
+using BaitaHora.Application.Common.Behaviors;
+using BaitaHora.Application.Common.Validation;
+using BaitaHora.Application.Features.Auth.Commands;
+
+using BaitaHora.Infrastructure.Configuration;
+using BaitaHora.Infrastructure.Data;
+using BaitaHora.Infrastructure.Persistence.Interceptors;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Infrastructure (Auth, Password, Token, etc.)
-builder.Services.AddAuthInfrastructure(builder.Configuration);
-
-// MediatR + Validation
-builder.Services.AddMediatR(cfg =>
-{
-    cfg.RegisterServicesFromAssemblyContaining<RegisterOwnerWithCompanyCommand>();
-});
-builder.Services.AddValidatorsFromAssemblyContaining<RegisterOwnerWithCompanyCommand>();
-builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
-
-builder.Services.Configure<ValidationOptions>(builder.Configuration.GetSection("Validation"));
-
+// ----------------------------------------------------
 // DbContext
-builder.Services.AddDbContext<AppDbContext>(options =>
+// ----------------------------------------------------
+builder.Services.AddDbContext<AppDbContext>((sp, options) =>
 {
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
+    options.AddInterceptors(sp.GetRequiredService<TimestampInterceptor>());
 });
-// Registro adicional necessário para resolver IUnitOfWork que depende de DbContext
-builder.Services.AddScoped<DbContext>(provider => provider.GetRequiredService<AppDbContext>());
+// (Opcional) se algum serviço pede DbContext base:
+builder.Services.AddScoped<DbContext>(sp => sp.GetRequiredService<AppDbContext>());
+builder.Services.AddSingleton<TimestampInterceptor>();
 
-// HttpContextAccessor
+// ----------------------------------------------------
+// Infraestrutura (Repos, UoW, Serviços de Auth/Cookie/Token, etc.)
+// Observação: essa extensão configura TokenOptions via "JwtOptions"
+// ----------------------------------------------------
+builder.Services.AddAuthInfrastructure(builder.Configuration);
+
+// ----------------------------------------------------
+// MediatR + Validators + Pipeline Behaviors
+// ----------------------------------------------------
+builder.Services.AddMediatR(cfg =>
+{
+    // registra handlers/requests a partir do assembly que contém o comando
+    cfg.RegisterServicesFromAssemblyContaining<RegisterOwnerWithCompanyCommand>();
+});
+
+// registra todos os validators do mesmo assembly do comando
+builder.Services.AddValidatorsFromAssemblyContaining<RegisterOwnerWithCompanyCommand>();
+
+// Behaviors em ORDEM: validação primeiro, depois UoW (commit/rollback)
+builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(UnitOfWorkBehavior<,>));
+
+// opções de validação (se tu usa)
+builder.Services.Configure<ValidationOptions>(builder.Configuration.GetSection("Validation"));
+
+// ----------------------------------------------------
+// HttpContextAccessor (para adapters/ports que dependem dele)
+// ----------------------------------------------------
 builder.Services.AddHttpContextAccessor();
 
-// JWT options
+// ----------------------------------------------------
+// JWT
+// Importante: manter a MESMA seção usada na infra (JwtOptions).
+// Se teu appsettings usa "Jwt" em vez de "JwtOptions", sincroniza ambos.
+// ----------------------------------------------------
 var jwtOpts = new TokenOptions();
 builder.Configuration.GetSection("JwtOptions").Bind(jwtOpts);
 
-// JWT Auth
+// sanity check simples (evita chave vazia)
+if (string.IsNullOrWhiteSpace(jwtOpts.Secret))
+    throw new InvalidOperationException("JwtOptions.Secret não está configurado.");
+
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(o =>
@@ -60,14 +87,16 @@ builder.Services
 
 builder.Services.AddAuthorization();
 
-// Controllers + Swagger
+// ----------------------------------------------------
+// MVC + Swagger
+// ----------------------------------------------------
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Swagger apenas em desenvolvimento
+// Swagger em Dev
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -75,7 +104,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
 app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllers();
+
 app.Run();

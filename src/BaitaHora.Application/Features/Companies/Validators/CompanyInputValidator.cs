@@ -24,8 +24,8 @@ public sealed class CompanyInputValidator : AbstractValidator<CompanyInput>
             .Must(c => CNPJ.TryParse(c, out _))
                 .WithMessage("CNPJ inválido. Verifique se possui 14 dígitos numéricos.");
 
-        RuleFor(x => x.Email).EmailVo();        
-        RuleFor(x => x.Phone).PhoneVo("+55");   
+        RuleFor(x => x.CompanyEmail).EmailVo();        
+        RuleFor(x => x.CompanyPhone).PhoneVo("+55");   
 
         RuleFor(x => x.Address)
             .NotNull().WithMessage("O endereço da empresa é obrigatório.")

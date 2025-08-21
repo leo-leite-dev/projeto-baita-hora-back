@@ -47,12 +47,12 @@ public sealed class CompanyConfiguration : IEntityTypeConfiguration<Company>
         builder.HasIndex(c => c.Cnpj)
             .IsUnique();
 
-        builder.Property(c => c.Email)
+        builder.Property(c => c.CompanyEmail)
             .HasConversion(emailConverter)
             .HasMaxLength(256)
             .IsRequired();
 
-        builder.Property(c => c.Phone)
+        builder.Property(c => c.CompanyPhone)
             .HasConversion(phoneConverter)
             .HasMaxLength(16)
             .IsRequired();

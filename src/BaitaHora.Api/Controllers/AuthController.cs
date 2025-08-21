@@ -3,6 +3,7 @@ using MediatR;
 using BaitaHora.Api.Helpers;
 using BaitaHora.Application.IServices.Auth;
 using BaitaHora.Application.Features.Auth.Commands;
+using Microsoft.AspNetCore.Authorization;
 
 namespace BaitaHora.Api.Controllers.Auth
 {
@@ -21,6 +22,14 @@ namespace BaitaHora.Api.Controllers.Auth
 
         [HttpPost("register-owner")]
         public async Task<IActionResult> RegisterOwner([FromBody] RegisterOwnerWithCompanyCommand cmd, CancellationToken ct)
+        {
+            var result = await _mediator.Send(cmd, ct);
+            return result.ToActionResult(this);
+        }
+
+        // [Authorize]
+        [HttpPost("register-employee")]
+        public async Task<IActionResult> RegisterEmployee([FromBody] RegisterEmployeeCommand cmd, CancellationToken ct)
         {
             var result = await _mediator.Send(cmd, ct);
             return result.ToActionResult(this);

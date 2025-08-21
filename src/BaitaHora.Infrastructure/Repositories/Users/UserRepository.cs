@@ -14,7 +14,7 @@ public sealed class UserRepository : GenericRepository<User>, IUserRepository
 
     public Task<User?> GetByEmailAsync(Email email, CancellationToken ct) =>
         _context.Set<User>()
-            .FirstOrDefaultAsync(u => u.Email == email, ct);
+            .FirstOrDefaultAsync(u => u.UserEmail == email, ct);
 
     public Task<User?> GetByUsernameAsync(Username username, CancellationToken ct) =>
         _context.Set<User>()
@@ -24,7 +24,7 @@ public sealed class UserRepository : GenericRepository<User>, IUserRepository
     {
         var q = _context.Set<User>()
             .AsNoTracking()
-            .Where(u => u.Email == email);
+            .Where(u => u.UserEmail == email);
 
         if (excludingUserId.HasValue)
             q = q.Where(u => u.Id != excludingUserId.Value);

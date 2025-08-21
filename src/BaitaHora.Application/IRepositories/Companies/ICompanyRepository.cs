@@ -6,6 +6,7 @@ namespace BaitaHora.Application.IRepositories
 {
     public interface ICompanyRepository : IGenericRepository<Company>
     {
+        Task<Company?> GetByIdWithMembersAndPositionsAsync(Guid companyId, CancellationToken ct);
         Task<bool> IsCompanyNameTakenAsync(CompanyName companyName, Guid? excludingCompanyId, CancellationToken ct);
         Task<bool> IsCnpjTakenAsync(CNPJ cnpj, Guid? excludingCompanyId, CancellationToken ct);
         Task<bool> IsCompanyEmailTakenAsync(Email email, Guid? excludingCompanyId, CancellationToken ct);
