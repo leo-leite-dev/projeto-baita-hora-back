@@ -45,14 +45,12 @@ public sealed class User : Entity
         if (newRole == CompanyRole.Unknown)
             throw new UserException("Role inválida.");
         Role = newRole;
-        Touch();
     }
 
     public bool SetEmail(Email newEmail)
     {
         if (UserEmail.Equals(newEmail)) return false;
         UserEmail = newEmail;
-        Touch();
         return true;
     }
 
@@ -60,7 +58,6 @@ public sealed class User : Entity
     {
         if (Username.Equals(newUsername)) return false;
         Username = newUsername;
-        Touch();
         return true;
     }
 
@@ -76,8 +73,6 @@ public sealed class User : Entity
 
         PasswordResetToken = null;
         PasswordResetTokenExpiresAt = null;
-
-        Touch();
     }
 
     public void ChangePassword(
@@ -110,8 +105,6 @@ public sealed class User : Entity
 
         PasswordResetToken = null;
         PasswordResetTokenExpiresAt = null;
-
-        Touch();
     }
 
     public void GeneratePasswordResetToken(Func<string> tokenGenerator, TimeSpan duration)
@@ -121,8 +114,6 @@ public sealed class User : Entity
 
         PasswordResetToken = tokenGenerator();
         PasswordResetTokenExpiresAt = DateTime.UtcNow.Add(duration);
-
-        Touch();
     }
 
     public bool HasActiveResetRequest(DateTime? now = null)

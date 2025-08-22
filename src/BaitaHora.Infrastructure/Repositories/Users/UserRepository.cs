@@ -18,28 +18,4 @@ public sealed class UserRepository : GenericRepository<User>, IUserRepository
     public Task<User?> GetByUsernameAsync(Username username, CancellationToken ct) =>
         _context.Set<User>()
             .FirstOrDefaultAsync(u => u.Username == username, ct);
-
-    public Task<bool> IsUserEmailTakenAsync(Email email, Guid? excludingUserId, CancellationToken ct)
-    {
-        var q = _context.Set<User>()
-            .AsNoTracking()
-            .Where(u => u.UserEmail == email);
-
-        if (excludingUserId.HasValue)
-            q = q.Where(u => u.Id != excludingUserId.Value);
-
-        return q.AnyAsync(ct);
-    }
-
-    public Task<bool> IsUsernameTakenAsync(Username username, Guid? excludingUserId, CancellationToken ct)
-    {
-        var q = _context.Set<User>()
-            .AsNoTracking()
-            .Where(u => u.Username == username);
-
-        if (excludingUserId.HasValue)
-            q = q.Where(u => u.Id != excludingUserId.Value);
-
-        return q.AnyAsync(ct);
-    }
 }

@@ -32,7 +32,6 @@ public sealed class UserProfile : Entity
         return profile;
     }
 
-//REMOVER TOUCH NA PROXIMA ATUALIZAÇÃO DE PROJETO
     public bool SetFullName(string newFullName)
     {
         var value = (newFullName ?? string.Empty).Trim();
@@ -41,7 +40,6 @@ public sealed class UserProfile : Entity
 
         if (string.Equals(FullName, value, StringComparison.Ordinal)) return false;
         FullName = value;
-        Touch();
         return true;
     }
 
@@ -49,7 +47,6 @@ public sealed class UserProfile : Entity
     {
         if (Cpf.Equals(newCpf)) return false;
         Cpf = newCpf;
-        Touch();
         return true;
     }
 
@@ -57,7 +54,6 @@ public sealed class UserProfile : Entity
     {
         if (Nullable.Equals(Rg, newRg)) return false;
         Rg = newRg;
-        Touch();
         return true;
     }
 
@@ -86,7 +82,6 @@ public sealed class UserProfile : Entity
             return false;
 
         BirthDate = normalized;
-        Touch();
         return true;
     }
 
@@ -94,7 +89,6 @@ public sealed class UserProfile : Entity
     {
         if (UserPhone.Equals(newPhone)) return false;
         UserPhone = newPhone;
-        Touch();
         return true;
     }
 
@@ -104,7 +98,6 @@ public sealed class UserProfile : Entity
         if (Address is not null && Equals(Address, newAddress)) return false;
 
         Address = newAddress;
-        Touch();
         return true;
     }
 
@@ -126,7 +119,6 @@ public sealed class UserProfile : Entity
         if (string.Equals(ProfileImageUrl, newValue, StringComparison.Ordinal)) return false;
 
         ProfileImageUrl = newValue;
-        Touch();
         return true;
     }
 }

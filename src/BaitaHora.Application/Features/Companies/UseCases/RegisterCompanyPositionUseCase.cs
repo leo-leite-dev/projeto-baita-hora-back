@@ -11,16 +11,13 @@ public sealed class RegisterCompanyPositionUseCase
 {
     private readonly ICompanyRepository _companyRepository;
     private readonly ICompanyPositionRepository _companyPositionRepository;
-    private readonly ILogger<RegisterEmployeeUseCase> _logger;
 
     public RegisterCompanyPositionUseCase(
         ICompanyRepository companyRepository,
-        ICompanyPositionRepository companyPositionRepository,
-        ILogger<RegisterEmployeeUseCase> logger)
+        ICompanyPositionRepository companyPositionRepository)
     {
         _companyRepository = companyRepository;
         _companyPositionRepository = companyPositionRepository;
-        _logger = logger;
     }
 
     public async Task<Result<CompanyPositionResponse>> HandleAsync(RegisterCompanyPositionCommand cmd, CancellationToken ct)
