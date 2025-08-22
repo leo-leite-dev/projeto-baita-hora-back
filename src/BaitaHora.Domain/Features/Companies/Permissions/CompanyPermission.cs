@@ -1,7 +1,7 @@
 namespace BaitaHora.Domain.Permissions
 {
     [Flags]
-    public enum CompanyPermission
+    public enum CompanyPermission : long
     {
         None = 0,
         AddMember = 1 << 0,

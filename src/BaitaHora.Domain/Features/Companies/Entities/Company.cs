@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using BaitaHora.Domain.Companies.ValueObjects;
 using BaitaHora.Domain.Features.Commons;
 using BaitaHora.Domain.Features.Commons.Exceptions;
@@ -115,7 +116,7 @@ public sealed class Company : Entity
         var member = CompanyMember.Create(Id, userId, CompanyRole.Owner);
 
         var founder = EnsurePositionByName(
-            name: "Fundador",
+            positionName: "Fundador",
             accessLevel: CompanyRole.Owner,
             allowOwnerLevel: true,
             isSystem: true
@@ -167,27 +168,30 @@ public sealed class Company : Entity
         return member;
     }
 
-    public CompanyPosition AddPosition(string name, CompanyRole accessLevel, bool isSystem = false)
+    public CompanyPosition CreatePosition(string positionName, CompanyRole accessLevel, bool isSystem = false)
     {
-        if (string.IsNullOrWhiteSpace(name))
-            throw new CompanyException("Nome do cargo é obrigatório.");
+        if (!Enum.IsDefined(typeof(CompanyRole), accessLevel))
+            throw new CompanyException("Nível de acesso inválido.");
 
-        if (_companyPositions.Any(p => string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase)))
+        if (accessLevel is CompanyRole.Unknown)
+            throw new CompanyException("Não é possível cadastrar um cargo com esse nível de acesso.");
+        if (accessLevel is CompanyRole.Owner)
+            throw new CompanyException("Cargo Owner só pode ser criado pelo fluxo de fundador.");
+
+        if (_companyPositions.Any(p =>
+                string.Equals(NormalizeName(p.PositionName), NormalizeName(positionName), StringComparison.OrdinalIgnoreCase)))
             throw new CompanyException("Já existe um cargo com esse nome.");
 
-        if (accessLevel == CompanyRole.Owner)
-            throw new CompanyException("Cargo de nível Owner só pode ser criado pelo fluxo de fundador.");
-
-        var pos = CompanyPosition.Create(
+        var position = CompanyPosition.Create(
             companyId: Id,
-            name: name,
+            positionName: positionName,
             accessLevel: accessLevel,
             allowOwnerLevel: false,
             isSystem: isSystem
         );
-
-        _companyPositions.Add(pos);
-        return pos;
+        
+        _companyPositions.Add(position);
+        return position;
     }
 
     public bool RenamePosition(Guid positionId, string newName)
@@ -196,7 +200,7 @@ public sealed class Company : Entity
             ?? throw new CompanyException("Cargo não encontrado.");
 
         if (_companyPositions.Any(p => p.Id != positionId &&
-                string.Equals(p.Name, newName, StringComparison.OrdinalIgnoreCase)))
+                string.Equals(p.PositionName, newName, StringComparison.OrdinalIgnoreCase)))
             throw new CompanyException("Já existe um cargo com esse nome.");
 
         return pos.SetName(newName);
@@ -232,22 +236,29 @@ public sealed class Company : Entity
         return pos.Activate();
     }
 
-    private CompanyPosition EnsurePositionByName(string name, CompanyRole accessLevel, bool allowOwnerLevel = false, bool isSystem = false)
+    private CompanyPosition EnsurePositionByName(string positionName, CompanyRole accessLevel, bool allowOwnerLevel = false, bool isSystem = false)
     {
-        var pos = _companyPositions.FirstOrDefault(
-            p => string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase));
+        var position = _companyPositions.FirstOrDefault(
+            p => string.Equals(p.PositionName, positionName, StringComparison.OrdinalIgnoreCase));
 
-        if (pos is not null) return pos;
+        if (position is not null) return position;
 
-        pos = CompanyPosition.Create(
+        position = CompanyPosition.Create(
             companyId: Id,
-            name: name,
+            positionName: positionName,
             accessLevel: accessLevel,
             allowOwnerLevel: allowOwnerLevel,
             isSystem: isSystem
         );
 
-        _companyPositions.Add(pos);
-        return pos;
+        _companyPositions.Add(position);
+        return position;
+    }
+
+    private static string NormalizeName(string? name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return string.Empty;
+        var trimmed = name.Trim();
+        return Regex.Replace(trimmed, @"\s{2,}", " ");
     }
 }

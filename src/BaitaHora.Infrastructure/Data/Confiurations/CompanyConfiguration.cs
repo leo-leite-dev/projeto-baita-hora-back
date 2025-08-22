@@ -1,9 +1,9 @@
-using BaitaHora.Domain.Companies.ValueObjects; 
+using BaitaHora.Domain.Companies.ValueObjects;
+using BaitaHora.Domain.Features.Commons.ValueObjects;
+using BaitaHora.Domain.Features.Companies.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using BaitaHora.Domain.Features.Companies.Entities;
-using BaitaHora.Domain.Features.Commons.ValueObjects;
 
 namespace BaitaHora.Infrastructure.Data.Configurations;
 
@@ -15,53 +15,52 @@ public sealed class CompanyConfiguration : IEntityTypeConfiguration<Company>
         builder.HasKey(c => c.Id);
 
         var companyNameConverter = new ValueConverter<CompanyName, string>(
-            toProvider   => toProvider.Value,
-            fromProvider => CompanyName.Parse(fromProvider)
+            v => v.Value,
+            v => CompanyName.Parse(v)
         );
+
         var cnpjConverter = new ValueConverter<CNPJ, string>(
-            toProvider   => toProvider.Value,
-            fromProvider => CNPJ.Parse(fromProvider)
+            v => v.Value,
+            v => CNPJ.Parse(v)
         );
+
         var emailConverter = new ValueConverter<Email, string>(
-            toProvider   => toProvider.Value,
-            fromProvider => Email.Parse(fromProvider)
+            v => v.Value,
+            v => Email.Parse(v)
         );
+
         var phoneConverter = new ValueConverter<Phone, string>(
-            toProvider   => toProvider.Value,
-            fromProvider => Phone.Parse(fromProvider)
+            v => v.Value,
+            v => Phone.Parse(v)
         );
 
         builder.Property(c => c.CompanyName)
-            .HasConversion(companyNameConverter)
-            .HasMaxLength(120)
-            .IsRequired();
-
-        builder.HasIndex(c => c.CompanyName)
-            .IsUnique();
+               .HasConversion(companyNameConverter)
+               .HasMaxLength(150)
+               .HasColumnType("citext")      // case-insensitive
+               .IsRequired();
 
         builder.Property(c => c.Cnpj)
-            .HasConversion(cnpjConverter)
-            .HasMaxLength(14)
-            .IsRequired();
-
-        builder.HasIndex(c => c.Cnpj)
-            .IsUnique();
+               .HasConversion(cnpjConverter)
+               .HasMaxLength(18)             // mantém teu tamanho atual
+               .IsRequired();
 
         builder.Property(c => c.CompanyEmail)
-            .HasConversion(emailConverter)
-            .HasMaxLength(256)
-            .IsRequired();
+               .HasConversion(emailConverter)
+               .HasMaxLength(256)
+               .HasColumnType("citext")      // case-insensitive
+               .IsRequired();
 
         builder.Property(c => c.CompanyPhone)
-            .HasConversion(phoneConverter)
-            .HasMaxLength(16)
-            .IsRequired();
+               .HasConversion(phoneConverter)
+               .HasMaxLength(32)
+               .IsRequired();
 
         builder.Property(c => c.TradeName)
-            .HasMaxLength(120);
+               .HasMaxLength(150);
 
         builder.Property(c => c.IsActive)
-            .IsRequired();
+               .IsRequired();
 
         builder.OwnsOne(c => c.Address, addr =>
         {
@@ -76,18 +75,38 @@ public sealed class CompanyConfiguration : IEntityTypeConfiguration<Company>
         builder.Navigation(c => c.Address).IsRequired();
 
         builder.HasMany(c => c.Members)
-            .WithOne(m => m.Company)
-            .HasForeignKey(m => m.CompanyId)
-            .OnDelete(DeleteBehavior.Cascade);
+               .WithOne(m => m.Company)
+               .HasForeignKey(m => m.CompanyId)
+               .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasMany(c => c.Positions)
-            .WithOne(p => p.Company)
-            .HasForeignKey(p => p.CompanyId)
-            .OnDelete(DeleteBehavior.Cascade);
+               .WithOne(p => p.Company)
+               .HasForeignKey(p => p.CompanyId)
+               .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(c => c.Image)
-            .WithOne(i => i.Company)
-            .HasForeignKey<CompanyImage>(i => i.CompanyId)
-            .OnDelete(DeleteBehavior.Cascade);
+               .WithOne(i => i.Company)
+               .HasForeignKey<CompanyImage>(i => i.CompanyId)
+               .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Navigation(c => c.Members)
+               .HasField("_members")
+               .UsePropertyAccessMode(PropertyAccessMode.Field);
+
+        builder.Navigation(c => c.Positions)
+               .HasField("_companyPositions")
+               .UsePropertyAccessMode(PropertyAccessMode.Field);
+
+        builder.HasIndex(c => c.CompanyName)
+               .IsUnique()
+               .HasDatabaseName("ux_companies_name");
+
+        builder.HasIndex(c => c.Cnpj)
+               .IsUnique()
+               .HasDatabaseName("ux_companies_cnpj");
+
+        builder.HasIndex(c => c.CompanyEmail)
+               .IsUnique()
+               .HasDatabaseName("ux_companies_email");
     }
 }

@@ -4,27 +4,24 @@ using BaitaHora.Domain.Features.Companies.Enums;
 using BaitaHora.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
-namespace BaitaHora.Infrastructure.Repositories.Companie;
-
-public sealed class CompanyMemberRepository : ICompanyMemberRepository
+namespace BaitaHora.Infrastructure.Repositories.Companies
 {
-    private readonly AppDbContext _db;
-    public CompanyMemberRepository(AppDbContext db) => _db = db;
-
-    public async Task<CompanyMember?> GetAsync(Guid companyId, Guid userId, CancellationToken ct)
-        => await _db.CompanyMembers
-            .AsNoTracking()
-            .FirstOrDefaultAsync(m => m.CompanyId == companyId && m.UserId == userId, ct);
-
-    public async Task<(bool found, CompanyRole role, bool isActive)> GetRoleAsync(Guid companyId, Guid userId, CancellationToken ct)
+    public sealed class CompanyMemberRepository
+        : GenericRepository<CompanyMember>, ICompanyMemberRepository
     {
-        var tuple = await _db.CompanyMembers
-            .Where(m => m.CompanyId == companyId && m.UserId == userId)
-            .Select(m => new { m.Role, m.IsActive })
-            .FirstOrDefaultAsync(ct);
+        public CompanyMemberRepository(AppDbContext context) : base(context) { }
 
-        return tuple is null
-            ? (false, default, false)
-            : (true, tuple.Role, tuple.IsActive);
+        public async Task<(bool found, CompanyRole role, bool isActive)> GetRoleAsync(
+            Guid companyId, Guid userId, CancellationToken ct)
+        {
+            var row = await _context.Set<CompanyMember>()
+                .Where(m => m.CompanyId == companyId && m.UserId == userId)
+                .Select(m => new { m.Role, m.IsActive })
+                .FirstOrDefaultAsync(ct);
+
+            return row is null
+                ? (false, default, false)
+                : (true, row.Role, row.IsActive);
+        }
     }
 }

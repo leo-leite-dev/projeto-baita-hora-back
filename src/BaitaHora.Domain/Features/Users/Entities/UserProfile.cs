@@ -32,6 +32,7 @@ public sealed class UserProfile : Entity
         return profile;
     }
 
+//REMOVER TOUCH NA PROXIMA ATUALIZAÇÃO DE PROJETO
     public bool SetFullName(string newFullName)
     {
         var value = (newFullName ?? string.Empty).Trim();

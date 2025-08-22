@@ -3,18 +3,15 @@ using BaitaHora.Application.IRepositories;
 using BaitaHora.Application.IRepositories.Users;
 using BaitaHora.Application.IServices.Auth;
 using BaitaHora.Domain.Companies.ValueObjects;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using BaitaHora.Application.Feature.Auth.DTOs.Responses;
+using BaitaHora.Application.Features.Auth.DTOs.Responses;
 using BaitaHora.Application.Features.Auth.Commands;
 using BaitaHora.Domain.Features.Users.Entities;
 using BaitaHora.Domain.Features.Companies.Entities;
 using BaitaHora.Domain.Features.Commons.ValueObjects;
 using BaitaHora.Domain.Features.Users.ValueObjects;
-using BaitaHora.Application.Features.Users.DTOs;
-using BaitaHora.Application.Features.Companies.Inputs;
 using BaitaHora.Domain.Features.Companies.Enums;
-using BaitaHora.Application.IServices.Common;
+using BaitaHora.Application.Features.Companies.Commands;
+using BaitaHora.Application.Features.Users.Commands;
 
 namespace BaitaHora.Application.Features.Auth.UseCases;
 
@@ -24,21 +21,15 @@ public sealed class RegisterOwnerWithCompanyUseCase
     private readonly IUserRepository _userRepository;
     private readonly ICompanyRepository _companyRepository;
     private readonly IPasswordService _passwordService;
-    private readonly IUserUniquenessChecker _userUniquenessesChecker;
-    private readonly ILogger<RegisterOwnerWithCompanyUseCase> _logger;
 
     public RegisterOwnerWithCompanyUseCase(
         IUserRepository userRepository,
         ICompanyRepository companyRepository,
-        IPasswordService passwordService,
-        IUserUniquenessChecker userUniquenessesChecker,
-        ILogger<RegisterOwnerWithCompanyUseCase> logger)
+        IPasswordService passwordService)
     {
         _userRepository = userRepository;
         _companyRepository = companyRepository;
         _passwordService = passwordService;
-        _userUniquenessesChecker = userUniquenessesChecker;
-        _logger = logger;
     }
 
     public async Task<Result<RegisterOwnerWithCompanyResponse>> HandleAsync(
@@ -46,82 +37,42 @@ public sealed class RegisterOwnerWithCompanyUseCase
     {
         var (owner, company) = Assembler.From(request);
 
-        var uniqueness = await _userUniquenessesChecker.CheckAsync(
-            owner.UserEmail, owner.Username, owner.Cpf, owner.Rg, excludingUserId: null, ct);
+        var profile = UserProfile.Create(owner.FullName, owner.Cpf, owner.UserPhone, owner.Address);
+        if (owner.Rg is not null) profile.SetRg(owner.Rg.Value);
+        if (owner.BirthDate is not null) profile.SetBirthDate(owner.BirthDate.Value);
 
-        if (!uniqueness.IsOk)
-            return Result<RegisterOwnerWithCompanyResponse>.Conflict(
-                string.Join(" ", uniqueness.Violations.Select(v => $"{v.Field}: {v.Message}"))
-            );
+        var user = User.Create(
+            owner.UserEmail,
+            owner.Username,
+            owner.RawPassword,
+            profile,
+            _passwordService.Hash);
 
-        if (await _companyRepository.IsCompanyEmailTakenAsync(company.CompanyEmail, null, ct))
-            return Result<RegisterOwnerWithCompanyResponse>.Conflict("Email de empresa já cadastrado.",
-            ResultCodes.Conflict.UniqueViolation);
+        var comp = Company.Create(
+            company.CompanyName,
+            company.Cnpj,
+            company.Address,
+            company.TradeName,
+            company.CompanyPhone,
+            company.CompanyEmail
+        );
 
-        if (await _companyRepository.IsCompanyNameTakenAsync(company.CompanyName, null, ct))
-            return Result<RegisterOwnerWithCompanyResponse>.Conflict("Razão social já cadastrada.",
-             ResultCodes.Conflict.UniqueViolation);
+        user.SetRole(CompanyRole.Owner);
+        comp.AddOwnerFounder(user.Id);
 
-        if (await _companyRepository.IsCnpjTakenAsync(company.Cnpj, null, ct))
-            return Result<RegisterOwnerWithCompanyResponse>.Conflict("CNPJ já cadastrado.",
-             ResultCodes.Conflict.UniqueViolation);
+        await _userRepository.AddAsync(user, ct);
+        await _companyRepository.AddAsync(comp, ct);
 
-        try
-        {
-            var profile = UserProfile.Create(owner.FullName, owner.Cpf, owner.UserPhone, owner.Address);
-            if (owner.Rg is not null) profile.SetRg(owner.Rg.Value);
-            if (owner.BirthDate is not null) profile.SetBirthDate(owner.BirthDate.Value);
-
-            var user = User.Create(
-                owner.UserEmail,
-                owner.Username,
-                owner.RawPassword,
-                profile,
-                _passwordService.Hash);
-
-            var comp = Company.Create(
-                company.CompanyName,
-                company.Cnpj,
-                company.Address,
-                company.TradeName,
-                company.CompanyPhone,
-                company.CompanyEmail
-            );
-
-            user.SetRole(CompanyRole.Owner);
-            comp.AddOwnerFounder(user.Id);
-
-            await _userRepository.AddAsync(user, ct);
-            await _companyRepository.AddAsync(comp, ct);
-
-            var response = new RegisterOwnerWithCompanyResponse(user.Id, comp.Id);
-            return Result<RegisterOwnerWithCompanyResponse>.Created(response);
-        }
-        catch (DbUpdateException ex)
-        {
-            _logger.LogWarning(ex,
-                "Violação de integridade ao registrar dono/empresa. Email={Email}, Username={Username}, CNPJ={Cnpj}",
-                owner.UserEmail, owner.Username, company.Cnpj);
-
-            return Result<RegisterOwnerWithCompanyResponse>.Conflict("Violação de integridade (índice único).");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex,
-                "Erro inesperado ao registrar dono/empresa. Email={Email}, Username={Username}, CNPJ={Cnpj}",
-                owner.UserEmail, owner.Username, company.Cnpj);
-
-            return Result<RegisterOwnerWithCompanyResponse>.ServerError(
-                "Erro interno ao processar o cadastro do dono/empresa.");
-        }
+        var response = new RegisterOwnerWithCompanyResponse(user.Id, comp.Id);
+        return Result<RegisterOwnerWithCompanyResponse>.Created(response);
     }
 
     private static class Assembler
     {
-        public static (OwnerVO owner, CompanyVO company) From(RegisterOwnerWithCompanyCommand input)
-            => (BuildOwner(input.User), BuildCompany(input.Company));
+        public static (OwnerVO owner, CompanyVO company) From(RegisterOwnerWithCompanyCommand cmd)
+            => (BuildOwner(cmd.Owner), BuildCompany(cmd.Company));
 
-        private static OwnerVO BuildOwner(UserInput u)
+        private static OwnerVO BuildOwner(UserCommand u)
         {
             var email = Email.Parse(u.UserEmail);
             var username = Username.Parse(u.Username);
@@ -143,7 +94,7 @@ public sealed class RegisterOwnerWithCompanyUseCase
             return new OwnerVO(email, username, u.RawPassword, u.Profile.FullName, cpf, rg, phone, u.Profile.BirthDate, addr);
         }
 
-        private static CompanyVO BuildCompany(CompanyInput c)
+        private static CompanyVO BuildCompany(CompanyCommand c)
         {
             var name = CompanyName.Parse(c.CompanyName);
             var cnpj = CNPJ.Parse(c.Cnpj);

@@ -1,113 +1,171 @@
 using System.Text;
 using FluentValidation;
-using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 
-using BaitaHora.Application.Common.Behaviors;
-using BaitaHora.Application.Common.Validation;
-using BaitaHora.Application.Features.Auth.Commands;
+using BaitaHora.Application.Configuration;            // AddApplication()
+using BaitaHora.Application.Features.Auth.Commands;  // p/ registrar MediatR
+using BaitaHora.Application.Features.Auth.Validators;
 
-using BaitaHora.Infrastructure.Configuration;
+using BaitaHora.Infrastructure.Configuration;        // AddAuthInfrastructure()
 using BaitaHora.Infrastructure.Data;
+using BaitaHora.Infrastructure.Middlewares;          // ExceptionHttpMappingMiddleware, JwtMiddleware
 using BaitaHora.Infrastructure.Persistence.Interceptors;
+using MediatR;
+using BaitaHora.Application.Common.Behaviors;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
 // ----------------------------------------------------
 // DbContext
 // ----------------------------------------------------
+builder.Services.AddSingleton<TimestampInterceptor>();
 builder.Services.AddDbContext<AppDbContext>((sp, options) =>
 {
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
     options.AddInterceptors(sp.GetRequiredService<TimestampInterceptor>());
 });
-// (Opcional) se algum serviço pede DbContext base:
+// opcional: expor DbContext base
 builder.Services.AddScoped<DbContext>(sp => sp.GetRequiredService<AppDbContext>());
-builder.Services.AddSingleton<TimestampInterceptor>();
 
 // ----------------------------------------------------
-// Infraestrutura (Repos, UoW, Serviços de Auth/Cookie/Token, etc.)
-// Observação: essa extensão configura TokenOptions via "JwtOptions"
-// ----------------------------------------------------
-builder.Services.AddAuthInfrastructure(builder.Configuration);
-
-// ----------------------------------------------------
-// MediatR + Validators + Pipeline Behaviors
-// ----------------------------------------------------
-builder.Services.AddMediatR(cfg =>
-{
-    // registra handlers/requests a partir do assembly que contém o comando
-    cfg.RegisterServicesFromAssemblyContaining<RegisterOwnerWithCompanyCommand>();
-});
-
-// registra todos os validators do mesmo assembly do comando
-builder.Services.AddValidatorsFromAssemblyContaining<RegisterOwnerWithCompanyCommand>();
-
-// Behaviors em ORDEM: validação primeiro, depois UoW (commit/rollback)
-builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
-builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(UnitOfWorkBehavior<,>));
-
-// opções de validação (se tu usa)
-builder.Services.Configure<ValidationOptions>(builder.Configuration.GetSection("Validation"));
-
-// ----------------------------------------------------
-// HttpContextAccessor (para adapters/ports que dependem dele)
+// Infra & Application
 // ----------------------------------------------------
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddAuthInfrastructure(builder.Configuration); // repos, UoW, serviços, tradutor de erros (Postgres)
+builder.Services.AddApplication();                             // behaviors (Validation, DbExceptionMapping, etc.)
 
 // ----------------------------------------------------
-// JWT
-// Importante: manter a MESMA seção usada na infra (JwtOptions).
-// Se teu appsettings usa "Jwt" em vez de "JwtOptions", sincroniza ambos.
+// Options (JwtOptions -> TokenOptions)
 // ----------------------------------------------------
-var jwtOpts = new TokenOptions();
-builder.Configuration.GetSection("JwtOptions").Bind(jwtOpts);
+builder.Services.Configure<TokenOptions>(builder.Configuration.GetSection("JwtOptions"));
+var jwt = builder.Configuration.GetSection("JwtOptions").Get<TokenOptions>()
+          ?? throw new InvalidOperationException("JwtOptions não configurado.");
+var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.Secret));
 
-// sanity check simples (evita chave vazia)
-if (string.IsNullOrWhiteSpace(jwtOpts.Secret))
-    throw new InvalidOperationException("JwtOptions.Secret não está configurado.");
-
+// ----------------------------------------------------
+// AuthN/AuthZ - JWT Bearer
+// ----------------------------------------------------
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(o =>
     {
         o.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = jwtOpts.Issuer,
-            ValidAudience = jwtOpts.Audience,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOpts.Secret))
+            IssuerSigningKey = signingKey,
+
+            ValidateIssuer = true,
+            ValidIssuer = jwt.Issuer,
+
+            ValidateAudience = true,
+            ValidAudience = jwt.Audience,
+
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.FromMinutes(1)
         };
     });
-
 builder.Services.AddAuthorization();
 
 // ----------------------------------------------------
-// MVC + Swagger
+// MediatR + FluentValidation
+// ----------------------------------------------------
+builder.Services.AddMediatR(cfg =>
+{
+    cfg.RegisterServicesFromAssemblies(
+        typeof(AuthenticateCommand).Assembly,
+        typeof(Program).Assembly
+    );
+});
+builder.Services.AddValidatorsFromAssemblyContaining<RegisterOwnerWithCompanyCommandValidator>(includeInternalTypes: true);
+
+// (se você também registra behaviors manualmente, mantenha a ordem)
+builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(AuthorizationBehavior<,>)); // se existir
+builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(DbExceptionMappingBehavior<,>));
+builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(UnitOfWorkBehavior<,>));
+
+// ----------------------------------------------------
+// Controllers & Swagger
 // ----------------------------------------------------
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "BaitaHora API", Version = "v1" });
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Cole APENAS o access token (sem o prefixo 'Bearer ')."
+    });
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
 
+// ----------------------------------------------------
+// CORS
+// ----------------------------------------------------
+builder.Services.AddCors(opt =>
+{
+    opt.AddDefaultPolicy(p =>
+        p.AllowAnyHeader()
+         .AllowAnyMethod()
+         .AllowCredentials()
+         .SetIsOriginAllowed(_ => true));
+});
+
+// ----------------------------------------------------
+// Build
+// ----------------------------------------------------
 var app = builder.Build();
 
-// Swagger em Dev
+// ----------------------------------------------------
+// Pipeline (ordem importa!)
+// ----------------------------------------------------
+
+// 1) Tratamento de exceções primeiro (não use DeveloperExceptionPage se quiser ver 409)
+app.UseMiddleware<ExceptionHttpMappingMiddleware>();
+
+// 2) HTTPS/HSTS (se quiser HSTS, coloque aqui em prod)
+// app.UseHsts();
+app.UseHttpsRedirection();
+
+// 3) Roteamento
+app.UseRouting();
+
+// 4) CORS antes de Auth
+app.UseCors();
+
+// 5) Autenticação / Middlewares de segurança
+app.UseAuthentication();
+app.UseMiddleware<JwtMiddleware>(); // se ele depende de User, mantenha após UseAuthentication
+
+// 6) Autorização
+app.UseAuthorization();
+
+// 7) Swagger (ok ficar depois de auth; em dev costuma vir aqui)
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
-
-app.UseAuthentication();
-app.UseAuthorization();
-
+// 8) Endpoints
 app.MapControllers();
 
 app.Run();

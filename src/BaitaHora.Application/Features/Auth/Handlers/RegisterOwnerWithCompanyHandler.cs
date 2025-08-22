@@ -1,5 +1,5 @@
 using BaitaHora.Application.Common;
-using BaitaHora.Application.Feature.Auth.DTOs.Responses;
+using BaitaHora.Application.Features.Auth.DTOs.Responses;
 using BaitaHora.Application.Features.Auth.Commands;
 using BaitaHora.Application.Features.Auth.UseCases;
 using MediatR;

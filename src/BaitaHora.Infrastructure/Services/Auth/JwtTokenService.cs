@@ -2,7 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using BaitaHora.Application.Feature.Auth.DTOs.Responses;
+using BaitaHora.Application.Features.Auth.DTOs.Responses;
 using BaitaHora.Application.IRepositories.Auth;
 using BaitaHora.Application.IServices.Auth;
 using BaitaHora.Application.IServices.Auth.Models;
@@ -33,7 +33,12 @@ public sealed class JwtTokenService : ITokenService
         _log = log;
     }
 
-    public AuthTokenResponse IssueTokens(Guid userId, string username, IEnumerable<string> roles, IDictionary<string, string>? extraClaims = null)
+    public async Task<AuthTokenResponse> IssueTokensAsync(
+        Guid userId,
+        string username,
+        IEnumerable<string> roles,
+        IDictionary<string, string>? extraClaims = null,
+        CancellationToken ct = default)
     {
         var now = DateTime.UtcNow;
         var accessExpires = now.AddMinutes(_opt.AccessTokenMinutes);
@@ -71,6 +76,7 @@ public sealed class JwtTokenService : ITokenService
 
         var accessToken = new JwtSecurityTokenHandler().WriteToken(jwt);
 
+        // Refresh
         var refreshToken = GenerateSecureToken();
         var refreshHash = Sha256(refreshToken);
         var refreshExpires = now.AddDays(_opt.RefreshTokenDays);
@@ -86,8 +92,8 @@ public sealed class JwtTokenService : ITokenService
             CreatedAtUtc: now
         );
 
-        _sessions.AddAsync(session, CancellationToken.None).GetAwaiter().GetResult();
-        _sessions.SaveChangesAsync(CancellationToken.None).GetAwaiter().GetResult();
+        await _sessions.AddAsync(session, ct);
+        await _sessions.SaveChangesAsync(ct);
 
         return new AuthTokenResponse(
             AccessToken: accessToken,
@@ -99,27 +105,25 @@ public sealed class JwtTokenService : ITokenService
         );
     }
 
-    public AuthTokenResponse Refresh(string refreshToken)
+    public async Task<AuthTokenResponse> RefreshAsync(string refreshToken, CancellationToken ct = default)
     {
         var now = DateTime.UtcNow;
         var hash = Sha256(refreshToken);
 
-        var dto = _sessions.GetByRefreshTokenHashAsync(hash, CancellationToken.None)
-                           .GetAwaiter().GetResult();
+        var dto = await _sessions.GetByRefreshTokenHashAsync(hash, ct);
 
         if (dto is null || dto.IsRevoked || dto.RefreshTokenExpiresAtUtc <= now)
             throw new SecurityTokenException("Refresh token inválido.");
 
-        var (username, roles, isActive) = _identity.GetIdentityAsync(dto.UserId, CancellationToken.None)
-                                                   .GetAwaiter().GetResult();
+        var (username, roles, isActive) = await _identity.GetIdentityAsync(dto.UserId, ct);
 
         if (!isActive)
             throw new SecurityTokenException("Conta desativada.");
 
-        _sessions.InvalidateAsync(dto.Id, CancellationToken.None).GetAwaiter().GetResult();
-        _sessions.SaveChangesAsync(CancellationToken.None).GetAwaiter().GetResult();
+        await _sessions.InvalidateAsync(dto.Id, ct);
+        await _sessions.SaveChangesAsync(ct);
 
-        return IssueTokens(dto.UserId, username, roles);
+        return await IssueTokensAsync(dto.UserId, username, roles, ct: ct);
     }
 
     public ClaimsPrincipal? ValidateToken(string token)
@@ -129,7 +133,7 @@ public sealed class JwtTokenService : ITokenService
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.UTF8.GetBytes(_opt.Secret);
 
-            var principal = tokenHandler.ValidateToken(token, new TokenValidationParameters
+            return tokenHandler.ValidateToken(token, new TokenValidationParameters
             {
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = new SymmetricSecurityKey(key),
@@ -139,9 +143,7 @@ public sealed class JwtTokenService : ITokenService
                 ValidAudience = _opt.Audience,
                 ValidateLifetime = true,
                 ClockSkew = TimeSpan.FromMinutes(1)
-            }, out SecurityToken validatedToken);
-
-            return principal;
+            }, out _);
         }
         catch (Exception ex)
         {

@@ -19,32 +19,32 @@ public sealed record Address
 {
     public string Street { get; } = string.Empty;
     public string Number { get; } = string.Empty;
+    public string? Complement { get; }
     public string Neighborhood { get; } = string.Empty;
     public string City { get; } = string.Empty;
     public string State { get; } = string.Empty;
     public string ZipCode { get; } = string.Empty;
-    public string? Complement { get; }
 
     private Address() { }
 
     private Address(
-        string street, string number, string neighborhood,
-        string city, string state, string zipCode, string? complement)
+        string street, string number, string? complement, string neighborhood,
+        string city, string state, string zipCode)
     {
         Street = street;
         Number = number;
+        Complement = complement;
         Neighborhood = neighborhood;
         City = city;
         State = state;
         ZipCode = zipCode;
-        Complement = complement;
     }
 
     public static Address Create(
-        string? street, string? number, string? neighborhood,
-        string? city, string? state, string? zipCode, string? complement = null)
+        string? street, string? number, string? neighborhood, string? city, string? state,
+        string? zipCode, string? complement = null)
     {
-        if (!TryCreate(street, number, neighborhood, city, state, zipCode, complement,
+        if (!TryCreate(street, number, complement, neighborhood, city, state, zipCode,
                        out var addr, out var errors))
         {
             var msg = string.Join("; ", errors.Select(e => e.Message));
@@ -59,29 +59,29 @@ public sealed record Address
         => Create(street, number, neighborhood, city, state, zipCode, complement);
 
     public static bool TryParse(
-        string? street, string? number, string? neighborhood,
-        string? city, string? state, string? zipCode, string? complement,
+        string? street, string? number, string? complement, string? neighborhood,
+        string? city, string? state, string? zipCode,
         out Address? address, out IReadOnlyList<AddressValidationError> errors)
-        => TryCreate(street, number, neighborhood, city, state, zipCode, complement, out address, out errors);
+        => TryCreate(street, number, complement, neighborhood, city, state, zipCode, out address, out errors);
 
     public static bool TryCreate(
-        string? street, string? number, string? neighborhood,
-        string? city, string? state, string? zipCode, string? complement,
+        string? street, string? number, string? complement, string? neighborhood,
+        string? city, string? state, string? zipCode,
         out Address? address, out IReadOnlyList<AddressValidationError> errors)
     {
         address = null;
 
         static string N(string? s) => (s ?? string.Empty).Trim();
         static string? O(string? s) => string.IsNullOrWhiteSpace(s) ? null : s.Trim();
-        static string D(string? s) => new string((s ?? string.Empty).Where(char.IsDigit).ToArray());
+        static string Digits(string? s) => new string((s ?? string.Empty).Where(char.IsDigit).ToArray());
 
         var streetN = N(street);
         var numberN = N(number);
+        var complementN = O(complement);
         var neighborhoodN = N(neighborhood);
         var cityN = N(city);
-        var stateN = N(state).ToUpperInvariant();
-        var zipDigits = D(zipCode);
-        var complementN = O(complement);
+        var stateN = N(state).ToUpperInvariant();   
+        var zipDigits = Digits(zipCode);    
 
         var list = new List<AddressValidationError>(7);
 
@@ -106,7 +106,7 @@ public sealed record Address
             return false;
         }
 
-        address = new Address(streetN, numberN, neighborhoodN, cityN, stateN, zipDigits, complementN);
+        address = new Address(streetN, numberN, complementN, neighborhoodN, cityN, stateN, zipDigits);
         errors = EmptyList<AddressValidationError>.Value;
         return true;
     }

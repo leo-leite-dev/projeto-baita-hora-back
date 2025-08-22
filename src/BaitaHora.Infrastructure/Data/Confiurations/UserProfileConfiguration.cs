@@ -22,11 +22,12 @@ public sealed class UserProfileConfiguration : IEntityTypeConfiguration<UserProf
             toProvider => toProvider.Value,
             fromProvider => CPF.Parse(fromProvider)
         );
+
         var rgConverter = new ValueConverter<RG?, string?>(
             toProvider => toProvider.HasValue ? toProvider.Value.Value : null,
             fromProvider => string.IsNullOrEmpty(fromProvider) ? null : RG.Parse(fromProvider)
         );
-     
+
         var phoneConverter = new ValueConverter<Phone, string>(
             toProvider => toProvider.Value,
             fromProvider => Phone.Parse(fromProvider)
@@ -36,7 +37,6 @@ public sealed class UserProfileConfiguration : IEntityTypeConfiguration<UserProf
             .HasConversion(cpfConverter)
             .HasMaxLength(11)
             .IsRequired();
-        builder.HasIndex(p => p.Cpf).IsUnique();
 
         builder.Property(p => p.Rg)
             .HasConversion(rgConverter)
@@ -64,5 +64,14 @@ public sealed class UserProfileConfiguration : IEntityTypeConfiguration<UserProf
 
         builder.Property(p => p.ProfileImageUrl)
             .HasMaxLength(512);
+
+        builder.Property(x => x.Rg)
+            .HasMaxLength(20)
+            .HasColumnName("rg");
+
+        builder.HasIndex(x => x.Rg)
+            .HasDatabaseName("ux_user_profiles_rg")
+            .IsUnique()
+            .HasFilter("\"rg\" IS NOT NULL");
     }
 }

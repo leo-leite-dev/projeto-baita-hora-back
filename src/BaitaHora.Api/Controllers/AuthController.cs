@@ -1,38 +1,57 @@
-using Microsoft.AspNetCore.Mvc;
 using MediatR;
-using BaitaHora.Api.Helpers;
-using BaitaHora.Application.IServices.Auth;
-using BaitaHora.Application.Features.Auth.Commands;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using BaitaHora.Api.Helpers;
+using BaitaHora.Api.Contracts.Auth.Requests;
+using BaitaHora.Api.Contracts.Auth.Mappers;
 
-namespace BaitaHora.Api.Controllers.Auth
+namespace BaitaHora.Api.Controllers;
+
+[ApiController]
+[Route("api/auth")]
+[AllowAnonymous]
+public sealed class AuthController : ControllerBase
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class AuthController : ControllerBase
+    private readonly ISender _mediator;
+    public AuthController(ISender mediator) => _mediator = mediator;
+
+    [HttpGet("me")]
+    [Authorize] // só responde se tiver autenticado
+    public IActionResult Me()
     {
-        private readonly ISender _mediator;
-        private readonly ICookieService _cookieService;
+        var user = HttpContext.User;
 
-        public AuthController(ISender mediator, ICookieService cookieService)
-        {
-            _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
-            _cookieService = cookieService ?? throw new ArgumentNullException(nameof(cookieService));
-        }
+        if (user?.Identity?.IsAuthenticated != true)
+            return Unauthorized(new { message = "Usuário não autenticado" });
 
-        [HttpPost("register-owner")]
-        public async Task<IActionResult> RegisterOwner([FromBody] RegisterOwnerWithCompanyCommand cmd, CancellationToken ct)
-        {
-            var result = await _mediator.Send(cmd, ct);
-            return result.ToActionResult(this);
-        }
+        var userId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+                     ?? user.FindFirst("sub")?.Value;
+        var username = user.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value
+                       ?? user.Identity?.Name;
+        var roles = user.FindAll(System.Security.Claims.ClaimTypes.Role).Select(r => r.Value).ToList();
 
-        // [Authorize]
-        [HttpPost("register-employee")]
-        public async Task<IActionResult> RegisterEmployee([FromBody] RegisterEmployeeCommand cmd, CancellationToken ct)
+        return Ok(new
         {
-            var result = await _mediator.Send(cmd, ct);
-            return result.ToActionResult(this);
-        }
+            IsAuthenticated = true,
+            UserId = userId,
+            Username = username,
+            Roles = roles
+        });
+    }
+
+    [HttpPost("login")]
+    public async Task<IActionResult> Login([FromBody] AuthenticateRequest req, CancellationToken ct)
+    {
+        var cmd = req.ToCommand();
+        var result = await _mediator.Send(cmd, ct);
+        return result.ToActionResult(this, result.Value);
+    }
+
+    [HttpPost("register-owner")]
+    public async Task<IActionResult> RegisterOwner([FromBody] RegisterOwnerWithCompanyRequest req, CancellationToken ct)
+    {
+        var cmd = req.ToCommand();
+        var result = await _mediator.Send(cmd, ct);
+        return result.ToActionResult(this, result.Value);
     }
 }

@@ -1,14 +1,14 @@
 using System.Text.RegularExpressions;
 using BaitaHora.Application.Features.Commons.Validators;
-using BaitaHora.Application.Features.Users.DTOs;
+using BaitaHora.Application.Features.Users.Commands;
 using BaitaHora.Domain.Features.Users.ValueObjects;
 using FluentValidation;
 
 namespace BaitaHora.Application.Features.Auth.Validators;
 
-public sealed class UserInputValidator : AbstractValidator<UserInput>
+public sealed class UserCommandValidator : AbstractValidator<UserCommand>
 {
-    public UserInputValidator()
+    public UserCommandValidator()
     {
         RuleFor(x => x.UserEmail).EmailVo();
 
@@ -31,6 +31,6 @@ public sealed class UserInputValidator : AbstractValidator<UserInput>
 
         RuleFor(x => x.Profile)
             .NotNull().WithMessage("O perfil do usuário é obrigatório.")
-            .SetValidator(new UserProfileInputValidator());
+            .SetValidator(new UserProfileCommandValidator());
     }
 }

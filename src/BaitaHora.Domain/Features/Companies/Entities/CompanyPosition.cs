@@ -6,7 +6,7 @@ using BaitaHora.Domain.Features.Companies.Enums;
 public class CompanyPosition : Entity
 {
     public Guid CompanyId { get; private set; }
-    public string Name { get; private set; } = null!;
+    public string PositionName { get; private set; } = null!;
     public CompanyRole AccessLevel { get; private set; }
     public bool IsActive { get; private set; }
     public bool IsSystem { get; private set; }
@@ -14,15 +14,14 @@ public class CompanyPosition : Entity
 
     private CompanyPosition() { }
 
-    public static CompanyPosition Create(
-        Guid companyId, string name, CompanyRole accessLevel,
-        bool allowOwnerLevel = false, bool isSystem = false)
+    public static CompanyPosition Create(Guid companyId, string positionName, CompanyRole accessLevel,
+    bool allowOwnerLevel = false, bool isSystem = false)
     {
         if (companyId == Guid.Empty) throw new CompanyException("CompanyId inválido.");
         if (accessLevel == CompanyRole.Owner && !allowOwnerLevel)
             throw new CompanyException("Cargo Owner só pode ser criado no fluxo do fundador.");
 
-        var pos = new CompanyPosition
+        var companyPosition = new CompanyPosition
         {
             CompanyId = companyId,
             AccessLevel = accessLevel,
@@ -30,8 +29,8 @@ public class CompanyPosition : Entity
             IsSystem = isSystem
         };
 
-        pos.SetName(name);               
-        return pos;
+        companyPosition.SetName(positionName);
+        return companyPosition;
     }
 
     public bool SetName(string newName)
@@ -39,8 +38,8 @@ public class CompanyPosition : Entity
         var normalized = newName?.Trim();
         if (string.IsNullOrWhiteSpace(normalized))
             throw new CompanyException("Nome do cargo é obrigatório.");
-        if (string.Equals(Name, normalized, StringComparison.Ordinal)) return false;
-        Name = normalized; Touch(); return true;
+        if (string.Equals(PositionName, normalized, StringComparison.Ordinal)) return false;
+        PositionName = normalized; Touch(); return true;
     }
 
     public bool SetAccessLevel(CompanyRole newLevel, bool allowOwnerLevel = false)

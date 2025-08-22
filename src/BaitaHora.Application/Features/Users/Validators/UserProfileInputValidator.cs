@@ -1,15 +1,15 @@
 using System.Text.RegularExpressions;
 using BaitaHora.Application.Features.Commons.Validators;
-using BaitaHora.Application.Features.Users.DTOs;
+using BaitaHora.Application.Features.Users.Commands;
 using BaitaHora.Domain.Features.Commons.ValueObjects;
 using BaitaHora.Domain.Features.Users.ValueObjects;
 using FluentValidation;
 
 namespace BaitaHora.Application.Features.Auth.Validators;
 
-public sealed class UserProfileInputValidator : AbstractValidator<UserProfileInput>
+public sealed class UserProfileCommandValidator : AbstractValidator<UserProfileCommand>
 {
-    public UserProfileInputValidator()
+    public UserProfileCommandValidator()
     {
         RuleFor(x => x.FullName)
             .NotEmpty().WithMessage("O nome completo é obrigatório.")
@@ -53,7 +53,7 @@ public sealed class UserProfileInputValidator : AbstractValidator<UserProfileInp
 
         RuleFor(x => x.Address)
             .NotNull().WithMessage("O endereço é obrigatório.")
-            .SetValidator(new AddressInputValidator());
+            .SetValidator(new AddressCommandValidator());
     }
 
     private static int NormalizedLen(string? rg)

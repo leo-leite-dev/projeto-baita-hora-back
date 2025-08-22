@@ -2,7 +2,6 @@ using BaitaHora.Application.IRepositories;
 using BaitaHora.Domain.Companies.ValueObjects;
 using BaitaHora.Domain.Features.Commons.ValueObjects;
 using BaitaHora.Domain.Features.Companies.Entities;
-using BaitaHora.Infrastructure.Commons.Repositories;
 using BaitaHora.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 

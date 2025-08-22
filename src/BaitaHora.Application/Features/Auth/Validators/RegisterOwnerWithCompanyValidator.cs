@@ -9,12 +9,12 @@ public sealed class RegisterOwnerWithCompanyCommandValidator
 {
     public RegisterOwnerWithCompanyCommandValidator()
     {
-        RuleFor(x => x.User)
+        RuleFor(x => x.Owner)
             .NotNull()
-            .SetValidator(new UserInputValidator());
+            .SetValidator(new UserCommandValidator());
 
         RuleFor(x => x.Company)
             .NotNull()
-            .SetValidator(new CompanyInputValidator());
+            .SetValidator(new CompanyCommandValidator());
     }
 }

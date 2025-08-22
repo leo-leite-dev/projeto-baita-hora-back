@@ -1,5 +1,5 @@
 using BaitaHora.Application.Common;
-using BaitaHora.Application.Feature.Auth.DTOs.Responses;
+using BaitaHora.Application.Features.Auth.DTOs.Responses;
 using BaitaHora.Application.Features.Auth.Commands;
 using BaitaHora.Application.Features.Auth.UseCases;
 using MediatR;
@@ -11,5 +11,5 @@ public sealed class AuthenticateHandler : IRequestHandler<AuthenticateCommand, R
     private readonly AuthenticateUseCase _uc;
     public AuthenticateHandler(AuthenticateUseCase uc) => _uc = uc;
     public Task<Result<AuthTokenResponse>> Handle(AuthenticateCommand cmd, CancellationToken ct)
-        => _uc.HandleAsync(cmd.Input, ct);
+        => _uc.HandleAsync(cmd, ct);
 }

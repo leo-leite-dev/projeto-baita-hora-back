@@ -5,6 +5,7 @@ using BaitaHora.Domain.Features.Users.Entities;
 using BaitaHora.Domain.Features.Companies.Entities;
 using BaitaHora.Domain.Features.Commons.ValueObjects;
 using BaitaHora.Domain.Features.Users.ValueObjects;
+using BaitaHora.Infrastructure.Persistence.Entities;
 
 namespace BaitaHora.Infrastructure.Data;
 
@@ -18,6 +19,7 @@ public sealed class AppDbContext : DbContext
     public DbSet<CompanyImage> CompanyImages => Set<CompanyImage>();
     public DbSet<CompanyMember> CompanyMembers => Set<CompanyMember>();
     public DbSet<CompanyPosition> CompanyPositions => Set<CompanyPosition>();
+    public DbSet<LoginSession> LoginSessions => Set<LoginSession>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -59,7 +61,7 @@ public sealed class AppDbContext : DbContext
             .HasColumnName("email")
             .HasMaxLength(255)
             .IsRequired();
-            
+
 
         modelBuilder.Entity<UserProfile>(entity =>
         {

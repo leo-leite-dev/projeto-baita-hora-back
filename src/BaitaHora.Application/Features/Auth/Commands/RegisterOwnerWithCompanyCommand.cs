@@ -1,8 +1,8 @@
 using BaitaHora.Application.Common;
 using BaitaHora.Application.Common.Behaviors;
-using BaitaHora.Application.Feature.Auth.DTOs.Responses;
-using BaitaHora.Application.Features.Companies.Inputs;
-using BaitaHora.Application.Features.Users.DTOs;
+using BaitaHora.Application.Features.Auth.DTOs.Responses;
+using BaitaHora.Application.Features.Companies.Commands;
+using BaitaHora.Application.Features.Users.Commands;
 using MediatR;
 
 namespace BaitaHora.Application.Features.Auth.Commands;
@@ -10,6 +10,6 @@ namespace BaitaHora.Application.Features.Auth.Commands;
 public sealed record RegisterOwnerWithCompanyCommand
     : IRequest<Result<RegisterOwnerWithCompanyResponse>>, ITransactionalRequest
 {
-    public required UserInput User { get; init; }
-    public required CompanyInput Company { get; init; }
+    public required UserCommand Owner { get; init; }
+    public required CompanyCommand Company { get; init; }
 }

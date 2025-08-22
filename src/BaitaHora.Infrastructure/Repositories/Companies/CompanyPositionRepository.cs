@@ -1,0 +1,10 @@
+using BaitaHora.Application.IRepositories;
+using BaitaHora.Infrastructure.Data;
+
+namespace BaitaHora.Infrastructure.Repositories.Companies
+{
+    public class CompanyPositionRepository : GenericRepository<CompanyPosition>, ICompanyPositionRepository
+    {
+        public CompanyPositionRepository(AppDbContext context) : base(context) { }
+    }
+}

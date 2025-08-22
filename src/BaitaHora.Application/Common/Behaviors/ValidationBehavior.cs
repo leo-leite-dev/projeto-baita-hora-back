@@ -2,7 +2,7 @@ using System.Reflection;
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.Options;
-using BaitaHora.Application.Common.Validation;      
+using BaitaHora.Application.Common.Validation;
 
 namespace BaitaHora.Application.Common.Behaviors;
 
@@ -40,7 +40,6 @@ public sealed class ValidationBehavior<TRequest, TResponse> : IPipelineBehavior<
 
                 if (_opts.Mode == ValidationMode.First)
                 {
-                    // Só o primeiro erro (UX mais suave)
                     var first = failures.First();
                     errors = new Dictionary<string, object?>
                     {
@@ -49,7 +48,6 @@ public sealed class ValidationBehavior<TRequest, TResponse> : IPipelineBehavior<
                 }
                 else
                 {
-                    // Todos os erros, opcionalmente com limite
                     var grouped = failures
                         .GroupBy(f => NormalizeKey(f.PropertyName))
                         .Select(g => new { Field = g.Key, Msg = g.First().ErrorMessage });
@@ -60,7 +58,6 @@ public sealed class ValidationBehavior<TRequest, TResponse> : IPipelineBehavior<
                     errors = grouped.ToDictionary(k => k.Field, v => (object?)v.Msg);
                 }
 
-                // Result<T>
                 var respType = typeof(TResponse);
                 if (IsGenericResult(respType))
                 {
@@ -71,10 +68,10 @@ public sealed class ValidationBehavior<TRequest, TResponse> : IPipelineBehavior<
                         BindingFlags.Public | BindingFlags.Static,
                         new[]
                         {
-                            typeof(string),                         // detail
-                            typeof(string),                         // code
-                            typeof(string),                         // title
-                            typeof(IDictionary<string, object?>)    // meta/errors
+                            typeof(string),                         
+                            typeof(string),                      
+                            typeof(string),                        
+                            typeof(IDictionary<string, object?>)    
                         });
 
                     if (badRequest is not null)
@@ -87,7 +84,6 @@ public sealed class ValidationBehavior<TRequest, TResponse> : IPipelineBehavior<
                     }
                 }
 
-                // Result (não genérico)
                 object result = Result.BadRequest(
                     flatDetail,
                     ResultCodes.Validation.Invalid,

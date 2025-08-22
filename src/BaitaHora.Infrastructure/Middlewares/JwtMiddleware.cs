@@ -1,49 +1,49 @@
 using BaitaHora.Application.IServices.Auth;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace BaitaHora.Infrastructure.Middlewares
+namespace BaitaHora.Infrastructure.Middlewares;
+
+public class JwtMiddleware
 {
-    public class JwtMiddleware
+    private readonly RequestDelegate _next;
+
+    public JwtMiddleware(RequestDelegate next)
     {
-        private readonly RequestDelegate _next;
-        private readonly ITokenService _tokenService;
+        _next = next;
+    }
 
-        public JwtMiddleware(RequestDelegate next, ITokenService tokenService)
+    public async Task Invoke(HttpContext context)
+    {
+        var tokenService = context.RequestServices.GetRequiredService<ITokenService>();
+
+        var token = context.Request.Cookies["jwtToken"];
+
+        if (!string.IsNullOrEmpty(token))
         {
-            _next = next;
-            _tokenService = tokenService;
-        }
+            Console.WriteLine("[JwtMiddleware] jwtToken encontrado no cookie");
+            var principal = tokenService.ValidateToken(token);
 
-        public async Task Invoke(HttpContext context)
-        {
-            var token = context.Request.Cookies["jwtToken"];
-
-            if (!string.IsNullOrEmpty(token))
+            if (principal != null)
             {
-                Console.WriteLine("[JwtMiddleware] jwtToken encontrado no cookie");
-                var principal = _tokenService.ValidateToken(token);
-
-                if (principal != null)
+                Console.WriteLine("[JwtMiddleware] Token válido. Usuário autenticado.");
+                foreach (var claim in principal.Claims)
                 {
-                    Console.WriteLine("[JwtMiddleware] Token válido. Usuário autenticado.");
-                    foreach (var claim in principal.Claims)
-                    {
-                        Console.WriteLine($"[JwtMiddleware] Claim: {claim.Type} = {claim.Value}");
-                    }
+                    Console.WriteLine($"[JwtMiddleware] Claim: {claim.Type} = {claim.Value}");
+                }
 
-                    context.User = principal;
-                }
-                else
-                {
-                    Console.WriteLine("[JwtMiddleware] Token inválido.");
-                }
+                context.User = principal;
             }
             else
             {
-                Console.WriteLine("[JwtMiddleware] Nenhum jwtToken encontrado no cookie");
+                Console.WriteLine("[JwtMiddleware] Token inválido.");
             }
-
-            await _next(context);
         }
+        else
+        {
+            Console.WriteLine("[JwtMiddleware] Nenhum jwtToken encontrado no cookie");
+        }
+
+        await _next(context);
     }
 }
