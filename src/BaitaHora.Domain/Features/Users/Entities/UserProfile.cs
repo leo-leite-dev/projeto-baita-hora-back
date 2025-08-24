@@ -12,7 +12,7 @@ public sealed class UserProfile : Entity
     public CPF Cpf { get; private set; } = default!;
     public RG? Rg { get; private set; }
 
-    public DateTime? BirthDate { get; private set; }
+    public DateOnly? BirthDate { get; private set; }
     public Phone UserPhone { get; private set; }
     public Address Address { get; private set; } = default!;
     public string? ProfileImageUrl { get; private set; }
@@ -57,20 +57,23 @@ public sealed class UserProfile : Entity
         return true;
     }
 
-    public bool SetBirthDate(DateTime? newBirthDate)
+    public bool SetBirthDate(DateOnly? newBirthDate)
     {
-        DateTime? normalized = null;
+        DateOnly? normalized = null;
         if (newBirthDate.HasValue)
         {
-            var birth = newBirthDate.Value.Date;
-            var today = DateTime.UtcNow.Date;
+            var birth = newBirthDate.Value;
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
 
             if (birth > today)
                 throw new UserException("A data de nascimento não pode estar no futuro.");
             if (birth < today.AddYears(-120))
                 throw new UserException("Data de nascimento muito antiga.");
 
-            var age = today.Year - birth.Year - (birth > today.AddYears(-(today.Year - birth.Year)) ? 1 : 0);
+            var age = today.Year - birth.Year;
+            if (birth > today.AddYears(-age))
+                age--;
+
             if (age < 18)
                 throw new UserException("Usuário deve ter pelo menos 18 anos.");
 
@@ -78,7 +81,7 @@ public sealed class UserProfile : Entity
         }
 
         if (BirthDate.HasValue == normalized.HasValue &&
-            (!BirthDate.HasValue || BirthDate.Value.Date == normalized!.Value.Date))
+            (!BirthDate.HasValue || BirthDate.Value == normalized!.Value))
             return false;
 
         BirthDate = normalized;

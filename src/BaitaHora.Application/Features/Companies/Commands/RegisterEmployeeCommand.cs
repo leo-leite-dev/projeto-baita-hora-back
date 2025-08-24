@@ -13,8 +13,8 @@ public sealed record RegisterEmployeeCommand
 {
     public required Guid CompanyId { get; init; }
     public required Guid PositionId { get; init; }
-    public required UserCommand Employee { get; init; }
+    public required CreateUserCommand Employee { get; init; }
 
     public Guid ResourceId => CompanyId;
-    public IEnumerable<CompanyPermission> RequiredPermissions => [CompanyPermission.AddMember];
+    public IEnumerable<CompanyPermission> RequiredPermissions => [CompanyPermission.ManageMember];
 }

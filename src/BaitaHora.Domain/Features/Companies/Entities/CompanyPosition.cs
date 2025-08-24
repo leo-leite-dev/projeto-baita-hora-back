@@ -2,11 +2,13 @@ using BaitaHora.Domain.Features.Commons;
 using BaitaHora.Domain.Features.Commons.Exceptions;
 using BaitaHora.Domain.Features.Companies.Entities;
 using BaitaHora.Domain.Features.Companies.Enums;
+using BaitaHora.Domain.Permissions;
 
 public class CompanyPosition : Entity
 {
     public Guid CompanyId { get; private set; }
     public string PositionName { get; private set; } = null!;
+    public CompanyPermission PermissionMask { get; private set; }
     public CompanyRole AccessLevel { get; private set; }
     public bool IsActive { get; private set; }
     public bool IsSystem { get; private set; }
@@ -38,18 +40,22 @@ public class CompanyPosition : Entity
         var normalized = newName?.Trim();
         if (string.IsNullOrWhiteSpace(normalized))
             throw new CompanyException("Nome do cargo é obrigatório.");
+
         if (string.Equals(PositionName, normalized, StringComparison.Ordinal)) return false;
-        PositionName = normalized; Touch(); return true;
+
+        PositionName = normalized;
+        return true;
     }
 
-    public bool SetAccessLevel(CompanyRole newLevel, bool allowOwnerLevel = false)
+    public bool Deactivate()
     {
-        if (newLevel == AccessLevel) return false;
-        if (newLevel == CompanyRole.Owner && !allowOwnerLevel)
-            throw new CompanyException("Nível Owner é reservado ao fundador.");
-        AccessLevel = newLevel; Touch(); return true;
+        if (!IsActive) return false;
+        return true;
     }
-
-    public bool Deactivate() { if (!IsActive) return false; IsActive = false; Touch(); return true; }
-    public bool Activate() { if (IsActive) return false; IsActive = true; Touch(); return true; }
+    public bool Activate()
+    {
+        if (IsActive) return false;
+        IsActive = true;
+        return true;
+    }
 }

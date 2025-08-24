@@ -116,6 +116,9 @@ namespace BaitaHora.Infrastructure.Data.Migrations
                     b.Property<DateTimeOffset>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<long>("DirectPermissionMask")
+                        .HasColumnType("bigint");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
@@ -175,6 +178,9 @@ namespace BaitaHora.Infrastructure.Data.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
+                    b.Property<int>("TokenVersion")
+                        .HasColumnType("integer");
+
                     b.Property<DateTimeOffset?>("UpdatedAtUtc")
                         .HasColumnType("timestamp with time zone");
 
@@ -211,7 +217,7 @@ namespace BaitaHora.Infrastructure.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime?>("BirthDate")
+                    b.Property<DateOnly?>("BirthDate")
                         .HasColumnType("date");
 
                     b.Property<string>("Cpf")
@@ -252,6 +258,57 @@ namespace BaitaHora.Infrastructure.Data.Migrations
                         .HasFilter("\"rg\" IS NOT NULL");
 
                     b.ToTable("user_profiles", (string)null);
+                });
+
+            modelBuilder.Entity("BaitaHora.Infrastructure.Data.Outbox.OutboxMessage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("AttemptCount")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("LastError")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("LockToken")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("LockedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("NextAttemptUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("OccurredOnUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Payload")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset?>("PublishedOnUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<short>("Status")
+                        .HasColumnType("smallint");
+
+                    b.Property<DateTimeOffset>("StoredOnUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StoredOnUtc");
+
+                    b.HasIndex("Status", "NextAttemptUtc");
+
+                    b.ToTable("outbox_messages", (string)null);
                 });
 
             modelBuilder.Entity("BaitaHora.Infrastructure.Persistence.Entities.LoginSession", b =>
@@ -330,6 +387,9 @@ namespace BaitaHora.Infrastructure.Data.Migrations
                         .HasColumnType("boolean")
                         .HasDefaultValue(false)
                         .HasColumnName("is_system");
+
+                    b.Property<long>("PermissionMask")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("PositionName")
                         .IsRequired()

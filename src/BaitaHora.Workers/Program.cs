@@ -1,7 +1,13 @@
-using BaitaHora.Workers;
 
-var builder = Host.CreateApplicationBuilder(args);
-builder.Services.AddHostedService<Worker>();
+var builder = Host.CreateDefaultBuilder(args);
 
-var host = builder.Build();
-host.Run();
+if (OperatingSystem.IsWindows())
+    builder = builder.UseWindowsService();
+else if (OperatingSystem.IsLinux())
+    builder = builder.UseSystemd();
+
+using var host = builder
+    .ConfigureServices(s => s.AddHostedService<WorkerService>())
+    .Build();
+
+await host.RunAsync();

@@ -7,6 +7,7 @@ namespace BaitaHora.Application.Common
         public string Code { get; }
         public string? Title { get; }
         public string? Error { get; }
+
         public IReadOnlyDictionary<string, object?> Metadata { get; }
 
         protected Result(bool isSuccess, string code, string? title, string? error, IDictionary<string, object?>? meta = null)
@@ -85,11 +86,10 @@ namespace BaitaHora.Application.Common
         public static Result<T> Created(T value, string? title = null)
             => new(true, ResultCodes.Generic.Created, title, null, value);
 
-        // Assinatura diferente → não esconde o método da base
         public static Result<T> NoContent(T? value = default, string? title = null)
             => new(true, ResultCodes.Generic.NoContent, title, null, value);
 
-        // ===================== FALHA (new: hiding intencional) =====================
+        // ===================== FALHA =====================
         public new static Result<T> Fail(string code, string message, string? title = null, IDictionary<string, object?>? meta = null)
             => new(false, code, title, message, default, meta);
 
@@ -115,10 +115,11 @@ namespace BaitaHora.Application.Common
             => new(false, code ?? ResultCodes.Generic.ServerError, title, message, default, meta);
 
         // ===================== CONVERSÕES / COMPOSIÇÃO =====================
+
         public static Result<T> From(Result src, T valueIfSuccess, string? title = null)
             => src.IsSuccess
                 ? Ok(valueIfSuccess, title ?? src.Title)
-                : Fail(src.Code, src.Error ?? "Erro", title ?? src.Title);
+                : Fail(src.Code, src.Error ?? "Erro", title ?? src.Title, new Dictionary<string, object?>(src.Metadata));
 
         public static Result<T> From<TSource>(Result<TSource> src, Func<TSource, T> map, string? title = null)
         {
@@ -128,21 +129,49 @@ namespace BaitaHora.Application.Common
                     return Fail(ResultCodes.Generic.ServerError, "Valor esperado não encontrado.", title ?? src.Title);
                 return Ok(map(src.Value), title ?? src.Title);
             }
-            return Fail(src.Code, src.Error ?? "Erro", title ?? src.Title);
+
+            return Fail(src.Code, src.Error ?? "Erro", title ?? src.Title, new Dictionary<string, object?>(src.Metadata));
         }
+
+        public static Result<T> FromError(Result src)
+            => Fail(src.Code, src.Error ?? "Erro", src.Title, new Dictionary<string, object?>(src.Metadata));
 
         public Result<TOut> Map<TOut>(Func<T, TOut> mapper)
         {
-            if (!IsSuccess) return Result<TOut>.Fail(Code, Error ?? "Erro", Title);
-            if (Value is null) return Result<TOut>.Fail(ResultCodes.Generic.ServerError, "Valor esperado não encontrado.", Title);
+            if (!IsSuccess)
+                return Result<TOut>.Fail(Code, Error ?? "Erro", Title, new Dictionary<string, object?>(Metadata));
+
+            if (Value is null)
+                return Result<TOut>.Fail(ResultCodes.Generic.ServerError, "Valor esperado não encontrado.", Title);
+
             return Result<TOut>.Ok(mapper(Value), Title);
         }
 
         public Result<TOut> Bind<TOut>(Func<T, Result<TOut>> binder)
         {
-            if (!IsSuccess) return Result<TOut>.Fail(Code, Error ?? "Erro", Title);
-            if (Value is null) return Result<TOut>.Fail(ResultCodes.Generic.ServerError, "Valor esperado não encontrado.", Title);
+            if (!IsSuccess)
+                return Result<TOut>.Fail(Code, Error ?? "Erro", Title, new Dictionary<string, object?>(Metadata));
+
+            if (Value is null)
+                return Result<TOut>.Fail(ResultCodes.Generic.ServerError, "Valor esperado não encontrado.", Title);
+
             return binder(Value);
+        }
+
+        public Result<TOut> MapError<TOut>()
+        {
+            if (IsSuccess)
+                throw new InvalidOperationException("MapError não deve ser usado em resultados de sucesso.");
+
+            return Result<TOut>.Fail(Code, Error ?? "Erro", Title, new Dictionary<string, object?>(Metadata));
+        }
+
+        public Result<TOut> Map<TOut>()
+        {
+            if (IsSuccess)
+                throw new InvalidOperationException("Map() sem mapper só é válido para propagar erro.");
+
+            return Result<TOut>.Fail(Code, Error ?? "Erro", Title, new Dictionary<string, object?>(Metadata));
         }
 
         public new Result<T> WithMeta(string key, object? value)

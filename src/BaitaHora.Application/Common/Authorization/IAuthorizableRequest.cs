@@ -4,6 +4,7 @@ namespace BaitaHora.Application.Common.Authorization;
 
 public interface IAuthorizableRequest
 {
-    Guid ResourceId { get; }                  
+    Guid ResourceId { get; }
     IEnumerable<CompanyPermission> RequiredPermissions { get; }
+    bool RequireAllPermissions => true;
 }

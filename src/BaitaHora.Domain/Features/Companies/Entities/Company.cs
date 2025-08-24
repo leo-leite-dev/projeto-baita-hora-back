@@ -28,7 +28,13 @@ public sealed class Company : Entity
 
     private Company() { }
 
-    public static Company Create(CompanyName companyName, CNPJ cnpj, Address address, string? tradeName, Phone CompanyPhone, Email CompanyEmail)
+    public static Company Create(
+        CompanyName companyName,
+        CNPJ cnpj,
+        Address address,
+        string? tradeName,
+        Phone companyPhone,
+        Email companyEmail)
     {
         if (address is null) throw new CompanyException("Endereço é obrigatório.");
 
@@ -37,11 +43,8 @@ public sealed class Company : Entity
         company.SetCnpj(cnpj);
         company.SetAddress(address);
         company.SetTradeName(tradeName);
-        company.SetPhone(CompanyPhone);
-        company.SetEmail(CompanyEmail);
-
-        // company.SetImage(image);
-
+        company.SetPhone(companyPhone);
+        company.SetEmail(companyEmail);
         return company;
     }
 
@@ -63,7 +66,6 @@ public sealed class Company : Entity
     {
         if (newAddress is null) throw new CompanyException("Endereço é obrigatório.");
         if (Address != null && Address.Equals(newAddress)) return false;
-
         Address = newAddress;
         return true;
     }
@@ -113,7 +115,7 @@ public sealed class Company : Entity
         if (_members.Any(m => m.Role == CompanyRole.Owner && m.IsActive))
             throw new CompanyException("Já existe um Owner para esta empresa.");
 
-        var member = CompanyMember.Create(Id, userId, CompanyRole.Owner);
+        var member = CompanyMember.CreateFounder(Id, userId);
 
         var founder = EnsurePositionByName(
             positionName: "Fundador",
@@ -124,7 +126,6 @@ public sealed class Company : Entity
         member.SetPrimaryPosition(founder);
 
         _members.Add(member);
-
         return member;
     }
 
@@ -132,14 +133,17 @@ public sealed class Company : Entity
     {
         if (position is null)
             throw new CompanyException("Posição é obrigatória.");
+
         if (position.CompanyId != Id)
             throw new CompanyException("Cargo não pertence a esta empresa.");
+
         if (!position.IsActive)
             throw new CompanyException("Não é possível atribuir um cargo inativo.");
-        if (position.AccessLevel == CompanyRole.Owner)
-            throw new CompanyException("Cargo de nível Owner só pode ser atribuído ao fundador.");
 
-        var member = CompanyMember.Create(Id, userId, position.AccessLevel);
+        if (position.AccessLevel == CompanyRole.Owner)
+            throw new CompanyException("Para Owner, use o fluxo de fundador (AddOwnerFounder).");
+
+        var member = CompanyMember.CreateMember(Id, userId, position.AccessLevel);
         member.SetPrimaryPosition(position);
 
         _members.Add(member);
@@ -150,12 +154,15 @@ public sealed class Company : Entity
     {
         if (newPosition is null)
             throw new CompanyException("Posição é obrigatória.");
+
         if (newPosition.CompanyId != Id)
             throw new CompanyException("Cargo não pertence a esta empresa.");
-        if (!newPosition.IsActive) throw
-         new CompanyException("Não é possível atribuir um cargo inativo.");
+
+        if (!newPosition.IsActive)
+            throw new CompanyException("Não é possível atribuir um cargo inativo.");
+
         if (newPosition.AccessLevel == CompanyRole.Owner)
-            throw new CompanyException("Cargo de nível Owner só pode ser atribuído ao fundador.");
+            throw new CompanyException("Elevação para Owner só via fluxo de fundador.");
 
         var member = _members.SingleOrDefault(m => m.UserId == userId && m.IsActive)
             ?? throw new CompanyException("Membro não encontrado ou inativo.");
@@ -163,7 +170,7 @@ public sealed class Company : Entity
         member.SetPrimaryPosition(newPosition);
 
         if (alignRoleToPosition)
-            member.SetRole(newPosition.AccessLevel);
+            member.SetRole(newPosition.AccessLevel, allowOwnerLevel: false);
 
         return member;
     }
@@ -175,6 +182,7 @@ public sealed class Company : Entity
 
         if (accessLevel is CompanyRole.Unknown)
             throw new CompanyException("Não é possível cadastrar um cargo com esse nível de acesso.");
+
         if (accessLevel is CompanyRole.Owner)
             throw new CompanyException("Cargo Owner só pode ser criado pelo fluxo de fundador.");
 
@@ -189,7 +197,7 @@ public sealed class Company : Entity
             allowOwnerLevel: false,
             isSystem: isSystem
         );
-        
+
         _companyPositions.Add(position);
         return position;
     }
@@ -204,17 +212,6 @@ public sealed class Company : Entity
             throw new CompanyException("Já existe um cargo com esse nome.");
 
         return pos.SetName(newName);
-    }
-
-    public bool ChangePositionAccessLevel(Guid positionId, CompanyRole newLevel)
-    {
-        var pos = _companyPositions.SingleOrDefault(p => p.Id == positionId)
-            ?? throw new CompanyException("Cargo não encontrado.");
-
-        if (newLevel == CompanyRole.Owner)
-            throw new CompanyException("Nível Owner é reservado ao fundador.");
-
-        return pos.SetAccessLevel(newLevel);
     }
 
     public bool DeactivatePosition(Guid positionId)

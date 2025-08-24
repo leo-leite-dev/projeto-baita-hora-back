@@ -2,8 +2,8 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using BaitaHora.Api.Helpers;
-using BaitaHora.Api.Contracts.Companies.Requests;
-using BaitaHora.Api.Contracts.Companies.Mappers;
+using BaitaHora.Contracts.DTOs.Companies;
+using BaitaHora.Api.Mappers.Companies;
 
 namespace BaitaHora.Api.Controllers.Companies;
 
@@ -16,7 +16,7 @@ public sealed class CompanyPositionsController : ControllerBase
     public CompanyPositionsController(ISender mediator) => _mediator = mediator;
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromRoute] Guid companyId, [FromBody] CreateCompanyPositionRequest req, CancellationToken ct)
+    public async Task<IActionResult> CreatePosition([FromRoute] Guid companyId, [FromBody] CreateCompanyPositionRequest req, CancellationToken ct)
     {
         var cmd = req.ToCommand(companyId);
         var result = await _mediator.Send(cmd, ct);

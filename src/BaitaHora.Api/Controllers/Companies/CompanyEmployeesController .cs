@@ -2,8 +2,8 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using BaitaHora.Api.Helpers;
-using BaitaHora.Api.Contracts.Companies.Mappers;
-using BaitaHora.Api.Contracts.Auth.Requests;
+using BaitaHora.Contracts.DTOs.Companies;
+using BaitaHora.Api.Mappers.Companies;
 
 namespace BaitaHora.Api.Controllers.Companies;
 
@@ -19,6 +19,18 @@ public sealed class CompanyEmployeesController : ControllerBase
     public async Task<IActionResult> RegisterEmployee([FromRoute] Guid companyId, [FromBody] RegisterEmployeeRequest req, CancellationToken ct)
     {
         var cmd = req.ToCommand(companyId);
+        var result = await _mediator.Send(cmd, ct);
+        return result.ToActionResult(this, result.Value);
+    }
+
+    [HttpPatch("{employeeId:guid}")]
+    public async Task<IActionResult> PatchEmployee(
+      [FromRoute] Guid companyId,
+      [FromRoute] Guid employeeId,
+      [FromBody] PatchEmployeeRequest req,
+      CancellationToken ct)
+    {
+        var cmd = req.ToCommand(companyId, employeeId);
         var result = await _mediator.Send(cmd, ct);
         return result.ToActionResult(this, result.Value);
     }

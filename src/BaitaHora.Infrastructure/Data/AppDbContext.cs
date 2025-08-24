@@ -6,6 +6,7 @@ using BaitaHora.Domain.Features.Companies.Entities;
 using BaitaHora.Domain.Features.Commons.ValueObjects;
 using BaitaHora.Domain.Features.Users.ValueObjects;
 using BaitaHora.Infrastructure.Persistence.Entities;
+using BaitaHora.Infrastructure.Data.Outbox;
 
 namespace BaitaHora.Infrastructure.Data;
 
@@ -20,6 +21,7 @@ public sealed class AppDbContext : DbContext
     public DbSet<CompanyMember> CompanyMembers => Set<CompanyMember>();
     public DbSet<CompanyPosition> CompanyPositions => Set<CompanyPosition>();
     public DbSet<LoginSession> LoginSessions => Set<LoginSession>();
+     public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -38,8 +38,12 @@ public sealed class RegisterOwnerWithCompanyUseCase
         var (owner, company) = Assembler.From(request);
 
         var profile = UserProfile.Create(owner.FullName, owner.Cpf, owner.UserPhone, owner.Address);
-        if (owner.Rg is not null) profile.SetRg(owner.Rg.Value);
-        if (owner.BirthDate is not null) profile.SetBirthDate(owner.BirthDate.Value);
+
+        if (owner.Rg is not null)
+            profile.SetRg(owner.Rg.Value);
+
+        if (owner.BirthDate is not null)
+            profile.SetBirthDate(owner.BirthDate.Value);
 
         var user = User.Create(
             owner.UserEmail,
@@ -72,13 +76,12 @@ public sealed class RegisterOwnerWithCompanyUseCase
         public static (OwnerVO owner, CompanyVO company) From(RegisterOwnerWithCompanyCommand cmd)
             => (BuildOwner(cmd.Owner), BuildCompany(cmd.Company));
 
-        private static OwnerVO BuildOwner(UserCommand u)
+        private static OwnerVO BuildOwner(CreateUserCommand u)
         {
             var email = Email.Parse(u.UserEmail);
             var username = Username.Parse(u.Username);
             var cpf = CPF.Parse(u.Profile.Cpf);
             var phone = Phone.Parse(u.Profile.UserPhone);
-
             RG? rg = string.IsNullOrWhiteSpace(u.Profile.Rg) ? default : RG.Parse(u.Profile.Rg);
 
             var addr = Address.Parse(
@@ -91,10 +94,14 @@ public sealed class RegisterOwnerWithCompanyUseCase
                 complement: u.Profile.Address.Complement
             );
 
-            return new OwnerVO(email, username, u.RawPassword, u.Profile.FullName, cpf, rg, phone, u.Profile.BirthDate, addr);
+            DateOnly? birth = u.Profile.BirthDate is DateTime bdt
+                ? DateOnly.FromDateTime(bdt)
+                : (DateOnly?)null;
+
+            return new OwnerVO(email, username, u.RawPassword, u.Profile.FullName, cpf, rg, phone, birth, addr);
         }
 
-        private static CompanyVO BuildCompany(CompanyCommand c)
+        private static CompanyVO BuildCompany(CreateCompanyCommand c)
         {
             var name = CompanyName.Parse(c.CompanyName);
             var cnpj = CNPJ.Parse(c.Cnpj);
@@ -118,7 +125,7 @@ public sealed class RegisterOwnerWithCompanyUseCase
 
 public readonly record struct OwnerVO(
     Email UserEmail, Username Username, string RawPassword, string FullName,
-    CPF Cpf, RG? Rg, Phone UserPhone, DateTime? BirthDate, Address Address);
+    CPF Cpf, RG? Rg, Phone UserPhone, DateOnly? BirthDate, Address Address);
 
 public readonly record struct CompanyVO(
     CompanyName CompanyName, string? TradeName, CNPJ Cnpj, Email CompanyEmail, Phone CompanyPhone, Address Address);

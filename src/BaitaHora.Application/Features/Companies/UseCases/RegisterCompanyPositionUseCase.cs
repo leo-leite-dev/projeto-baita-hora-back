@@ -1,7 +1,6 @@
 using BaitaHora.Application.Common;
 using BaitaHora.Application.IRepositories;
 using BaitaHora.Domain.Features.Companies.Enums;
-using Microsoft.Extensions.Logging;
 using BaitaHora.Application.Features.Companies.Commands;
 using BaitaHora.Application.Features.Companies.Responses;
 
@@ -20,21 +19,21 @@ public sealed class RegisterCompanyPositionUseCase
         _companyPositionRepository = companyPositionRepository;
     }
 
-    public async Task<Result<CompanyPositionResponse>> HandleAsync(RegisterCompanyPositionCommand cmd, CancellationToken ct)
+    public async Task<Result<CreateCompanyPositionResponse>> HandleAsync(RegisterCompanyPositionCommand cmd, CancellationToken ct)
     {
         var company = await _companyRepository.GetByIdWithMembersAndPositionsAsync(cmd.CompanyId, ct);
         if (company is null)
-            return Result<CompanyPositionResponse>.NotFound("Empresa não encontrada.");
+            return Result<CreateCompanyPositionResponse>.NotFound("Empresa não encontrada.");
 
         var isOwner = company.Members.Any(m => m.Role == CompanyRole.Owner);
         if (!isOwner)
-            return Result<CompanyPositionResponse>.Forbidden("Apenas Fundador pode adicionar cargos.");
+            return Result<CreateCompanyPositionResponse>.Forbidden("Apenas Fundador pode adicionar cargos.");
 
         var position = company.CreatePosition(cmd.PositionName, cmd.AccessLevel);
 
         await _companyPositionRepository.AddAsync(position, ct);
 
-        var response = new CompanyPositionResponse(company.Id, position.PositionName);
-        return Result<CompanyPositionResponse>.Created(response);
+        var response = new CreateCompanyPositionResponse(company.Id, position.PositionName);
+        return Result<CreateCompanyPositionResponse>.Created(response);
     }
 }

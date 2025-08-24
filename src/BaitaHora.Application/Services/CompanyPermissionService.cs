@@ -1,21 +1,68 @@
+using BaitaHora.Application.Common.Caching;
 using BaitaHora.Application.IRepositories.Companies;
 using BaitaHora.Application.IServices.Auth;
-using BaitaHora.Domain.Companies.Policies;
+using BaitaHora.Domain.Features.Companies.Enums;
 using BaitaHora.Domain.Permissions;
-
-namespace BaitaHora.Application.Services;
 
 public sealed class CompanyPermissionService : ICompanyPermissionService
 {
-    private readonly ICompanyMemberRepository _companyRepository;
+    private readonly ICompanyMemberRepository _companyMemberRepository;
+    private readonly PermissionCache _cache;
 
-    public CompanyPermissionService(ICompanyMemberRepository companyRepository) => _companyRepository = companyRepository;
+    public CompanyPermissionService(ICompanyMemberRepository companyMemberRepository, PermissionCache cache)
+        => (_companyMemberRepository, _cache) = (companyMemberRepository, cache);
 
-    public async Task<bool> CanAsync(Guid companyId, Guid userId, CompanyPermission p, CancellationToken ct)
+    public async Task<CompanyPermission?> GetMaskAsync(Guid companyId, Guid userId, CancellationToken ct)
     {
-        var (found, role, isActive) = await _companyRepository.GetRoleAsync(companyId, userId, ct);
-        if (!found || !isActive) return false;
+        if (_cache.TryGet(companyId, userId, out var cached))
+            return cached;
 
-        return CompanyRolePolicies.Can(role, p);
+        var member = await _companyMemberRepository.GetByCompanyAndUserWithPositionAsync(companyId, userId, ct);
+        if (member is null || !member.IsActive)
+        {
+            _cache.Set(companyId, userId, null);
+            return null;
+        }
+
+        if (member.Role == CompanyRole.Owner)
+        {
+            _cache.Set(companyId, userId, CompanyPermission.All);
+            return CompanyPermission.All;
+        }
+
+        CompanyPermission mask = CompanyPermission.None;
+
+        if (member.PrimaryPosition is not null)
+            mask |= member.PrimaryPosition.PermissionMask;
+
+        // Caso tenha grants diretos no membro:
+        mask |= member.DirectPermissionMask; // se não existir, remova esta linha
+
+        _cache.Set(companyId, userId, mask);
+        return mask;
+    }
+
+    public bool Has(CompanyPermission mask, CompanyPermission required)
+        => (mask & required) == required;
+
+    public bool HasAny(CompanyPermission mask, IEnumerable<CompanyPermission> required)
+    {
+        foreach (var r in required)
+            if ((mask & r) == r) return true;
+        return false;
+    }
+
+    public async Task<bool> CanAsync(Guid companyId, Guid userId, CompanyPermission required, CancellationToken ct)
+    {
+        var mask = await GetMaskAsync(companyId, userId, ct);
+        if (mask is null) return false;
+        return Has(mask.Value, required);
+    }
+
+    public async Task<bool> CanAnyAsync(Guid companyId, Guid userId, IEnumerable<CompanyPermission> required, CancellationToken ct)
+    {
+        var mask = await GetMaskAsync(companyId, userId, ct);
+        if (mask is null) return false;
+        return HasAny(mask.Value, required);
     }
 }

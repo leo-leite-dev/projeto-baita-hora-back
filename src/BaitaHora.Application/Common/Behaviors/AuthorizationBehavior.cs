@@ -18,12 +18,24 @@ public sealed class AuthorizationBehavior<TReq, TRes> : IPipelineBehavior<TReq, 
     {
         var userId = _identity.GetUserId();
 
-        foreach (var permission in req.RequiredPermissions)
-        {
-            var ok = await _perm.CanAsync(req.ResourceId, userId, permission, ct);
-            if (!ok)
-                return ResultFactory.Forbidden<TRes>("Sem permissão.");
-        }
+        if (req.ResourceId == Guid.Empty)
+            return ResultFactory.Forbidden<TRes>("Recurso não informado."); 
+
+        var required = req.RequiredPermissions.ToArray(); 
+        if (required.Length == 0)
+            return await next();
+
+        var mask = await _perm.GetMaskAsync(req.ResourceId, userId, ct);
+        if (mask is null)
+            return ResultFactory.Forbidden<TRes>("Sem permissão.");
+
+        var requireAll = req.RequireAllPermissions;
+        var ok = requireAll
+            ? required.All(r => _perm.Has(mask.Value, r))
+            : _perm.HasAny(mask.Value, required);
+
+        if (!ok)
+            return ResultFactory.Forbidden<TRes>("Sem permissão.");
 
         return await next();
     }

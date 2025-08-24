@@ -1,9 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
-using BaitaHora.Infrastructure.Data;
 
-namespace BaitaHora.Infrastructure.Factories;
+namespace BaitaHora.Infrastructure.Data;
 
 public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
 {

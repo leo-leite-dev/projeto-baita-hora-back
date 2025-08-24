@@ -1,33 +1,42 @@
 using System.Text;
 using FluentValidation;
+using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-
-using BaitaHora.Application.Configuration;            // AddApplication()
-using BaitaHora.Application.Features.Auth.Commands;  // p/ registrar MediatR
-using BaitaHora.Application.Features.Auth.Validators;
-
-using BaitaHora.Infrastructure.Configuration;        // AddAuthInfrastructure()
-using BaitaHora.Infrastructure.Data;
-using BaitaHora.Infrastructure.Middlewares;          // ExceptionHttpMappingMiddleware, JwtMiddleware
-using BaitaHora.Infrastructure.Persistence.Interceptors;
-using MediatR;
+using BaitaHora.Application.Configuration;
 using BaitaHora.Application.Common.Behaviors;
-
+using BaitaHora.Application.Features.Auth.Commands;
+using BaitaHora.Infrastructure.Configuration;
+using BaitaHora.Infrastructure.Data;
+using BaitaHora.Infrastructure.Middlewares;
+using BaitaHora.Infrastructure.Persistence.Interceptors;
+using BaitaHora.Application.Features.Auth.Validators;
+using BaitaHora.Application.Features.Users.Handlers;
+using BaitaHora.Application.Common.Events;
+using BaitaHora.Infrastructure.Data.Outbox;
+using BaitaHora.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // ----------------------------------------------------
-// DbContext
+// DbContext + Interceptors
 // ----------------------------------------------------
+builder.Services.AddScoped<OutboxSaveChangesInterceptor>();
 builder.Services.AddSingleton<TimestampInterceptor>();
+
 builder.Services.AddDbContext<AppDbContext>((sp, options) =>
 {
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
-    options.AddInterceptors(sp.GetRequiredService<TimestampInterceptor>());
+
+    // Interceptores (ordem: timestamp + outbox)
+    options.AddInterceptors(
+        sp.GetRequiredService<TimestampInterceptor>(),
+        sp.GetRequiredService<OutboxSaveChangesInterceptor>()
+    );
 });
+
 // opcional: expor DbContext base
 builder.Services.AddScoped<DbContext>(sp => sp.GetRequiredService<AppDbContext>());
 
@@ -35,8 +44,8 @@ builder.Services.AddScoped<DbContext>(sp => sp.GetRequiredService<AppDbContext>(
 // Infra & Application
 // ----------------------------------------------------
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddAuthInfrastructure(builder.Configuration); // repos, UoW, serviços, tradutor de erros (Postgres)
-builder.Services.AddApplication();                             // behaviors (Validation, DbExceptionMapping, etc.)
+builder.Services.AddAuthInfrastructure(builder.Configuration);  // extensão de infra
+builder.Services.AddApplication();                              // extensão de application (behaviors comuns)
 
 // ----------------------------------------------------
 // Options (JwtOptions -> TokenOptions)
@@ -80,13 +89,27 @@ builder.Services.AddMediatR(cfg =>
         typeof(Program).Assembly
     );
 });
+
 builder.Services.AddValidatorsFromAssemblyContaining<RegisterOwnerWithCompanyCommandValidator>(includeInternalTypes: true);
 
-// (se você também registra behaviors manualmente, mantenha a ordem)
+// ----------------------------------------------------
+// BEHAVIORS (ordem importa!)
+// 1) Validation → 2) Authorization → 3) UnitOfWork → 4) DomainEvents → 5) IntegrationEvents
+// ----------------------------------------------------
 builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
-builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(AuthorizationBehavior<,>)); // se existir
-builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(DbExceptionMappingBehavior<,>));
-builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(UnitOfWorkBehavior<,>));
+builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(AuthorizationBehavior<,>));
+builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(UnitOfWorkBehavior<,>));        // Commit ocorre aqui (antes)
+builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(DomainEventsBehavior<,>));      // Publica domain events in-proc
+builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(IntegrationEventsBehavior<,>)); // Drena Outbox (após commit)
+
+// ----------------------------------------------------
+// Domain Event Handlers (scan)
+// ----------------------------------------------------
+builder.Services.Scan(scan => scan
+    .FromAssembliesOf(typeof(OnUserDeactivated_CascadeCompanyMembers))
+    .AddClasses(c => c.AssignableTo(typeof(IDomainEventHandler<>)))
+    .AsImplementedInterfaces()
+    .WithScopedLifetime());
 
 // ----------------------------------------------------
 // Controllers & Swagger
@@ -138,10 +161,10 @@ var app = builder.Build();
 // Pipeline (ordem importa!)
 // ----------------------------------------------------
 
-// 1) Tratamento de exceções primeiro (não use DeveloperExceptionPage se quiser ver 409)
+// 1) Tratamento de exceções primeiro
 app.UseMiddleware<ExceptionHttpMappingMiddleware>();
 
-// 2) HTTPS/HSTS (se quiser HSTS, coloque aqui em prod)
+// 2) HTTPS/HSTS (se quiser HSTS, habilite em prod)
 // app.UseHsts();
 app.UseHttpsRedirection();
 
@@ -153,12 +176,12 @@ app.UseCors();
 
 // 5) Autenticação / Middlewares de segurança
 app.UseAuthentication();
-app.UseMiddleware<JwtMiddleware>(); // se ele depende de User, mantenha após UseAuthentication
+app.UseMiddleware<JwtMiddleware>(); // se depende de User, mantenha após UseAuthentication
 
 // 6) Autorização
 app.UseAuthorization();
 
-// 7) Swagger (ok ficar depois de auth; em dev costuma vir aqui)
+// 7) Swagger
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

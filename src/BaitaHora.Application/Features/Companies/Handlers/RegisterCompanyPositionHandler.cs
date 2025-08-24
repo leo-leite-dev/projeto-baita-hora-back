@@ -7,13 +7,13 @@ using MediatR;
 namespace BaitaHora.Application.Features.Auth.Handlers;
 
 public sealed class RegisterCompanyPositionHandler
-    : IRequestHandler<RegisterCompanyPositionCommand, Result<CompanyPositionResponse>>
+    : IRequestHandler<RegisterCompanyPositionCommand, Result<CreateCompanyPositionResponse>>
 {
     private readonly RegisterCompanyPositionUseCase _useCase;
 
     public RegisterCompanyPositionHandler(RegisterCompanyPositionUseCase useCase)
         => _useCase = useCase;
 
-    public Task<Result<CompanyPositionResponse>> Handle(RegisterCompanyPositionCommand request, CancellationToken ct
+    public Task<Result<CreateCompanyPositionResponse>> Handle(RegisterCompanyPositionCommand request, CancellationToken ct
     ) => _useCase.HandleAsync(request, ct);
 }

@@ -31,6 +31,7 @@ public sealed class AuthenticateUseCase
     {
         ct.ThrowIfCancellationRequested();
 
+
         var identifier = cmd.Identify?.Trim();
         if (string.IsNullOrWhiteSpace(identifier))
             return Result<AuthTokenResponse>.BadRequest("Informe e-mail ou username.", ResultCodes.Generic.BadRequest);
@@ -63,3 +64,10 @@ public sealed class AuthenticateUseCase
         return Result<AuthTokenResponse>.Ok(token, title: "Autenticado.");
     }
 }
+
+
+        // if (!user.IsActive)
+        //     return Result.Forbidden("Usuário desativado.");
+
+// public Task<List<User>> GetActivesAsync(CancellationToken ct)
+//     => _db.Users.Where(u => u.IsActive).ToListAsync(ct);

@@ -4,9 +4,9 @@ namespace BaitaHora.Application.Common;
 
 public interface IUnitOfWork
 {
-    Task<int> SaveChangesAsync(CancellationToken ct = default);
-
-    Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken ct = default);
-    Task CommitTransactionAsync(IDbContextTransaction tx, CancellationToken ct = default);
-    Task RollbackTransactionAsync(IDbContextTransaction tx, CancellationToken ct = default);
+    bool HasActiveTransaction { get; }
+    Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken ct);
+    Task SaveChangesAsync(CancellationToken ct);
+    Task CommitTransactionAsync(IDbContextTransaction tx, CancellationToken ct);
+    Task RollbackTransactionAsync(IDbContextTransaction tx, CancellationToken ct);
 }

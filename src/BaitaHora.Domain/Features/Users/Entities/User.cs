@@ -2,6 +2,7 @@ using BaitaHora.Domain.Features.Commons;
 using BaitaHora.Domain.Features.Commons.Exceptions;
 using BaitaHora.Domain.Features.Commons.ValueObjects;
 using BaitaHora.Domain.Features.Companies.Enums;
+using BaitaHora.Domain.Features.Users.Events;
 using BaitaHora.Domain.Features.Users.Validators;
 using BaitaHora.Domain.Features.Users.ValueObjects;
 
@@ -22,6 +23,8 @@ public sealed class User : Entity
     public Guid ProfileId { get; private set; }
     public UserProfile Profile { get; private set; } = null!;
 
+    public int TokenVersion { get; private set; } = 0;
+
     private User() { }
 
     public static User Create(Email UserEmail, Username username, string rawPassword, UserProfile profile, Func<string, string> hashFunction)
@@ -40,17 +43,25 @@ public sealed class User : Entity
         return user;
     }
 
-    public void SetRole(CompanyRole newRole)
+    public bool SetRole(CompanyRole newRole)
     {
         if (newRole == CompanyRole.Unknown)
             throw new UserException("Role inválida.");
+
+        if (Role == newRole) return false;
         Role = newRole;
+        return true;
     }
 
     public bool SetEmail(Email newEmail)
     {
         if (UserEmail.Equals(newEmail)) return false;
         UserEmail = newEmail;
+
+        // (Opcional) se email estiver em claims de login, descomente:
+        // Touch();
+        // IncrementTokenVersion();
+
         return true;
     }
 
@@ -73,6 +84,10 @@ public sealed class User : Entity
 
         PasswordResetToken = null;
         PasswordResetTokenExpiresAt = null;
+
+        // Se quiser expelir sessões ao “setar” (ex.: em criação não precisa; em reset manual sim)
+        // Touch();
+        // IncrementTokenVersion();
     }
 
     public void ChangePassword(
@@ -105,6 +120,12 @@ public sealed class User : Entity
 
         PasswordResetToken = null;
         PasswordResetTokenExpiresAt = null;
+
+        // 🔐 Importante: invalidar sessões ativas
+        Touch();
+        IncrementTokenVersion();
+
+        // (Opcional) AddDomainEvent(new UserPasswordChangedDomainEvent(Id));
     }
 
     public void GeneratePasswordResetToken(Func<string> tokenGenerator, TimeSpan duration)
@@ -114,6 +135,8 @@ public sealed class User : Entity
 
         PasswordResetToken = tokenGenerator();
         PasswordResetTokenExpiresAt = DateTime.UtcNow.Add(duration);
+
+        // (Opcional) AddDomainEvent(new UserPasswordResetRequestedDomainEvent(Id));
     }
 
     public bool HasActiveResetRequest(DateTime? now = null)
@@ -135,5 +158,37 @@ public sealed class User : Entity
             throw new UserException("Token inválido.");
 
         SetPassword(newRawPassword, hashFunction);
+
+        // 🔐 Importante: expelir sessões após reset por token
+        Touch();
+        IncrementTokenVersion();
+
+        // (Opcional) AddDomainEvent(new UserPasswordResetCompletedDomainEvent(Id));
+    }
+
+    public bool Activate() => SetActive(true);
+    public bool Deactivate() => SetActive(false);
+
+    private bool SetActive(bool isActive)
+    {
+        if (IsActive == isActive) return false;
+
+        IsActive = isActive;
+        Touch();
+        IncrementTokenVersion();
+
+        if (isActive)
+            AddDomainEvent(new UserActivatedDomainEvent(Id));
+        else
+            AddDomainEvent(new UserDeactivatedDomainEvent(Id));
+
+        return true;
+    }
+
+    public bool IncrementTokenVersion()
+    {
+        var before = TokenVersion;
+        TokenVersion++;
+        return TokenVersion != before;
     }
 }

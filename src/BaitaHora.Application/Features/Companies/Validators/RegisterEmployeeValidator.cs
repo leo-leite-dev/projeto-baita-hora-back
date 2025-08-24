@@ -11,6 +11,6 @@ public sealed class RegisterEmployeeCommandValidator
     {
         RuleFor(x => x.Employee)
             .NotNull()
-            .SetValidator(new UserCommandValidator());
+            .SetValidator(new CreateUserCommandValidator());
     }
 }

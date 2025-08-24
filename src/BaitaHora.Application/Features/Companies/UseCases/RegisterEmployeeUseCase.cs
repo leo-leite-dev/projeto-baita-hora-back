@@ -1,74 +1,64 @@
 using BaitaHora.Application.Common;
 using BaitaHora.Application.Features.Companies.Commands;
+using BaitaHora.Application.Features.Companies.Guards;
 using BaitaHora.Application.Features.Companies.Responses;
 using BaitaHora.Application.Features.Users.Commands;
-using BaitaHora.Application.IRepositories;
 using BaitaHora.Application.IRepositories.Companies;
 using BaitaHora.Application.IRepositories.Users;
 using BaitaHora.Application.IServices.Auth;
-using BaitaHora.Application.Ports;
 using BaitaHora.Domain.Features.Commons.ValueObjects;
-using BaitaHora.Domain.Features.Companies.Enums;
 using BaitaHora.Domain.Features.Users.Entities;
 using BaitaHora.Domain.Features.Users.ValueObjects;
-using Microsoft.Extensions.Logging;
 
 namespace BaitaHora.Application.Features.Companies.UseCase;
 
 public sealed class RegisterEmployeeUseCase
 {
     private readonly IUserRepository _userRepository;
-    private readonly ICompanyRepository _companyRepository;
     private readonly ICompanyMemberRepository _companyMemberRepository;
     private readonly IPasswordService _passwordService;
-    private readonly ICompanyPermissionService _permissionService;
-    private readonly IUserIdentityPort _identity;
-    private readonly ILogger<RegisterEmployeeUseCase> _logger;
+    private readonly ICompanyGuards _companyGuards;
+    private readonly ICompanyPositionGuards _companyPositionGuards;
 
     public RegisterEmployeeUseCase(
         IUserRepository userRepository,
-        ICompanyRepository companyRepository,
         ICompanyMemberRepository companyMemberRepository,
         IPasswordService passwordService,
-        ICompanyPermissionService permissionService,
-        IUserIdentityPort identity,
-        ILogger<RegisterEmployeeUseCase> logger)
+        ICompanyGuards companyGuards,
+        ICompanyPositionGuards companyPositionGuards)
     {
         _userRepository = userRepository;
-        _companyRepository = companyRepository;
         _companyMemberRepository = companyMemberRepository;
         _passwordService = passwordService;
-        _permissionService = permissionService;
-        _identity = identity;
-        _logger = logger;
+        _companyGuards = companyGuards;
+        _companyPositionGuards = companyPositionGuards;
     }
 
-    public async Task<Result<RegisterEmployeeResponse>> HandleAsync(RegisterEmployeeCommand request, CancellationToken ct)
+    public async Task<Result<RegisterEmployeeResponse>> HandleAsync(
+        RegisterEmployeeCommand request, CancellationToken ct)
     {
-        var currentUserId = _identity.GetUserId();
+        var companyResult = await _companyGuards.GetWithMembersAndPositionsOrNotFoundAsync(request.CompanyId, ct);
+        if (!companyResult.IsSuccess)
+            return companyResult.MapError<RegisterEmployeeResponse>();
 
-        var company = await _companyRepository.GetByIdWithMembersAndPositionsAsync(request.CompanyId, ct);
-        if (company is null)
-            return Result<RegisterEmployeeResponse>.NotFound("Empresa não encontrada.");
+        var company = companyResult.Value!;
 
-        var isOwner = company.Members.Any(m => m.UserId == currentUserId && m.Role == CompanyRole.Owner);
-        if (!isOwner)
-            return Result<RegisterEmployeeResponse>.Forbidden("Apenas o Owner pode adicionar funcionários.");
+        var positionResult = _companyPositionGuards
+            .GetValidPositionOrBadRequest(company, request.PositionId);
+        if (!positionResult.IsSuccess)
+            return positionResult.MapError<RegisterEmployeeResponse>();
 
-        var position = company.Positions.SingleOrDefault(p => p.Id == request.PositionId);
-        if (position is null)
-            return Result<RegisterEmployeeResponse>.BadRequest("Cargo inválido para esta empresa.");
+        var position = positionResult.Value!;
 
         var input = Assembler.From(request.Employee);
 
-        var profile = UserProfile.Create(
-            input.FullName,
-            input.Cpf,
-            input.UserPhone,
-            input.Address);
+        var profile = UserProfile.Create(input.FullName, input.Cpf, input.UserPhone, input.Address);
 
-        if (input.Rg is not null) profile.SetRg(input.Rg.Value);
-        if (input.BirthDate is not null) profile.SetBirthDate(input.BirthDate.Value);
+        if (input.Rg is not null)
+            profile.SetRg(input.Rg.Value);
+
+        if (input.BirthDate is not null)
+            profile.SetBirthDate(input.BirthDate.Value);
 
         var user = User.Create(
             input.UserEmail,
@@ -95,9 +85,10 @@ public sealed class RegisterEmployeeUseCase
         return Result<RegisterEmployeeResponse>.Created(response);
     }
 
+
     private static class Assembler
     {
-        public static EmployeeVO From(UserCommand u)
+        public static EmployeeVO From(CreateUserCommand u)
         {
             var email = Email.Parse(u.UserEmail);
             var username = Username.Parse(u.Username);
@@ -115,6 +106,10 @@ public sealed class RegisterEmployeeUseCase
                 complement: u.Profile.Address.Complement
             );
 
+            DateOnly? birth = u.Profile.BirthDate is DateTime bdt
+                ? DateOnly.FromDateTime(bdt)
+                : (DateOnly?)null;
+
             return new EmployeeVO(
                 UserEmail: email,
                 Username: username,
@@ -123,14 +118,21 @@ public sealed class RegisterEmployeeUseCase
                 Cpf: cpf,
                 Rg: rg,
                 UserPhone: phone,
-                BirthDate: u.Profile.BirthDate,
+                BirthDate: birth,
                 Address: addr
             );
         }
     }
-}
 
-public readonly record struct EmployeeVO(
-    Email UserEmail, Username Username, string RawPassword, string FullName, CPF Cpf, RG? Rg,
-    Phone UserPhone, DateTime? BirthDate, Address Address
-);
+    public readonly record struct EmployeeVO(
+        Email UserEmail,
+        Username Username,
+        string RawPassword,
+        string FullName,
+        CPF Cpf,
+        RG? Rg,
+        Phone UserPhone,
+        DateOnly? BirthDate,
+        Address Address
+    );
+}

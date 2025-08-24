@@ -1,10 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <ItemGroup>
-    <ProjectReference Include="..\BaitaHora.Application\BaitaHora.Application.csproj" />
-    <ProjectReference Include="..\BaitaHora.Infrastructure\BaitaHora.Infrastructure.csproj" />
-  </ItemGroup>
-
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
@@ -19,13 +14,15 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="Scrutor" Version="6.1.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\BaitaHora.Shared\BaitaHora.Shared.csproj" />
+    <ProjectReference Include="..\BaitaHora.Contracts\BaitaHora.Contracts.csproj" />
     <ProjectReference Include="..\BaitaHora.Application\BaitaHora.Application.csproj" />
     <ProjectReference Include="..\BaitaHora.Infrastructure\BaitaHora.Infrastructure.csproj" />
-    <ProjectReference Include="..\BaitaHora.Shared\BaitaHora.Shared.csproj" />
   </ItemGroup>
 
 </Project>

@@ -10,6 +10,6 @@ namespace BaitaHora.Application.Features.Auth.Commands;
 public sealed record RegisterOwnerWithCompanyCommand
     : IRequest<Result<RegisterOwnerWithCompanyResponse>>, ITransactionalRequest
 {
-    public required UserCommand Owner { get; init; }
-    public required CompanyCommand Company { get; init; }
+    public required CreateUserCommand Owner { get; init; }
+    public required CreateCompanyCommand Company { get; init; }
 }

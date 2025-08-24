@@ -21,17 +21,25 @@ public readonly record struct CPF
         if (string.IsNullOrWhiteSpace(input)) return false;
 
         var s = new string(input.Where(char.IsDigit).ToArray());
-        if (s.Length != 11) return false;
-        if (s.Distinct().Count() == 1) return false;
+
+        if (s.Length != 11)
+            return false;
+
+        if (s.Distinct().Count() == 1)
+            return false;
 
         var a = s.Select(c => c - '0').ToArray();
         var sum = 0;
-        for (int i = 0; i < 9; i++) sum += a[i] * (10 - i);
+        for (int i = 0; i < 9; i++)
+            sum += a[i] * (10 - i);
+
         var d1 = sum % 11 < 2 ? 0 : 11 - (sum % 11);
         if (a[9] != d1) return false;
 
         sum = 0;
-        for (int i = 0; i < 10; i++) sum += a[i] * (11 - i);
+        for (int i = 0; i < 10; i++)
+            sum += a[i] * (11 - i);
+
         var d2 = sum % 11 < 2 ? 0 : 11 - (sum % 11);
         if (a[10] != d2) return false;
 

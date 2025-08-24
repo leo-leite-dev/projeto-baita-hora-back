@@ -4,11 +4,16 @@ namespace BaitaHora.Domain.Permissions
     public enum CompanyPermission : long
     {
         None = 0,
-        AddMember = 1 << 0,
+        ManageMember = 1 << 0,
         RemoveMember = 1 << 1,
-        EditMember = 1 << 2,
-        ManageRoles = 1 << 3,
-        ManagePositions = 1 << 4,
-        EditCompany = 1 << 5,
+        ManageRoles = 1 << 2,
+        ManagePositions = 1 << 3,
+        ManageCompany = 1 << 4,
+
+        All = ManageMember
+            | RemoveMember
+            | ManageRoles
+            | ManagePositions
+            | ManageCompany
     }
 }
