@@ -1,26 +1,15 @@
-using BaitaHora.Seeder.Config;
-using BaitaHora.Seeder.Http;
-using BaitaHora.Seeder.Logging;
-using BaitaHora.Seeder.Presentation.Forms;
-using BaitaHora.Seeder.Services;
+using Avalonia;
 
-namespace BaitaHora.Seeder;
+namespace BaitaHora.Seeder.Gui;
 
 internal static class Program
 {
     [STAThread]
-    static void Main()
-    {
-        ApplicationConfiguration.Initialize();
+    public static void Main(string[] args)
+        => BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
 
-        var cfg = AppConfig.Load();
-
-        var apiClient = new ApiClient();
-        var logger = new UiLogger();
-
-        var seedService = new SeedService(apiClient, logger);
-
-        var form = new MainForm(cfg, seedService, logger);
-        Application.Run(form);
-    }
+    public static AppBuilder BuildAvaloniaApp()
+        => AppBuilder.Configure<App>()
+                     .UsePlatformDetect()
+                     .LogToTrace();
 }

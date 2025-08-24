@@ -1,5 +1,5 @@
 using BaitaHora.Application.IRepositories;
-using BaitaHora.Domain.Features.Commons;
+using BaitaHora.Domain.Features.Common;
 using BaitaHora.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 

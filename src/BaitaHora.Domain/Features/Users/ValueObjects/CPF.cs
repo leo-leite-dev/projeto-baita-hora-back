@@ -1,4 +1,4 @@
-using BaitaHora.Domain.Features.Commons.Exceptions;
+using BaitaHora.Domain.Features.Common.Exceptions;
 
 namespace BaitaHora.Domain.Features.Users.ValueObjects;
 

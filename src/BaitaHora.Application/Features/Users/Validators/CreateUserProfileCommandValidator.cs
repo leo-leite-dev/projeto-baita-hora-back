@@ -1,7 +1,7 @@
 using System.Text.RegularExpressions;
 using BaitaHora.Application.Features.Commons.Validators;
 using BaitaHora.Application.Features.Users.Commands;
-using BaitaHora.Domain.Features.Commons.ValueObjects;
+using BaitaHora.Domain.Features.Common.ValueObjects;
 using BaitaHora.Domain.Features.Users.ValueObjects;
 using FluentValidation;
 

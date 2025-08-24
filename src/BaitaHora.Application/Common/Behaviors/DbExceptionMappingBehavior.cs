@@ -1,7 +1,7 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using BaitaHora.Domain.Features.Commons.Exceptions;
 using BaitaHora.Application.Common.Errors;
+using BaitaHora.Domain.Features.Common.Exceptions;
 
 namespace BaitaHora.Application.Common.Behaviors;
 

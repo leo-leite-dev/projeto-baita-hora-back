@@ -1,6 +1,6 @@
 namespace BaitaHora.Infrastructure.Persistence.Interceptors;
 
-using BaitaHora.Domain.Features.Commons;
+using BaitaHora.Domain.Features.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 

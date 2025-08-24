@@ -1,5 +1,4 @@
 using BaitaHora.Contracts.DTOs.Users;
-using BaitaHora.Contracts.DTOS.Adress;
 
 namespace BaitaHora.Seeder.Builders;
 
@@ -11,7 +10,7 @@ public static class OwnerBuilder
             FullName: "Dono da Firma",
             UserPhone: "+55 51 98888-7777",
             BirthDate: new DateTime(1990, 1, 10),
-            Cpf: "11122233344",
+            Cpf: "03672513024",
             Rg: "123456789",
             Address: AddressBuilder.Build(
                 street: "Rua X",
@@ -19,14 +18,14 @@ public static class OwnerBuilder
                 neighborhood: "Centro",
                 city: "Porto Alegre",
                 state: "RS",
-                zip: "90000-000"
+                zip: "93228170"
             )
         );
 
         return new CreateUserRequest(
             UserEmail: "owner@baitahora.com",
             Username: "owner",
-            RawPassword: "123456",
+            RawPassword: "SenhaForte@123",
             Profile: profile
         );
     }

@@ -1,8 +1,8 @@
 using System.Text.RegularExpressions;
 using BaitaHora.Domain.Companies.ValueObjects;
-using BaitaHora.Domain.Features.Commons;
-using BaitaHora.Domain.Features.Commons.Exceptions;
-using BaitaHora.Domain.Features.Commons.ValueObjects;
+using BaitaHora.Domain.Features.Common;
+using BaitaHora.Domain.Features.Common.Exceptions;
+using BaitaHora.Domain.Features.Common.ValueObjects;
 using BaitaHora.Domain.Features.Companies.Enums;
 
 namespace BaitaHora.Domain.Features.Companies.Entities;

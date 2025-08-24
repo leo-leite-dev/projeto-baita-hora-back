@@ -6,7 +6,7 @@ namespace BaitaHora.Infrastructure.Data.Outbox;
 
 public sealed class OutboxPublisher : IOutboxPublisher
 {
-    private readonly DbContext _db;
+    private readonly AppDbContext _db;     
     private readonly IBus _bus;
     private readonly ILogger<OutboxPublisher> _logger;
 
@@ -14,7 +14,7 @@ public sealed class OutboxPublisher : IOutboxPublisher
     private static readonly TimeSpan LockStaleAfter = TimeSpan.FromMinutes(2);
     private const int MaxAttempts = 10;
 
-    public OutboxPublisher(DbContext db, IBus bus, ILogger<OutboxPublisher> logger)
+    public OutboxPublisher(AppDbContext db, IBus bus, ILogger<OutboxPublisher> logger)
     {
         _db = db;
         _bus = bus;

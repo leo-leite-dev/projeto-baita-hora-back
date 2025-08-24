@@ -1,0 +1,24 @@
+<Window xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:models="clr-namespace:BaitaHora.Seeder.Models;assembly=BaitaHora.Seeder"
+  x:Class="BaitaHora.Seeder.Gui.MainWindow"
+  Width="420" Height="260" Title="BaitaHora Seeder">
+  <StackPanel Margin="16" Spacing="12">
+    <TextBlock FontSize="18" Text="Seed de Usuários" />
+    <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+      <TextBlock VerticalAlignment="Center" Text="Tipo:" Width="80" />
+      <ComboBox x:Name="UserTypeCombo" Width="260" SelectedIndex="0" />
+    </StackPanel>
+
+    <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+      <TextBlock VerticalAlignment="Center" Text="PositionId:" Width="80" />
+      <TextBox x:Name="PositionIdBox" Width="260" Watermark="Necessário p/ Employee" />
+    </StackPanel>
+
+    <StackPanel Orientation="Horizontal" Spacing="12" HorizontalAlignment="Right">
+      <Button x:Name="RunBtn" Width="120" Content="Salvar" />
+    </StackPanel>
+
+    <TextBlock x:Name="StatusBlock" TextWrapping="Wrap" />
+  </StackPanel>
+</Window>

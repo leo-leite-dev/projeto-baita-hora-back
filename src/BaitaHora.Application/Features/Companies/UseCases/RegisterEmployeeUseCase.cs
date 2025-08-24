@@ -6,7 +6,7 @@ using BaitaHora.Application.Features.Users.Commands;
 using BaitaHora.Application.IRepositories.Companies;
 using BaitaHora.Application.IRepositories.Users;
 using BaitaHora.Application.IServices.Auth;
-using BaitaHora.Domain.Features.Commons.ValueObjects;
+using BaitaHora.Domain.Features.Common.ValueObjects;
 using BaitaHora.Domain.Features.Users.Entities;
 using BaitaHora.Domain.Features.Users.ValueObjects;
 

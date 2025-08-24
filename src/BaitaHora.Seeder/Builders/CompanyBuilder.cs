@@ -17,7 +17,7 @@ public static class CompanyBuilder
                 neighborhood: "Centro",
                 city: "Porto Alegre",
                 state: "RS",
-                zip: "90000-000"
+                zip: "93228170"
             )
         );
 }

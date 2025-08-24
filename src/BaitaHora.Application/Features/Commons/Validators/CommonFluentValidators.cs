@@ -1,5 +1,5 @@
 using System.Text.RegularExpressions;
-using BaitaHora.Domain.Features.Commons.ValueObjects;
+using BaitaHora.Domain.Features.Common.ValueObjects;
 using FluentValidation;
 
 namespace BaitaHora.Application.Features.Commons.Validators;

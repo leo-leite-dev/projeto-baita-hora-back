@@ -1,6 +1,6 @@
-using BaitaHora.Domain.Features.Commons;
-using BaitaHora.Domain.Features.Commons.Exceptions;
-using BaitaHora.Domain.Features.Commons.ValueObjects;
+using BaitaHora.Domain.Features.Common;
+using BaitaHora.Domain.Features.Common.Exceptions;
+using BaitaHora.Domain.Features.Common.ValueObjects;
 using BaitaHora.Domain.Features.Users.ValueObjects;
 
 namespace BaitaHora.Domain.Features.Users.Entities;

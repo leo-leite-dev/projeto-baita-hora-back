@@ -7,11 +7,11 @@ using BaitaHora.Application.Features.Auth.DTOs.Responses;
 using BaitaHora.Application.Features.Auth.Commands;
 using BaitaHora.Domain.Features.Users.Entities;
 using BaitaHora.Domain.Features.Companies.Entities;
-using BaitaHora.Domain.Features.Commons.ValueObjects;
 using BaitaHora.Domain.Features.Users.ValueObjects;
 using BaitaHora.Domain.Features.Companies.Enums;
 using BaitaHora.Application.Features.Companies.Commands;
 using BaitaHora.Application.Features.Users.Commands;
+using BaitaHora.Domain.Features.Common.ValueObjects;
 
 namespace BaitaHora.Application.Features.Auth.UseCases;
 

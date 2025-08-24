@@ -1,6 +1,6 @@
-using BaitaHora.Domain.Features.Commons;
-using BaitaHora.Domain.Features.Commons.Exceptions;
-using BaitaHora.Domain.Features.Commons.ValueObjects;
+using BaitaHora.Domain.Features.Common;
+using BaitaHora.Domain.Features.Common.Exceptions;
+using BaitaHora.Domain.Features.Common.ValueObjects;
 using BaitaHora.Domain.Features.Companies.Enums;
 using BaitaHora.Domain.Features.Users.Events;
 using BaitaHora.Domain.Features.Users.Validators;
