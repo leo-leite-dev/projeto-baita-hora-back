@@ -7,7 +7,7 @@ using MediatR;
 
 namespace BaitaHora.Application.Features.Companies.Commands;
 
-public sealed record RegisterCompanyPositionCommand
+public sealed record CreateCompanyPositionCommand
     : IRequest<Result<CreateCompanyPositionResponse>>, ITransactionalRequest
 {
     public Guid CompanyId { get; init; }

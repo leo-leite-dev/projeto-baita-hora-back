@@ -3,7 +3,7 @@ using BaitaHora.Domain.Features.Common.Exceptions;
 using BaitaHora.Domain.Features.Companies.Enums;
 using BaitaHora.Domain.Permissions;
 
-public class CompanyPosition : Entity
+public sealed class CompanyPosition : Entity
 {
     public Guid CompanyId { get; private set; }
     public string PositionName { get; private set; } = null!;
@@ -25,7 +25,7 @@ public class CompanyPosition : Entity
         if (!Enum.IsDefined(typeof(CompanyRole), accessLevel) || accessLevel == CompanyRole.Unknown)
             throw new CompanyException("Nível de acesso inválido.");
 
-        if (accessLevel == CompanyRole.Owner)
+        if (accessLevel == CompanyRole.Owner && !isSystem)
             throw new CompanyException("Cargo 'Owner' não existe; Owner só no fundador.");
 
         var position = new CompanyPosition
@@ -45,11 +45,15 @@ public class CompanyPosition : Entity
         var normalized = newName?.Trim();
         if (string.IsNullOrWhiteSpace(normalized))
             throw new CompanyException("Nome do cargo é obrigatório.");
-            
-        if (string.Equals(normalized, "Fundador", StringComparison.OrdinalIgnoreCase))
+
+        var isFourderName = string.Equals(normalized, "Fundador", StringComparison.OrdinalIgnoreCase);
+        var isFouderSystem = IsSystem && AccessLevel == CompanyRole.Owner;
+
+        if (isFourderName && !isFouderSystem)
             throw new CompanyException("Cargo 'Fundador' não pode ser criado ou alterado.");
 
-        if (string.Equals(PositionName, normalized, StringComparison.Ordinal)) return false;
+        if (string.Equals(PositionName, normalized, StringComparison.Ordinal))
+            return false;
 
         PositionName = normalized;
         return true;

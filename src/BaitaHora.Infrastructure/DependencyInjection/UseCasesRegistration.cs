@@ -12,7 +12,8 @@ public static class UseCasesRegistration
         services.AddScoped<AuthenticateUseCase>();
         services.AddScoped<RegisterOwnerWithCompanyUseCase>();
         services.AddScoped<RegisterEmployeeUseCase>();
-        services.AddScoped<RegisterCompanyPositionUseCase>();
+        services.AddScoped<CreateCompanyPositionUseCase>();
+        services.AddScoped<CreateCompanyServiceUseCase>();
         services.AddScoped<PatchEmployeeUseCase>();
         services.AddScoped<ToggleUserActiveUseCase>();
         return services;

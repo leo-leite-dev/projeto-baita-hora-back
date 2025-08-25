@@ -5,13 +5,13 @@ using BaitaHora.Domain.Features.Companies.Enums;
 
 namespace BaitaHora.Application.Features.Companies.Validators;
 
-public sealed class RegisterCompanyPositionCommandValidator
-    : AbstractValidator<RegisterCompanyPositionCommand>
+public sealed class CreateCompanyPositionCommandValidator
+    : AbstractValidator<CreateCompanyPositionCommand>
 {
     private static readonly Regex PositionNameRegex =
         new(@"^[\p{L}0-9 .,'\-&()/]+$", RegexOptions.Compiled);
 
-    public RegisterCompanyPositionCommandValidator()
+    public CreateCompanyPositionCommandValidator()
     {
         RuleFor(x => x.CompanyId)
             .NotEmpty().WithMessage("CompanyId é obrigatório.");

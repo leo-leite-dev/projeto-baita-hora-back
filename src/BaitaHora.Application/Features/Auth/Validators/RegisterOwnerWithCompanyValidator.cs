@@ -15,6 +15,6 @@ public sealed class RegisterOwnerWithCompanyCommandValidator
 
         RuleFor(x => x.Company)
             .NotNull()
-            .SetValidator(new CompanyCommandValidator());
+            .SetValidator(new CreateCompanyCommandValidator());
     }
 }

@@ -84,6 +84,10 @@ public sealed class PatchEmployeeUseCase
             if (!string.IsNullOrWhiteSpace(request.Employee.Username))
                 changedUser |= user.SetUsername(Username.Parse(request.Employee.Username));
 
+            user = await _userRepository.GetByIdWithProfileAsync(member.UserId, ct);
+            if (user is null)
+                return Result<PatchEmployeeResponse>.NotFound("Membro da empresa não encontrado.");
+
             if (request.Employee.Profile is not null)
             {
                 var p = request.Employee.Profile;

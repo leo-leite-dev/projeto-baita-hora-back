@@ -1,17 +1,17 @@
 using BaitaHora.Application.Common;
 using BaitaHora.Application.IRepositories;
 using BaitaHora.Domain.Features.Companies.Enums;
-using BaitaHora.Application.Features.Companies.Commands;
 using BaitaHora.Application.Features.Companies.Responses;
+using BaitaHora.Application.Features.Companies.Commands;
 
 namespace BaitaHora.Application.Features.Companies.UseCase;
 
-public sealed class RegisterCompanyPositionUseCase
+public sealed class CreateCompanyPositionUseCase
 {
     private readonly ICompanyRepository _companyRepository;
     private readonly ICompanyPositionRepository _companyPositionRepository;
 
-    public RegisterCompanyPositionUseCase(
+    public CreateCompanyPositionUseCase(
         ICompanyRepository companyRepository,
         ICompanyPositionRepository companyPositionRepository)
     {
@@ -19,7 +19,7 @@ public sealed class RegisterCompanyPositionUseCase
         _companyPositionRepository = companyPositionRepository;
     }
 
-    public async Task<Result<CreateCompanyPositionResponse>> HandleAsync(RegisterCompanyPositionCommand cmd, CancellationToken ct)
+    public async Task<Result<CreateCompanyPositionResponse>> HandleAsync(CreateCompanyPositionCommand  cmd, CancellationToken ct)
     {
         var company = await _companyRepository.GetByIdWithMembersAndPositionsAsync(cmd.CompanyId, ct);
         if (company is null)

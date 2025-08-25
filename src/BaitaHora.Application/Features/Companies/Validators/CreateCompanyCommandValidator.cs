@@ -5,9 +5,9 @@ using FluentValidation;
 
 namespace BaitaHora.Application.Features.Companies.Validators;
 
-public sealed class CompanyCommandValidator : AbstractValidator<CreateCompanyCommand>
+public sealed class CreateCompanyCommandValidator : AbstractValidator<CreateCompanyCommand>
 {
-    public CompanyCommandValidator()
+    public CreateCompanyCommandValidator()
     {
         RuleFor(x => x.CompanyName)
             .NotEmpty().WithMessage("O nome da empresa é obrigatório.")

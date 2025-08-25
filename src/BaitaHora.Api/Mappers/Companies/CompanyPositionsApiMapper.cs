@@ -5,7 +5,7 @@ namespace BaitaHora.Api.Mappers.Companies;
 
 public static class CompanyPositionsApiMapper
 {
-    public static RegisterCompanyPositionCommand ToCommand(
+    public static CreateCompanyPositionCommand ToCommand(
         this CreateCompanyPositionRequest r, Guid companyId)
         => new()
         {

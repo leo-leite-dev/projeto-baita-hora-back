@@ -1,0 +1,25 @@
+using MediatR;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using BaitaHora.Api.Helpers;
+using BaitaHora.Contracts.DTOs.Companies;
+using BaitaHora.Api.Mappers.Companies;
+
+namespace BaitaHora.Api.Controllers.Companies;
+
+[ApiController]
+[Route(ApiRoutes.CompaniesPrefix + "/{companyId:guid}/services")]
+[Authorize]
+public sealed class CompanyServicesController : ControllerBase
+{
+    private readonly ISender _mediator;
+    public CompanyServicesController(ISender mediator) => _mediator = mediator;
+
+    [HttpPost]
+    public async Task<IActionResult> CreateCompanyService([FromRoute] Guid companyId, [FromBody] CreateCompanyServiceRequest req, CancellationToken ct)
+    {
+        var cmd = req.ToCommand(companyId);
+        var result = await _mediator.Send(cmd, ct);
+        return result.ToActionResult(this);
+    }
+}

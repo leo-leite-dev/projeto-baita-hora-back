@@ -1,5 +1,8 @@
+using BaitaHora.Domain.Features.Companies.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
+namespace BaitaHora.Infrastructure.Data.Configurations;
 
 public sealed class CompanyPositionConfiguration : IEntityTypeConfiguration<CompanyPosition>
 {
@@ -39,5 +42,10 @@ public sealed class CompanyPositionConfiguration : IEntityTypeConfiguration<Comp
         builder.HasIndex(p => new { p.CompanyId, p.PositionName })
             .IsUnique()
             .HasDatabaseName("ux_company_positions_companyid_name");
+
+        builder.HasMany<CompanyPositionService>()
+               .WithOne()
+               .HasForeignKey(l => l.PositionId)
+               .OnDelete(DeleteBehavior.Cascade);
     }
 }

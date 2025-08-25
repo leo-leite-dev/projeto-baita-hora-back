@@ -17,6 +17,7 @@ public sealed class PostgresDbErrorTranslator : IDbErrorTranslator
             ["ux_companies_cnpj"] = "Já existe uma empresa com esse CNPJ.",
             ["ux_companies_email"] = "Já existe uma empresa com esse e-mail.",
             ["ux_companies_name"] = "Já existe uma empresa com essa razão social.",
+            ["ux_company_services_companyid_servicename"] = "Já existe um serviço com esse nome.",
 
             // Users
             ["ux_users_username"] = "Nome de usuário já em uso.",

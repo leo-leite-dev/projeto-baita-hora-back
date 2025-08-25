@@ -45,9 +45,7 @@ public sealed class Company : Entity
 
     public bool SetName(CompanyName newCompanyName)
     {
-        if (CompanyName.Equals(newCompanyName))
-            return false;
-
+        if (CompanyName == newCompanyName) return false;
         CompanyName = newCompanyName;
         return true;
     }

@@ -17,4 +17,9 @@ public sealed class UserRepository : GenericRepository<User>, IUserRepository
     public Task<User?> GetByUsernameAsync(Username username, CancellationToken ct) =>
         _context.Set<User>()
             .FirstOrDefaultAsync(u => u.Username == username, ct);
+
+    public Task<User?> GetByIdWithProfileAsync(Guid id, CancellationToken ct = default) =>
+        _context.Set<User>()            
+            .Include(u => u.Profile)
+            .FirstOrDefaultAsync(u => u.Id == id, ct);
 }

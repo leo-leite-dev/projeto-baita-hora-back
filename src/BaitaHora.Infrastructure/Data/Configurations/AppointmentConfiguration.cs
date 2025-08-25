@@ -1,5 +1,4 @@
 using BaitaHora.Domain.Entities.Scheduling;
-using BaitaHora.Domain.Features.Schedules.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -30,36 +29,50 @@ public sealed class AppointmentConfiguration : IEntityTypeConfiguration<Appointm
             .HasColumnName("customer_id");
 
         b.Property(x => x.CustomerDisplayName)
+            .IsRequired()
             .HasMaxLength(200)
             .HasColumnName("customer_display_name");
 
         b.Property(x => x.CustomerPhone)
-            .HasMaxLength(30)
+            .IsRequired()
+            .HasMaxLength(40)
             .HasColumnName("customer_phone");
 
         b.Property(x => x.ServiceId)
+            .IsRequired()
             .HasColumnName("service_id");
 
+        b.Property(x => x.ServiceNameSnapshot)
+            .IsRequired()
+            .HasMaxLength(200)
+            .HasColumnName("service_name_snapshot");
+
+        b.Property(x => x.ServicePriceSnapshot)
+            .HasColumnName("service_price_snapshot")
+            .HasColumnType("numeric(12,2)");
+
         b.Property(x => x.Notes)
-            .HasMaxLength(2000)
+            .HasMaxLength(1000)
             .HasColumnName("notes");
 
         b.Property(x => x.CancellationReason)
             .HasMaxLength(500)
             .HasColumnName("cancellation_reason");
 
+        b.Property(x => x.Status)
+            .IsRequired()
+            .HasConversion<int>()
+            .HasColumnName("status");
+
         b.Property(x => x.CreatedAtUtc)
             .HasColumnName("created_at_utc");
-
         b.Property(x => x.UpdatedAtUtc)
             .HasColumnName("updated_at_utc");
 
         b.HasIndex(x => new { x.ScheduleId, x.StartsAtUtc })
-            .HasDatabaseName("ix_appointments_schedule_start");
+            .IsUnique();
 
-
-        b.HasOne(x => x.Schedule)
-         .WithMany(nameof(Schedule.Appointments))
-         .HasForeignKey(x => x.ScheduleId);
+        b.HasIndex(x => x.ServiceId);
+        b.HasIndex(x => x.CustomerId);
     }
 }

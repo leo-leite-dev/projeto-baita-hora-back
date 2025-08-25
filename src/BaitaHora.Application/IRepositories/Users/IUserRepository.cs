@@ -8,5 +8,6 @@ namespace BaitaHora.Application.IRepositories.Users
     {
         Task<User?> GetByEmailAsync(Email email, CancellationToken ct);
         Task<User?> GetByUsernameAsync(Username username, CancellationToken ct);
+        Task<User?> GetByIdWithProfileAsync(Guid id, CancellationToken ct = default);
     }
 }

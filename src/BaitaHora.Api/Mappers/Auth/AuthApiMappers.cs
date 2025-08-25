@@ -8,7 +8,7 @@ public static class AuthApiMappers
     public static AuthenticateCommand ToCommand(this AuthenticateRequest r)
         => new()
         {
-            Identify    = r.Identify,
+            Identify = r.Identify,
             RawPassword = r.Password
         };
 }
