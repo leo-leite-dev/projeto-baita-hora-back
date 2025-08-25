@@ -20,6 +20,5 @@ public sealed class OnUserActivated_CascadeCompanyMembers
         var memberships = await _memberRepository.GetByUserIdAsync(evt.UserId, ct);
         foreach (var m in memberships)
             m.Activate();
-
     }
 }

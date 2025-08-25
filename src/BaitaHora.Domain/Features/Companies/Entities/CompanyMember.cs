@@ -28,8 +28,11 @@ public sealed class CompanyMember : Entity
 
     private CompanyMember(Guid companyId, Guid userId)
     {
-        if (companyId == Guid.Empty) throw new CompanyException("CompanyId inválido.");
-        if (userId == Guid.Empty) throw new CompanyException("UserId inválido.");
+        if (companyId == Guid.Empty)
+            throw new CompanyException("CompanyId inválido.");
+
+        if (userId == Guid.Empty)
+            throw new CompanyException("UserId inválido.");
 
         CompanyId = companyId;
         UserId = userId;
@@ -37,32 +40,37 @@ public sealed class CompanyMember : Entity
         IsActive = true;
     }
 
-    public static CompanyMember CreateMember(Guid companyId, Guid userId, CompanyRole role)
+    internal static CompanyMember CreateFounder(Guid companyId, Guid userId)
+    {
+        var member = new CompanyMember(companyId, userId);
+        member.Role = CompanyRole.Owner;
+        return member;
+    }
+
+    internal static CompanyMember CreateMember(Guid companyId, Guid userId, CompanyRole role)
     {
         if (role == CompanyRole.Owner)
-            throw new CompanyException("Use CreateFounder para criar Owner.");
+            throw new CompanyException("Metodo inválido para criação de Owner.");
 
         var member = new CompanyMember(companyId, userId);
-        member.SetRole(role, allowOwnerLevel: false);
+        member.Role = role;
         return member;
     }
 
-    public static CompanyMember CreateFounder(Guid companyId, Guid userId)
+    public (bool changed, bool requiresSessionRefresh) SetRole(CompanyRole newRole, bool allowOwnerLevel = false)
     {
-        var member = new CompanyMember(companyId, userId);
-        member.SetRole(CompanyRole.Owner, allowOwnerLevel: true);
-        return member;
-    }
-
-    public bool SetRole(CompanyRole newRole, bool allowOwnerLevel = false)
-    {
-        if (newRole == Role) return false;
         if (newRole == CompanyRole.Owner && !allowOwnerLevel)
-            throw new CompanyException("Elevação para Owner não autorizada.");
+            throw new CompanyException("Promoção a Owner é proibida. Owner só no ato de criar a empresa.");
+
+        if (Role == CompanyRole.Owner && !allowOwnerLevel)
+            throw new CompanyException("O Founder/Owner não pode ter o role alterado.");
+
+        if (newRole == Role)
+            return (false, false);
 
         Role = newRole;
-        Touch();
-        return true;
+
+        return (true, true);
     }
 
     public bool SetPrimaryPosition(CompanyPosition position)

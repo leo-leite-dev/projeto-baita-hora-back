@@ -148,6 +148,38 @@ namespace BaitaHora.Infrastructure.Data.Migrations
                     b.ToTable("CompanyMembers", (string)null);
                 });
 
+            modelBuilder.Entity("BaitaHora.Domain.Features.Schedules.Schedule", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at_utc");
+
+                    b.Property<string>("TimeZone")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("time_zone");
+
+                    b.Property<DateTimeOffset?>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at_utc");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("schedules", (string)null);
+                });
+
             modelBuilder.Entity("BaitaHora.Domain.Features.Users.Entities.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -411,7 +443,7 @@ namespace BaitaHora.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("BaitaHora.Domain.Features.Companies.Entities.Company", b =>
                 {
-                    b.OwnsOne("BaitaHora.Domain.Features.Commons.ValueObjects.Address", "Address", b1 =>
+                    b.OwnsOne("BaitaHora.Domain.Features.Common.ValueObjects.Address", "Address", b1 =>
                         {
                             b1.Property<Guid>("CompanyId")
                                 .HasColumnType("uuid");
@@ -511,7 +543,7 @@ namespace BaitaHora.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("BaitaHora.Domain.Features.Users.Entities.UserProfile", b =>
                 {
-                    b.OwnsOne("BaitaHora.Domain.Features.Commons.ValueObjects.Address", "Address", b1 =>
+                    b.OwnsOne("BaitaHora.Domain.Features.Common.ValueObjects.Address", "Address", b1 =>
                         {
                             b1.Property<Guid>("UserProfileId")
                                 .HasColumnType("uuid");

@@ -4,7 +4,6 @@ using BaitaHora.Domain.Features.Common.ValueObjects;
 using BaitaHora.Domain.Features.Companies.Enums;
 using BaitaHora.Domain.Features.Users.Events;
 using BaitaHora.Domain.Features.Users.Validators;
-using BaitaHora.Domain.Features.Users.ValueObjects;
 
 namespace BaitaHora.Domain.Features.Users.Entities;
 
@@ -40,6 +39,8 @@ public sealed class User : Entity
         user.IsActive = true;
 
         user.SetPassword(rawPassword, hashFunction);
+
+        user.AddDomainEvent(new UserRegisteredDomainEvent(user.Id));
         return user;
     }
 

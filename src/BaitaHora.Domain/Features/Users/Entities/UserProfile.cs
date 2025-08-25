@@ -19,7 +19,7 @@ public sealed class UserProfile : Entity
 
     private UserProfile() { }
 
-    public static UserProfile Create(string fullName, CPF cpf, Phone UserPhone, Address address)
+    public static UserProfile Create(string fullName, CPF cpf, Phone userPhone, Address address)
     {
         if (address is null) throw new UserException("Endereço é obrigatório.");
 
@@ -27,7 +27,7 @@ public sealed class UserProfile : Entity
         profile.SetAddress(address);
         profile.SetFullName(fullName);
         profile.SetCpf(cpf);
-        profile.SetPhone(UserPhone);
+        profile.SetPhone(userPhone);
 
         return profile;
     }

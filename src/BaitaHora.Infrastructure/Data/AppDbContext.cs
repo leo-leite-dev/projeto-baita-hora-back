@@ -8,6 +8,8 @@ using BaitaHora.Infrastructure.Persistence.Entities;
 using BaitaHora.Infrastructure.Data.Outbox;
 using BaitaHora.Domain.Features.Common.ValueObjects;
 using BaitaHora.Application.Abstractions.Data;
+using BaitaHora.Domain.Features.Schedules.Entities;
+using BaitaHora.Domain.Entities.Scheduling;
 
 namespace BaitaHora.Infrastructure.Data;
 
@@ -21,6 +23,8 @@ public sealed class AppDbContext : DbContext, IAppDbContext
     public DbSet<CompanyImage> CompanyImages => Set<CompanyImage>();
     public DbSet<CompanyMember> CompanyMembers => Set<CompanyMember>();
     public DbSet<CompanyPosition> CompanyPositions => Set<CompanyPosition>();
+    public DbSet<Schedule> Schedules => Set<Schedule>();
+    public DbSet<Appointment> Appointments => Set<Appointment>();
     public DbSet<LoginSession> LoginSessions => Set<LoginSession>();
     public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
 

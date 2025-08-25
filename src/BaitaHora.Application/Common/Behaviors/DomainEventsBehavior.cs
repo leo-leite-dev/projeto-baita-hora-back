@@ -1,6 +1,5 @@
-using BaitaHora.Application.Abstractions.Data;
+// BaitaHora.Application/Common/Behaviors/DomainEventsBehavior.cs
 using BaitaHora.Application.Common.Events;
-using BaitaHora.Domain.Features.Common;
 using MediatR;
 
 namespace BaitaHora.Application.Common.Behaviors;
@@ -8,12 +7,14 @@ namespace BaitaHora.Application.Common.Behaviors;
 public sealed class DomainEventsBehavior<TRequest, TResponse>
     : IPipelineBehavior<TRequest, TResponse>
 {
-    private readonly IAppDbContext _db;
+    private readonly IDomainEventAccessor _accessor;
     private readonly IDomainEventDispatcher _dispatcher;
 
-    public DomainEventsBehavior(IAppDbContext db, IDomainEventDispatcher dispatcher)
+    public DomainEventsBehavior(
+        IDomainEventAccessor accessor,
+        IDomainEventDispatcher dispatcher)
     {
-        _db = db;
+        _accessor = accessor;
         _dispatcher = dispatcher;
     }
 
@@ -24,23 +25,9 @@ public sealed class DomainEventsBehavior<TRequest, TResponse>
     {
         var response = await next();
 
-        var entitiesWithEvents = _db.ChangeTracker
-            .Entries<IHasDomainEvents>()
-            .Select(e => e.Entity)
-            .Where(e => e.DomainEvents.Count > 0)
-            .ToList();
-
-        if (entitiesWithEvents.Count == 0)
-            return response;
-
-        var domainEvents = entitiesWithEvents
-            .SelectMany(e => e.DomainEvents)
-            .ToList();
-
-        entitiesWithEvents.ForEach(e => e.ClearDomainEvents());
-
-        foreach (var ev in domainEvents)
-            await _dispatcher.PublishAsync(ev, ct);
+        var events = _accessor.CollectDomainEventsAndClear();
+        if (events.Count > 0)
+            await _dispatcher.DispatchAsync(events, ct);
 
         return response;
     }

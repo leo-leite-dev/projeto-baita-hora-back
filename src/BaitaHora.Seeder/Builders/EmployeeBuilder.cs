@@ -11,7 +11,7 @@ public static class EmployeeBuilder
             UserPhone: "+55 51 98888-5555",
             BirthDate: new DateTime(1990, 1, 10),
             Cpf: "18728901053",
-            Rg: "123456789",
+            Rg: "123456780",
             Address: AddressBuilder.Build(
                 street: "Rua X",
                 number: "123",

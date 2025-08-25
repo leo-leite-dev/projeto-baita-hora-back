@@ -28,15 +28,10 @@ public sealed class Company : Entity
 
     private Company() { }
 
-    public static Company Create(
-        CompanyName companyName,
-        CNPJ cnpj,
-        Address address,
-        string? tradeName,
-        Phone companyPhone,
-        Email companyEmail)
+    public static Company Create(CompanyName companyName, CNPJ cnpj, Address address, string? tradeName, Phone companyPhone, Email companyEmail)
     {
-        if (address is null) throw new CompanyException("Endereço é obrigatório.");
+        if (address is null)
+            throw new CompanyException("Endereço é obrigatório.");
 
         var company = new Company();
         company.SetName(companyName);
@@ -50,36 +45,48 @@ public sealed class Company : Entity
 
     public bool SetName(CompanyName newCompanyName)
     {
-        if (CompanyName.Equals(newCompanyName)) return false;
+        if (CompanyName.Equals(newCompanyName))
+            return false;
+
         CompanyName = newCompanyName;
         return true;
     }
 
     public bool SetCnpj(CNPJ newCnpj)
     {
-        if (Cnpj.Equals(newCnpj)) return false;
+        if (Cnpj.Equals(newCnpj))
+            return false;
+
         Cnpj = newCnpj;
         return true;
     }
 
     public bool SetAddress(Address newAddress)
     {
-        if (newAddress is null) throw new CompanyException("Endereço é obrigatório.");
-        if (Address != null && Address.Equals(newAddress)) return false;
+        if (newAddress is null)
+            throw new CompanyException("Endereço é obrigatório.");
+
+        if (Address != null && Address.Equals(newAddress))
+            return false;
+
         Address = newAddress;
         return true;
     }
 
     public bool SetPhone(Phone newPhone)
     {
-        if (CompanyPhone.Equals(newPhone)) return false;
+        if (CompanyPhone.Equals(newPhone))
+            return false;
+
         CompanyPhone = newPhone;
         return true;
     }
 
     public bool SetEmail(Email newEmail)
     {
-        if (CompanyEmail.Equals(newEmail)) return false;
+        if (CompanyEmail.Equals(newEmail))
+            return false;
+
         CompanyEmail = newEmail;
         return true;
     }
@@ -87,7 +94,8 @@ public sealed class Company : Entity
     public bool SetTradeName(string? newTradeName)
     {
         var normalized = string.IsNullOrWhiteSpace(newTradeName) ? null : newTradeName.Trim();
-        if (string.Equals(TradeName, normalized, StringComparison.Ordinal)) return false;
+        if (string.Equals(TradeName, normalized, StringComparison.Ordinal))
+            return false;
 
         if (normalized is not null && normalized.Length > 200)
             throw new CompanyException("Nome fantasia deve ter no máximo 200 caracteres.");
@@ -105,7 +113,9 @@ public sealed class Company : Entity
             return true;
         }
 
-        if (Image is not null && Equals(Image, newImage)) return false;
+        if (Image is not null && Equals(Image, newImage))
+            return false;
+
         Image = newImage;
         return true;
     }
@@ -116,16 +126,16 @@ public sealed class Company : Entity
             throw new CompanyException("Já existe um Owner para esta empresa.");
 
         var member = CompanyMember.CreateFounder(Id, userId);
+        _members.Add(member);
 
         var founder = EnsurePositionByName(
             positionName: "Fundador",
             accessLevel: CompanyRole.Owner,
-            allowOwnerLevel: true,
             isSystem: true
         );
+
         member.SetPrimaryPosition(founder);
 
-        _members.Add(member);
         return member;
     }
 
@@ -142,6 +152,9 @@ public sealed class Company : Entity
 
         if (position.AccessLevel == CompanyRole.Owner)
             throw new CompanyException("Para Owner, use o fluxo de fundador (AddOwnerFounder).");
+
+        if (_members.Any(m => m.UserId == userId && m.IsActive))
+            throw new CompanyException("Usuário já é membro ativo da empresa.");
 
         var member = CompanyMember.CreateMember(Id, userId, position.AccessLevel);
         member.SetPrimaryPosition(position);
@@ -166,39 +179,26 @@ public sealed class Company : Entity
 
         var member = _members.SingleOrDefault(m => m.UserId == userId && m.IsActive)
             ?? throw new CompanyException("Membro não encontrado ou inativo.");
-
         member.SetPrimaryPosition(newPosition);
 
         if (alignRoleToPosition)
-            member.SetRole(newPosition.AccessLevel, allowOwnerLevel: false);
+            member.SetRole(newPosition.AccessLevel);
 
         return member;
     }
 
     public CompanyPosition CreatePosition(string positionName, CompanyRole accessLevel, bool isSystem = false)
     {
-        if (!Enum.IsDefined(typeof(CompanyRole), accessLevel))
-            throw new CompanyException("Nível de acesso inválido.");
-
-        if (accessLevel is CompanyRole.Unknown)
-            throw new CompanyException("Não é possível cadastrar um cargo com esse nível de acesso.");
-
-        if (accessLevel is CompanyRole.Owner)
-            throw new CompanyException("Cargo Owner só pode ser criado pelo fluxo de fundador.");
+        if (accessLevel == CompanyRole.Owner)
+            throw new CompanyException("Owner não é um cargo; use o fluxo de fundador.");
 
         if (_companyPositions.Any(p =>
                 string.Equals(NormalizeName(p.PositionName), NormalizeName(positionName), StringComparison.OrdinalIgnoreCase)))
             throw new CompanyException("Já existe um cargo com esse nome.");
 
-        var position = CompanyPosition.Create(
-            companyId: Id,
-            positionName: positionName,
-            accessLevel: accessLevel,
-            allowOwnerLevel: false,
-            isSystem: isSystem
-        );
-
+        var position = CompanyPosition.Create(Id, positionName, accessLevel, isSystem);
         _companyPositions.Add(position);
+
         return position;
     }
 
@@ -233,22 +233,24 @@ public sealed class Company : Entity
         return pos.Activate();
     }
 
-    private CompanyPosition EnsurePositionByName(string positionName, CompanyRole accessLevel, bool allowOwnerLevel = false, bool isSystem = false)
+    private CompanyPosition EnsurePositionByName(string positionName, CompanyRole accessLevel, bool isSystem = false)
     {
-        var position = _companyPositions.FirstOrDefault(
-            p => string.Equals(p.PositionName, positionName, StringComparison.OrdinalIgnoreCase));
+        var position = _companyPositions
+            .FirstOrDefault(p => p.PositionName.Equals(positionName, StringComparison.OrdinalIgnoreCase));
 
-        if (position is not null) return position;
+
+        if (position != null)
+            return position;
 
         position = CompanyPosition.Create(
             companyId: Id,
             positionName: positionName,
             accessLevel: accessLevel,
-            allowOwnerLevel: allowOwnerLevel,
             isSystem: isSystem
         );
 
         _companyPositions.Add(position);
+
         return position;
     }
 

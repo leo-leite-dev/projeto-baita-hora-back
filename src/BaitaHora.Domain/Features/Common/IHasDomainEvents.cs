@@ -1,9 +1,7 @@
-namespace BaitaHora.Domain.Features.Common;
+namespace BaitaHora.Domain.Common.Events;
 
 public interface IHasDomainEvents
 {
-    IReadOnlyCollection<DomainEvent> DomainEvents { get; }
-
-    void AddDomainEvent(DomainEvent domainEvent);
+    IReadOnlyCollection<IDomainEvent> DomainEvents { get; }
     void ClearDomainEvents();
 }

@@ -5,7 +5,7 @@ using BaitaHora.Application.Features.Companies.Responses;
 using BaitaHora.Application.IRepositories.Companies;
 using BaitaHora.Application.IRepositories.Users;
 using BaitaHora.Domain.Features.Common.ValueObjects;
-using BaitaHora.Domain.Features.Users.Entities;    
+using BaitaHora.Domain.Features.Users.Entities;
 using BaitaHora.Domain.Features.Users.ValueObjects;
 
 namespace BaitaHora.Application.Features.Companies.UseCase;
@@ -54,16 +54,19 @@ public sealed class PatchEmployeeUseCase
                 return positionResult.MapError<PatchEmployeeResponse>();
 
             var position = positionResult.Value!;
+
             if (member.SetPrimaryPosition(position))
-            {
                 changed = true;
 
-                if (member.SetRole(position.AccessLevel, allowOwnerLevel: false))
-                {
-                    changed = true;
-                    requiresSessionRefresh = true;
-                }
-            }
+            var (roleChanged, mustRefresh) = member.SetRole(
+                newRole: position.AccessLevel,
+                allowOwnerLevel: false
+            );
+
+            if (roleChanged)
+                changed = true;
+            if (mustRefresh)
+                requiresSessionRefresh = true;
         }
 
         User? user = null;
@@ -125,7 +128,7 @@ public sealed class PatchEmployeeUseCase
         if (!changed)
         {
             var ok = new PatchEmployeeResponse(
-                EmployeeId:  member.UserId,
+                EmployeeId: member.UserId,
                 EmployeeName: member.User.Profile.FullName
             );
             return Result<PatchEmployeeResponse>.Ok(ok);
@@ -147,7 +150,7 @@ public sealed class PatchEmployeeUseCase
         }
 
         var response = new PatchEmployeeResponse(
-            EmployeeId:  member.UserId,
+            EmployeeId: member.UserId,
             EmployeeName: member.User.Profile.FullName
         );
         return Result<PatchEmployeeResponse>.Ok(response);

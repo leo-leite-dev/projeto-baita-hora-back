@@ -1,22 +1,61 @@
 using System.Net.Http.Json;
-using System.Text.Json;
 
-namespace BaitaHora.Seeder.Http;
-
-public sealed class ApiClient
+namespace BaitaHora.Seeder.Http
 {
-    private static readonly JsonSerializerOptions _jsonOpts = new(JsonSerializerDefaults.Web) { WriteIndented = true };
-
-    public async Task<HttpResponseMessage> PostJsonAsync<TReq>(string baseUrl, string path, TReq payload, CancellationToken ct = default)
+    public sealed class ApiClient : IDisposable
     {
-        using var http = new HttpClient { BaseAddress = new Uri(baseUrl) };
-        return await http.PostAsJsonAsync(path, payload, _jsonOpts, ct);
-    }
+        private readonly HttpClient _http;
 
-    public async Task<(int Status, string Body)> PostAndReadAsync<TReq>(string baseUrl, string path, TReq payload, CancellationToken ct = default)
-    {
-        var resp = await PostJsonAsync(baseUrl, path, payload, ct);
-        var body = await resp.Content.ReadAsStringAsync(ct);
-        return ((int)resp.StatusCode, body);
+        public ApiClient(string baseUrl)
+        {
+            _http = new HttpClient { BaseAddress = new Uri(baseUrl, UriKind.Absolute) };
+        }
+
+        public void SetBearer(string token)
+            => _http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+        public void ClearBearer()
+            => _http.DefaultRequestHeaders.Authorization = null;
+
+        public void Dispose() => _http.Dispose();
+
+        public async Task<(int status, string? body)> LoginAsync(string identify, string password, CancellationToken ct)
+            => await PostAndReadAsync(_http.BaseAddress!.ToString(), "/api/auth/login", new { identify, password }, ct);
+
+        public async Task<(int status, string? body)> PostAndReadAsync(string baseUrl, string path, object payload, CancellationToken ct)
+            => await SendAndReadAsync(HttpMethod.Post, baseUrl, path, payload, ct);
+
+        public async Task<(int status, string? body)> PutAndReadAsync(string baseUrl, string path, object payload, CancellationToken ct)
+            => await SendAndReadAsync(HttpMethod.Put, baseUrl, path, payload, ct);
+
+        public async Task<(int status, string? body)> PatchAndReadAsync(string baseUrl, string path, object payload, CancellationToken ct)
+            => await SendAndReadAsync(HttpMethod.Patch, baseUrl, path, payload, ct);
+
+        public async Task<(int status, string? body)> DeleteAndReadAsync(string baseUrl, string path, CancellationToken ct)
+        {
+            EnsureBase(baseUrl);
+            using var req = new HttpRequestMessage(HttpMethod.Delete, path);
+            using var res = await _http.SendAsync(req, ct);
+            var body = await res.Content.ReadAsStringAsync(ct);
+            return ((int)res.StatusCode, body);
+        }
+
+        private async Task<(int status, string? body)> SendAndReadAsync(HttpMethod method, string baseUrl, string path, object payload, CancellationToken ct)
+        {
+            EnsureBase(baseUrl);
+            using var req = new HttpRequestMessage(method, path)
+            {
+                Content = JsonContent.Create(payload)
+            };
+            using var res = await _http.SendAsync(req, ct);
+            var body = await res.Content.ReadAsStringAsync(ct);
+            return ((int)res.StatusCode, body);
+        }
+
+        private void EnsureBase(string baseUrl)
+        {
+            if (_http.BaseAddress?.ToString() != baseUrl)
+                _http.BaseAddress = new Uri(baseUrl, UriKind.Absolute);
+        }
     }
 }

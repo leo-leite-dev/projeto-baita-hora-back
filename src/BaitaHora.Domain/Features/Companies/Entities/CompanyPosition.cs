@@ -1,6 +1,5 @@
 using BaitaHora.Domain.Features.Common;
 using BaitaHora.Domain.Features.Common.Exceptions;
-using BaitaHora.Domain.Features.Companies.Entities;
 using BaitaHora.Domain.Features.Companies.Enums;
 using BaitaHora.Domain.Permissions;
 
@@ -12,18 +11,24 @@ public class CompanyPosition : Entity
     public CompanyRole AccessLevel { get; private set; }
     public bool IsActive { get; private set; }
     public bool IsSystem { get; private set; }
-    public Company Company { get; private set; } = null!;
 
     private CompanyPosition() { }
 
-    public static CompanyPosition Create(Guid companyId, string positionName, CompanyRole accessLevel,
-    bool allowOwnerLevel = false, bool isSystem = false)
+    internal static CompanyPosition Create(Guid companyId, string positionName, CompanyRole accessLevel, bool isSystem = false)
     {
-        if (companyId == Guid.Empty) throw new CompanyException("CompanyId inválido.");
-        if (accessLevel == CompanyRole.Owner && !allowOwnerLevel)
-            throw new CompanyException("Cargo Owner só pode ser criado no fluxo do fundador.");
+        if (companyId == Guid.Empty)
+            throw new CompanyException("CompanyId inválido.");
 
-        var companyPosition = new CompanyPosition
+        if (string.IsNullOrWhiteSpace(positionName))
+            throw new CompanyException("Nome do cargo é obrigatório.");
+
+        if (!Enum.IsDefined(typeof(CompanyRole), accessLevel) || accessLevel == CompanyRole.Unknown)
+            throw new CompanyException("Nível de acesso inválido.");
+
+        if (accessLevel == CompanyRole.Owner)
+            throw new CompanyException("Cargo 'Owner' não existe; Owner só no fundador.");
+
+        var position = new CompanyPosition
         {
             CompanyId = companyId,
             AccessLevel = accessLevel,
@@ -31,8 +36,8 @@ public class CompanyPosition : Entity
             IsSystem = isSystem
         };
 
-        companyPosition.SetName(positionName);
-        return companyPosition;
+        position.SetName(positionName);
+        return position;
     }
 
     public bool SetName(string newName)
@@ -40,6 +45,9 @@ public class CompanyPosition : Entity
         var normalized = newName?.Trim();
         if (string.IsNullOrWhiteSpace(normalized))
             throw new CompanyException("Nome do cargo é obrigatório.");
+            
+        if (string.Equals(normalized, "Fundador", StringComparison.OrdinalIgnoreCase))
+            throw new CompanyException("Cargo 'Fundador' não pode ser criado ou alterado.");
 
         if (string.Equals(PositionName, normalized, StringComparison.Ordinal)) return false;
 
