@@ -1,7 +1,8 @@
 using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
 using BaitaHora.Application.Ports;
-using Microsoft.AspNetCore.Http;
+
+namespace BaitaHora.Api.Web.Adapters;
 
 public sealed class HttpContextUserIdentityAdapter : IUserIdentityPort
 {

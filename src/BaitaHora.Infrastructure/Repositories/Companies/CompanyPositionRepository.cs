@@ -1,4 +1,4 @@
-using BaitaHora.Application.IRepositories;
+using BaitaHora.Application.IRepositories.Companies;
 using BaitaHora.Infrastructure.Data;
 
 namespace BaitaHora.Infrastructure.Repositories.Companies

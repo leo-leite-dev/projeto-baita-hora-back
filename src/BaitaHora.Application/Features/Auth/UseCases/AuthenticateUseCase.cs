@@ -1,11 +1,10 @@
-using BaitaHora.Application.Common;
+using BaitaHora.Application.Common.Results;
 using BaitaHora.Application.Features.Auth.Commands;
-using BaitaHora.Application.Features.Auth.DTOs.Responses;
+using BaitaHora.Application.Features.Auth.Responses;
 using BaitaHora.Application.IRepositories.Users;
 using BaitaHora.Application.IServices.Auth;
 using BaitaHora.Domain.Features.Common.ValueObjects;
 using BaitaHora.Domain.Features.Users.Entities;
-using BaitaHora.Domain.Features.Users.ValueObjects;
 using Microsoft.Extensions.Logging;
 
 namespace BaitaHora.Application.Features.Auth.UseCases;

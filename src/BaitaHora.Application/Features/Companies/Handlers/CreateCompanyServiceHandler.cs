@@ -1,8 +1,10 @@
-using BaitaHora.Application.Common;
+using BaitaHora.Application.Common.Results;
 using BaitaHora.Application.Features.Companies.Commands;
 using BaitaHora.Application.Features.Companies.Responses;
-using BaitaHora.Application.Features.Companies.UseCase;
+using BaitaHora.Application.Features.Companies.UseCases;
 using MediatR;
+
+namespace BaitaHora.Application.Features.Companies.Handlers;
 
 public sealed class CreateCompanyServiceHandler
     : IRequestHandler<CreateCompanyServiceCommand, Result<CreateCompanyServiceResponse>>

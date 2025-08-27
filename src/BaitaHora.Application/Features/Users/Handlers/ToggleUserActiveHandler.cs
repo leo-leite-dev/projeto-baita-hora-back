@@ -1,4 +1,4 @@
-using BaitaHora.Application.Common;
+using BaitaHora.Application.Common.Results;
 using BaitaHora.Application.Features.Users.Commands;
 using BaitaHora.Application.Features.Users.UseCases;
 using MediatR;

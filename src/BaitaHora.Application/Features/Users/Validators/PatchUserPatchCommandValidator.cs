@@ -2,7 +2,8 @@ using System.Text.RegularExpressions;
 using FluentValidation;
 using BaitaHora.Application.Features.Users.Commands;
 using BaitaHora.Application.Features.Commons.Validators;
-using BaitaHora.Domain.Features.Users.ValueObjects;
+
+namespace BaitaHora.Application.Features.Auth.Validators;
 
 public sealed class PatchUserCommandValidator : AbstractValidator<PatchUserCommand>
 {

@@ -1,13 +1,13 @@
-using BaitaHora.Application.Common;
 using BaitaHora.Application.Features.Companies.Commands;
 using BaitaHora.Application.Features.Companies.Responses;
 using BaitaHora.Application.Features.Companies.Guards;
-using BaitaHora.Application.IRepositories;
 using BaitaHora.Domain.Common.ValueObjects;
 using BaitaHora.Domain.Features.Companies.Entities;
 using Microsoft.Extensions.Logging;
+using BaitaHora.Application.Common.Results;
+using BaitaHora.Application.IRepositories.Companies;
 
-namespace BaitaHora.Application.Features.Companies.UseCase;
+namespace BaitaHora.Application.Features.Companies.UseCases;
 
 public sealed class CreateCompanyServiceUseCase
 {

@@ -1,4 +1,4 @@
-using BaitaHora.Application.Common;
+using BaitaHora.Application.Common.Results;
 using BaitaHora.Application.Features.Companies.Commands;
 using BaitaHora.Application.Features.Companies.Guards;
 using BaitaHora.Application.Features.Companies.Responses;
@@ -10,7 +10,7 @@ using BaitaHora.Domain.Features.Common.ValueObjects;
 using BaitaHora.Domain.Features.Users.Entities;
 using BaitaHora.Domain.Features.Users.ValueObjects;
 
-namespace BaitaHora.Application.Features.Companies.UseCase;
+namespace BaitaHora.Application.Features.Companies.UseCases;
 
 public sealed class RegisterEmployeeUseCase
 {

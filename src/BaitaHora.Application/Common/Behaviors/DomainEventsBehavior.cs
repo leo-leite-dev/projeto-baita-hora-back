@@ -1,4 +1,3 @@
-// BaitaHora.Application/Common/Behaviors/DomainEventsBehavior.cs
 using BaitaHora.Application.Common.Events;
 using MediatR;
 

@@ -1,7 +1,7 @@
-using BaitaHora.Application.Common;
-using BaitaHora.Application.Features.Auth.DTOs.Responses;
 using BaitaHora.Application.Features.Auth.Commands;
 using BaitaHora.Application.Features.Auth.UseCases;
+using BaitaHora.Application.Common.Results;
+using BaitaHora.Application.Features.Auth.Responses;
 using MediatR;
 
 namespace BaitaHora.Application.Features.Auth.Handlers;

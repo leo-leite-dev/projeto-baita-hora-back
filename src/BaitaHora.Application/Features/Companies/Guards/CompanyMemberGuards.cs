@@ -1,4 +1,4 @@
-using BaitaHora.Application.Common;
+using BaitaHora.Application.Common.Results;
 using BaitaHora.Domain.Features.Companies.Entities;
 
 namespace BaitaHora.Application.Features.Companies.Guards;

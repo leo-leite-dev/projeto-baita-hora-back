@@ -1,4 +1,4 @@
-using BaitaHora.Application.Common;
+using BaitaHora.Application.Common.Results;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BaitaHora.Api.Helpers;

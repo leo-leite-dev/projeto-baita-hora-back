@@ -1,4 +1,4 @@
-using BaitaHora.Application.Common;
+using BaitaHora.Application.Common.Results;
 using BaitaHora.Application.IRepositories;
 using BaitaHora.Domain.Features.Users.Entities;
 

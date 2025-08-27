@@ -1,5 +1,5 @@
-using BaitaHora.Application.Common;
-using BaitaHora.Application.IRepositories;
+using BaitaHora.Application.Common.Results;
+using BaitaHora.Application.IRepositories.Companies;
 using BaitaHora.Domain.Features.Companies.Entities;
 
 namespace BaitaHora.Application.Features.Companies.Guards;

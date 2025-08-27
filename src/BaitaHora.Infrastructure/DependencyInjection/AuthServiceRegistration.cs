@@ -15,7 +15,6 @@ public static class AuthRegistration
         services.AddScoped<IPasswordService, BCryptPasswordService>();
         services.AddScoped<ITokenService, JwtTokenService>();
         services.AddScoped<ISessionService, SessionService>();
-        services.AddScoped<ICookieService, CookieService>();
 
         return services;
     }

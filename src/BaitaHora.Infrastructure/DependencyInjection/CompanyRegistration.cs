@@ -1,6 +1,6 @@
 using BaitaHora.Application.Common.Caching;
 using BaitaHora.Application.Features.Companies.Guards;
-using BaitaHora.Application.IServices.Auth;
+using BaitaHora.Application.IServices.Companies;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace BaitaHora.Infrastructure.DependencyInjection;
@@ -11,7 +11,6 @@ public static class CompanyRegistration
     {
         services.AddSingleton<PermissionCache>();
         services.AddScoped<ICompanyPermissionService, CompanyPermissionService>();
-
         services.AddScoped<ICompanyGuards, CompanyGuards>();
         services.AddScoped<ICompanyPositionGuards, CompanyPositionGuards>();
         services.AddScoped<ICompanyMemberGuards, CompanyMemberGuards>();

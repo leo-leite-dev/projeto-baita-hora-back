@@ -1,4 +1,4 @@
-namespace BaitaHora.Application.Common;
+namespace BaitaHora.Application.Common.Results;
 
 public static class ResultCodes
 {

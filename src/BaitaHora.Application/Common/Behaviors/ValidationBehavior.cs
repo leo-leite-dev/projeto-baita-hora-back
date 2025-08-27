@@ -3,6 +3,7 @@ using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.Options;
 using BaitaHora.Application.Common.Validation;
+using BaitaHora.Application.Common.Results;
 
 namespace BaitaHora.Application.Common.Behaviors;
 

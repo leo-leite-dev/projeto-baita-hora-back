@@ -1,6 +1,6 @@
 using BaitaHora.Application.Common.Caching;
 using BaitaHora.Application.IRepositories.Companies;
-using BaitaHora.Application.IServices.Auth;
+using BaitaHora.Application.IServices.Companies;
 using BaitaHora.Domain.Features.Companies.Enums;
 using BaitaHora.Domain.Permissions;
 
@@ -35,8 +35,7 @@ public sealed class CompanyPermissionService : ICompanyPermissionService
         if (member.PrimaryPosition is not null)
             mask |= member.PrimaryPosition.PermissionMask;
 
-        // Caso tenha grants diretos no membro:
-        mask |= member.DirectPermissionMask; // se não existir, remova esta linha
+        mask |= member.DirectPermissionMask;
 
         _cache.Set(companyId, userId, mask);
         return mask;

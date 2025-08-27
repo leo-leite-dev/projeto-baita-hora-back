@@ -1,5 +1,5 @@
-using BaitaHora.Application.Common;
 using BaitaHora.Application.Common.Behaviors;
+using BaitaHora.Application.Common.Results;
 using BaitaHora.Application.Features.Companies.Responses;
 using MediatR;
 

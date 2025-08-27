@@ -1,6 +1,6 @@
-using BaitaHora.Application.Common;
 using BaitaHora.Application.Common.Behaviors;
-using BaitaHora.Application.Features.Auth.DTOs.Responses;
+using BaitaHora.Application.Common.Results;
+using BaitaHora.Application.Features.Auth.Responses;
 using BaitaHora.Application.Features.Companies.Commands;
 using BaitaHora.Application.Features.Users.Commands;
 using MediatR;

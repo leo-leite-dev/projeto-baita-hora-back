@@ -1,7 +1,7 @@
 using System.Text.RegularExpressions;
-using Npgsql;
+using BaitaHora.Application.Common.Errors;
 
-namespace BaitaHora.Application.Common.Errors;
+namespace BaitaHora.Infrastructure.Common.Errors;
 
 public sealed class PostgresDbErrorTranslator : IDbErrorTranslator
 {
@@ -10,7 +10,6 @@ public sealed class PostgresDbErrorTranslator : IDbErrorTranslator
         {
             // Positions
             ["ux_company_positions_companyid_name"] = "Já existe um cargo com esse nome.",
-            // (se em algum ambiente o índice tiver outro nome, mantenha o alias abaixo)
             ["ux_company_positions_companyid_name_normalized"] = "Já existe um cargo com esse nome.",
 
             // Companies
@@ -28,34 +27,33 @@ public sealed class PostgresDbErrorTranslator : IDbErrorTranslator
             ["ux_user_profiles_rg"] = "RG já cadastrado para outro usuário."
         };
 
-    public string? TryTranslateUniqueViolation(PostgresException ex)
+    public string? TryTranslateUniqueViolation(string? constraintName, string? detail = null)
     {
-        if (ex.ConstraintName is null) return TryFromDetail(ex);
-
-        if (Explicit.TryGetValue(ex.ConstraintName, out var msg))
-            return msg;
-
-        if (ex.ConstraintName.StartsWith("ux_", StringComparison.OrdinalIgnoreCase))
+        if (!string.IsNullOrWhiteSpace(constraintName))
         {
-            var parts = ex.ConstraintName.Split('_', StringSplitOptions.RemoveEmptyEntries);
-            if (parts.Length >= 3)
-            {
-                var table = parts[1];
-                var cols = string.Join(", ", parts.Skip(2));
-                var friendlyCols = string.Join(", ", parts.Skip(2).Select(Humanize));
-                var friendlyTable = Humanize(table);
+            if (Explicit.TryGetValue(constraintName!, out var msg))
+                return msg;
 
-                return $"Já existe {friendlyTable} com {friendlyCols} informado(s).";
+            if (constraintName!.StartsWith("ux_", StringComparison.OrdinalIgnoreCase))
+            {
+                var parts = constraintName.Split('_', StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length >= 3)
+                {
+                    var table = Humanize(parts[1]);
+                    var friendlyCols = string.Join(", ", parts.Skip(2).Select(Humanize));
+                    return $"Já existe {table} com {friendlyCols} informado(s).";
+                }
             }
         }
 
-        return TryFromDetail(ex)
-               ?? "Violação de unicidade.";
+        return TryFromDetail(detail) ?? "Violação de unicidade.";
     }
 
-    private static string? TryFromDetail(PostgresException ex)
+    private static string? TryFromDetail(string? detail)
     {
-        var m = Regex.Match(ex.Detail ?? "", @"Key\s+\((?<cols>[^)]+)\)\s*=\s*\((?<vals>[^)]*)\)");
+        if (string.IsNullOrWhiteSpace(detail)) return null;
+
+        var m = Regex.Match(detail, @"Key\s+\((?<cols>[^)]+)\)\s*=\s*\((?<vals>[^)]*)\)");
         if (!m.Success) return null;
 
         var cols = m.Groups["cols"].Value.Split(',', StringSplitOptions.TrimEntries);

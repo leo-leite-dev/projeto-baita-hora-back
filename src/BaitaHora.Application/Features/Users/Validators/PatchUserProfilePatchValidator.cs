@@ -1,6 +1,8 @@
 using FluentValidation;
 using BaitaHora.Application.Features.Users.Commands;
-using BaitaHora.Application.Features.Commons.Commands;
+using BaitaHora.Application.Features.Commons.Validators;
+
+namespace BaitaHora.Application.Features.Auth.Validators;
 
 public sealed class PatchUserProfileCommandValidator : AbstractValidator<PatchUserProfileCommand>
 {

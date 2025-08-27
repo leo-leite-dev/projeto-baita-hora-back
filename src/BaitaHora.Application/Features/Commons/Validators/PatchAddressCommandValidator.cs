@@ -2,6 +2,8 @@ using System.Text.RegularExpressions;
 using BaitaHora.Application.Features.Commons.Commands;
 using FluentValidation;
 
+namespace BaitaHora.Application.Features.Commons.Validators;
+
 public sealed class PatchAddressCommandValidator : AbstractValidator<PatchAddressCommand>
 {
     private static readonly Regex CepPlain = new(@"^\d{8}$", RegexOptions.Compiled);

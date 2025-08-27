@@ -1,7 +1,6 @@
 using BaitaHora.Application.Ports;
-using Microsoft.Extensions.DependencyInjection;
 
-namespace BaitaHora.Infrastructure.DependencyInjection;
+namespace BaitaHora.Api.Web.Adapters;
 
 public static class WebAdaptersRegistration
 {

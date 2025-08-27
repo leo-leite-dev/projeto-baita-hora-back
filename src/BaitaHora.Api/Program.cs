@@ -1,8 +1,16 @@
 using System.Text;
+using BaitaHora.Api.Web.Adapters;
+using BaitaHora.Api.Web.Cookies;
+using BaitaHora.Api.Web.Middlewares;
+using BaitaHora.Application.Abstractions.Integrations;
 using BaitaHora.Application.DependencyInjection;
+using BaitaHora.Application.IServices.Auth;
+using BaitaHora.Application.Ports;
 using BaitaHora.Infrastructure;
 using BaitaHora.Infrastructure.Configuration;
-using BaitaHora.Infrastructure.Middlewares;
+using BaitaHora.Infrastructure.DependencyInjection;
+using BaitaHora.Infrastructure.Services.Auth;
+using BaitaHora.Integrations.Social;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -12,6 +20,18 @@ var builder = WebApplication.CreateBuilder(args);
 // App + Infra exatamente como em produção
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddBotInfrastructure(builder.Configuration);
+
+// Infra de Web/DI
+builder.Services.AddHttpContextAccessor();
+
+// Ports/Adapters
+builder.Services.AddScoped<IUserIdentityPort, HttpContextUserIdentityAdapter>();
+
+// Auth services
+builder.Services.AddScoped<ITokenService, JwtTokenService>();
+builder.Services.AddScoped<IJwtCookieFactory, JwtCookieFactory>();
+builder.Services.AddScoped<IJwtCookieWriter, JwtCookieWriter>();
 
 // JWT obrigatório (tests injetam via ConfigureAppConfiguration)
 var jwt = builder.Configuration.GetSection("JwtOptions").Get<TokenOptions>()
@@ -37,6 +57,17 @@ builder.Services
             ClockSkew = TimeSpan.FromMinutes(1)
         };
     });
+
+// ou via  diretas:
+builder.Services.Configure<MetaOptions>(builder.Configuration.GetSection("Meta"));
+builder.Services.Configure<InstagramOptions>(builder.Configuration.GetSection("Instagram"));
+
+builder.Services.AddHttpClient<IInstagramApi, InstagramApi>(http =>
+{
+    // Base do Graph API – ajusta versão conforme precisar
+    http.BaseAddress = new Uri("https://graph.facebook.com/v23.0/");
+});
+
 
 builder.Services.AddAuthorization();
 builder.Services.AddControllers();
@@ -90,11 +121,12 @@ app.UseRouting();
 
 app.UseCors();
 
+// ⚠️ Ordem correta: preenche Authorization a partir do cookie **ANTES** do UseAuthentication
+app.UseMiddleware<JwtCookieAuthenticationMiddleware>();
+
 app.UseAuthentication();
-app.UseMiddleware<JwtMiddleware>();
 app.UseAuthorization();
 
-// Swagger apenas em Development (em Testing não depende dele)
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

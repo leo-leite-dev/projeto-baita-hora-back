@@ -1,6 +1,6 @@
 using BaitaHora.Domain.Features.Companies.Entities;
 
-namespace BaitaHora.Application.IRepositories;
+namespace BaitaHora.Application.IRepositories.Companies;
 
 public interface ICompanyServiceRepository : IGenericRepository<CompanyService>
 {

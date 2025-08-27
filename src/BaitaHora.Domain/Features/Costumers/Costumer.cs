@@ -1,4 +1,3 @@
-using System.Text.RegularExpressions;
 using BaitaHora.Domain.Features.Common;
 using BaitaHora.Domain.Features.Common.Exceptions;
 using BaitaHora.Domain.Features.Common.ValueObjects;
@@ -11,8 +10,6 @@ public sealed class Customer : Entity
     public Phone CustomerPhone { get; private set; }
 
     public bool IsActive { get; private set; } = true;
-
-    private static readonly Regex E164 = new(@"^\+[1-9]\d{7,14}$", RegexOptions.Compiled);
 
     private Customer() { }
 
@@ -32,7 +29,8 @@ public sealed class Customer : Entity
         if (string.IsNullOrWhiteSpace(newName.Value))
             throw new CustomerException("Nome do cliente é obrigatório.");
 
-        if (CustomerName.Equals(newName)) return false;
+        if (CustomerName.Equals(newName))
+            return false;
 
         CustomerName = newName;
 

@@ -1,5 +1,6 @@
+using BaitaHora.Application.Common.Persistence;
+using BaitaHora.Application.Common.Results;
 using MediatR;
-using Microsoft.EntityFrameworkCore.Storage;
 
 namespace BaitaHora.Application.Common.Behaviors;
 
@@ -14,9 +15,9 @@ public sealed class UnitOfWorkBehavior<TRequest, TResponse>
     : IPipelineBehavior<TRequest, TResponse>
     where TRequest : notnull
 {
-    private readonly IUnitOfWork _uow;
+    private readonly ITransactionalUnitOfWork _uow;
 
-    public UnitOfWorkBehavior(IUnitOfWork uow) => _uow = uow;
+    public UnitOfWorkBehavior(ITransactionalUnitOfWork uow) => _uow = uow;
 
     public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken ct)
     {
@@ -24,7 +25,7 @@ public sealed class UnitOfWorkBehavior<TRequest, TResponse>
             return await next();
 
         var ownsTx = !_uow.HasActiveTransaction;
-        IDbContextTransaction? tx = null;
+        IAppTransaction? tx = null;
 
         try
         {
@@ -40,21 +41,21 @@ public sealed class UnitOfWorkBehavior<TRequest, TResponse>
 
             if (!shouldCommit)
             {
-                if (ownsTx && tx is not null) await _uow.RollbackTransactionAsync(tx, ct);
+                if (ownsTx && tx is not null) await tx.RollbackAsync(ct);
                 return response;
             }
 
             await _uow.SaveChangesAsync(ct);
 
             if (ownsTx && tx is not null)
-                await _uow.CommitTransactionAsync(tx, ct);
+                await tx.CommitAsync(ct);
 
             return response;
         }
         catch
         {
             if (ownsTx && tx is not null)
-                await _uow.RollbackTransactionAsync(tx, ct);
+                await tx.RollbackAsync(ct);
             throw;
         }
         finally

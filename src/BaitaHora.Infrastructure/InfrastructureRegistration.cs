@@ -14,8 +14,8 @@ public static class InfrastructureRegistration
             .AddAuthInfrastructure(config)
             .AddCompanyInfrastructure()
             .AddMessagingInfrastructure(config)
-            .AddWebAdapters()
-            .AddUseCases();
+            .AddUseCases()
+                .AddBotInfrastructure(config);
 
         return services;
     }

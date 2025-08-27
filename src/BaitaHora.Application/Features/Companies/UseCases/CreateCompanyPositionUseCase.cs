@@ -1,10 +1,10 @@
-using BaitaHora.Application.Common;
-using BaitaHora.Application.IRepositories;
 using BaitaHora.Domain.Features.Companies.Enums;
 using BaitaHora.Application.Features.Companies.Responses;
 using BaitaHora.Application.Features.Companies.Commands;
+using BaitaHora.Application.Common.Results;
+using BaitaHora.Application.IRepositories.Companies;
 
-namespace BaitaHora.Application.Features.Companies.UseCase;
+namespace BaitaHora.Application.Features.Companies.UseCases;
 
 public sealed class CreateCompanyPositionUseCase
 {

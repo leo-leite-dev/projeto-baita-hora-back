@@ -1,13 +1,11 @@
 using System.Text.Json;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using BaitaHora.Domain.Features.Common.Exceptions;
 using BaitaHora.Application.Common.Errors;
 
-namespace BaitaHora.Infrastructure.Middlewares;
+namespace BaitaHora.Api.Web.Middlewares;
 
 public sealed class ExceptionHttpMappingMiddleware
 {
@@ -18,7 +16,7 @@ public sealed class ExceptionHttpMappingMiddleware
     public ExceptionHttpMappingMiddleware(
         RequestDelegate next,
         ILogger<ExceptionHttpMappingMiddleware> logger,
-        IDbErrorTranslator dbTranslator)   
+        IDbErrorTranslator dbTranslator)
     {
         _next = next;
         _logger = logger;
@@ -59,7 +57,7 @@ public sealed class ExceptionHttpMappingMiddleware
 
             if (pex.SqlState == PostgresErrorCodes.UniqueViolation)
             {
-                var friendly = _dbTranslator.TryTranslateUniqueViolation(pex)
+                var friendly = _dbTranslator.TryTranslateUniqueViolation(pex.ConstraintName, pex.Detail)
                                ?? "Registro duplicado.";
 
                 _logger.LogWarning(ex, "Violação de unicidade capturada. Constraint={Constraint}", pex.ConstraintName);

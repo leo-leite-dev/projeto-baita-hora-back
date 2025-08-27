@@ -1,5 +1,5 @@
 using BaitaHora.Application.Common.Authorization;
-using BaitaHora.Application.IServices.Auth;
+using BaitaHora.Application.IServices.Companies;
 using BaitaHora.Application.Ports;
 using MediatR;
 

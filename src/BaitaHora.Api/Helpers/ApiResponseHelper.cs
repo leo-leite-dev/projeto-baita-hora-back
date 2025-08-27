@@ -1,6 +1,6 @@
-namespace BaitaHora.Api.Helpers;
+using BaitaHora.Application.Common.Results;
 
-using BaitaHora.Application.Common;
+namespace BaitaHora.Api.Helpers;
 
 public static class ApiResponseHelper
 {

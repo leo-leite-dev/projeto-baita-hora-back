@@ -1,6 +1,5 @@
 using BaitaHora.Domain.Features.Common.ValueObjects;
 using BaitaHora.Domain.Features.Users.Entities;
-using BaitaHora.Domain.Features.Users.ValueObjects;
 
 namespace BaitaHora.Application.IRepositories.Users
 {

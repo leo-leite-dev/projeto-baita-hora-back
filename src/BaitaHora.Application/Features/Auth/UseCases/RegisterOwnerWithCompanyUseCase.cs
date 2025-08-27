@@ -1,9 +1,6 @@
-using BaitaHora.Application.Common;
-using BaitaHora.Application.IRepositories;
 using BaitaHora.Application.IRepositories.Users;
 using BaitaHora.Application.IServices.Auth;
 using BaitaHora.Domain.Companies.ValueObjects;
-using BaitaHora.Application.Features.Auth.DTOs.Responses;
 using BaitaHora.Application.Features.Auth.Commands;
 using BaitaHora.Domain.Features.Users.Entities;
 using BaitaHora.Domain.Features.Companies.Entities;
@@ -12,6 +9,9 @@ using BaitaHora.Domain.Features.Companies.Enums;
 using BaitaHora.Application.Features.Companies.Commands;
 using BaitaHora.Application.Features.Users.Commands;
 using BaitaHora.Domain.Features.Common.ValueObjects;
+using BaitaHora.Application.Features.Auth.Responses;
+using BaitaHora.Application.Common.Results;
+using BaitaHora.Application.IRepositories.Companies;
 
 namespace BaitaHora.Application.Features.Auth.UseCases;
 

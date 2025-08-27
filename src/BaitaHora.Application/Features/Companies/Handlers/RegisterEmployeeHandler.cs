@@ -1,8 +1,8 @@
-using BaitaHora.Application.Common;
 using BaitaHora.Application.Features.Companies.Commands;
-using BaitaHora.Application.Features.Companies.UseCase;
 using BaitaHora.Application.Features.Companies.Responses;
+using BaitaHora.Application.Common.Results;
 using MediatR;
+using BaitaHora.Application.Features.Companies.UseCases;
 
 namespace BaitaHora.Application.Features.Companies.Handlers;
 

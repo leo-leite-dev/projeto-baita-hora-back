@@ -1,5 +1,5 @@
 using BaitaHora.Application.Features.Auth.UseCases;
-using BaitaHora.Application.Features.Companies.UseCase;
+using BaitaHora.Application.Features.Companies.UseCases;
 using BaitaHora.Application.Features.Users.UseCases;
 using Microsoft.Extensions.DependencyInjection;
 
