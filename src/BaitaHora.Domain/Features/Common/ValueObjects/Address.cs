@@ -22,14 +22,14 @@ public sealed record Address
     public string? Complement { get; }
     public string Neighborhood { get; } = string.Empty;
     public string City { get; } = string.Empty;
-    public string State { get; } = string.Empty;
-    public string ZipCode { get; } = string.Empty;
+    public string State { get; } = string.Empty;   // UF (ex.: RS)
+    public string ZipCode { get; } = string.Empty; // 8 dígitos (ex.: 90000000)
 
     private Address() { }
 
     private Address(
-        string street, string number, string? complement, string neighborhood,
-        string city, string state, string zipCode)
+        string street, string number, string? complement,
+        string neighborhood, string city, string state, string zipCode)
     {
         Street = street;
         Number = number;
@@ -40,6 +40,11 @@ public sealed record Address
         ZipCode = zipCode;
     }
 
+    // -------- Fábricas públicas --------
+
+    /// <summary>
+    /// Cria ou lança UserException com mensagens agregadas de validação.
+    /// </summary>
     public static Address Create(
         string? street, string? number, string? neighborhood, string? city, string? state,
         string? zipCode, string? complement = null)
@@ -53,16 +58,25 @@ public sealed record Address
         return addr!;
     }
 
+    /// <summary>
+    /// Versão Parse para chamadas com todos os campos obrigatórios já não-nulos.
+    /// </summary>
     public static Address Parse(
         string street, string number, string neighborhood,
         string city, string state, string zipCode, string? complement = null)
         => Create(street, number, neighborhood, city, state, zipCode, complement);
 
+    /// <summary>
+    /// Tenta converter entradas possivelmente nulas em Address válido,
+    /// retornando lista de erros de validação do domínio.
+    /// </summary>
     public static bool TryParse(
         string? street, string? number, string? complement, string? neighborhood,
         string? city, string? state, string? zipCode,
         out Address? address, out IReadOnlyList<AddressValidationError> errors)
         => TryCreate(street, number, complement, neighborhood, city, state, zipCode, out address, out errors);
+
+    // -------- Validação centralizada do domínio --------
 
     public static bool TryCreate(
         string? street, string? number, string? complement, string? neighborhood,
@@ -80,23 +94,42 @@ public sealed record Address
         var complementN = O(complement);
         var neighborhoodN = N(neighborhood);
         var cityN = N(city);
-        var stateN = N(state).ToUpperInvariant();   
-        var zipDigits = Digits(zipCode);    
+        var stateN = N(state).ToUpperInvariant();
+        var zipDigits = Digits(zipCode);
 
-        var list = new List<AddressValidationError>(7);
+        var list = new List<AddressValidationError>(capacity: 7);
 
+        // Rua
         if (streetN.Length is < 3 or > 200)
             list.Add(new(AddressErrorCode.StreetInvalid, "Rua deve conter entre 3 e 200 caracteres."));
+
+        // Número
         if (string.IsNullOrWhiteSpace(numberN) || numberN.Length > 20)
             list.Add(new(AddressErrorCode.NumberInvalid, "Número é obrigatório e deve ter no máximo 20 caracteres."));
+
+        // Bairro
         if (string.IsNullOrWhiteSpace(neighborhoodN) || neighborhoodN.Length > 100)
             list.Add(new(AddressErrorCode.NeighborhoodInvalid, "Bairro é obrigatório e deve ter no máximo 100 caracteres."));
+
+        // Cidade
         if (string.IsNullOrWhiteSpace(cityN) || cityN.Length > 100)
             list.Add(new(AddressErrorCode.CityInvalid, "Cidade é obrigatória e deve ter no máximo 100 caracteres."));
+
+        // UF (2 letras + pertencente ao conjunto de UFs válidas)
         if (stateN.Length != 2 || !stateN.All(char.IsLetter))
+        {
             list.Add(new(AddressErrorCode.StateInvalid, "UF deve conter exatamente 2 letras (A-Z)."));
+        }
+        else if (!UfSet.Contains(stateN))
+        {
+            list.Add(new(AddressErrorCode.StateInvalid, "UF inválida. Use uma sigla válida (ex.: SP, RJ, MG)."));
+        }
+
+        // CEP (8 dígitos)
         if (zipDigits.Length != 8)
             list.Add(new(AddressErrorCode.ZipInvalid, "CEP inválido (deve ter 8 dígitos)."));
+
+        // Complemento (opcional, com limite)
         if (complementN is { Length: > 200 })
             list.Add(new(AddressErrorCode.ComplementInvalid, "Complemento deve ter no máximo 200 caracteres."));
 
@@ -111,6 +144,8 @@ public sealed record Address
         return true;
     }
 
+    // -------- Utilidades de apresentação --------
+
     public string ToFormattedString()
         => $"{Street}, {Number} - {Neighborhood}, {City}/{State} - {FormatZip(ZipCode)}" +
            (string.IsNullOrWhiteSpace(Complement) ? "" : $" ({Complement})");
@@ -120,6 +155,14 @@ public sealed record Address
 
     private static string FormatZip(string digits8)
         => digits8.Length == 8 ? $"{digits8[..5]}-{digits8[5..]}" : digits8;
+
+    // -------- Dados estáticos do domínio --------
+
+    private static readonly HashSet<string> UfSet = new(StringComparer.Ordinal)
+    {
+        "AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG",
+        "PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"
+    };
 
     private static class EmptyList<T>
     {

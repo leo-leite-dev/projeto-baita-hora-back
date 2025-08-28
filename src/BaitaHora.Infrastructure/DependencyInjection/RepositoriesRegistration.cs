@@ -5,7 +5,6 @@ using BaitaHora.Infrastructure.Repositories.Auth;
 using BaitaHora.Infrastructure.Repositories.Users;
 using BaitaHora.Infrastructure.Repositories.Companies;
 using Microsoft.Extensions.DependencyInjection;
-using BaitaHora.Application.IRepositories;
 using BaitaHora.Application.Features.Schedules;
 using BaitaHora.Infrastructure.Data.Repositories.Schedulings;
 using BaitaHora.Infrastructure.Repositories;

@@ -1,8 +1,8 @@
-using BaitaHora.Application.Features.Auth.Commands;
-using BaitaHora.Application.Features.Commons.Commands;
-using BaitaHora.Application.Features.Companies.Commands;
-using BaitaHora.Application.Features.Users.Commands;
+using BaitaHora.Application.Features.Addresses.Create;
 using BaitaHora.Contracts.DTOS.Auth;
+using BaitaHora.Application.Features.Onboarding;
+using BaitaHora.Application.Features.Users.CreateUser;
+using BaitaHora.Application.Features.Users.CreateUserProfile;
 
 namespace BaitaHora.Api.Mappers.Auth;
 
@@ -11,22 +11,24 @@ public static class RegisterOwnerApiMappers
     public static RegisterOwnerWithCompanyCommand ToCommand(this RegisterOwnerWithCompanyRequest r)
         => new()
         {
-            Company = new CreateCompanyCommand(
-                r.Company.CompanyName,
-                r.Company.Cnpj,
-                r.Company.TradeName,
-                r.Company.CompanyEmail,
-                r.Company.CompanyPhone,
-                new CreateAddressCommand(
-                    r.Company.Address.Street,
-                    r.Company.Address.Number,
-                    r.Company.Address.Complement,
-                    r.Company.Address.Neighborhood,
-                    r.Company.Address.City,
-                    r.Company.Address.State,
-                    r.Company.Address.ZipCode
-                )
-            ),
+            Company = new CreateCompanyWithOwnerCommand
+            {
+                CompanyName = r.Company.CompanyName,
+                Cnpj = r.Company.Cnpj,
+                TradeName = r.Company.TradeName,
+                CompanyEmail = r.Company.CompanyEmail,
+                CompanyPhone = r.Company.CompanyPhone,
+                Address = new CreateAddressCommand
+                {
+                    Street = r.Company.Address.Street,
+                    Number = r.Company.Address.Number,
+                    Complement = r.Company.Address.Complement,
+                    Neighborhood = r.Company.Address.Neighborhood,
+                    City = r.Company.Address.City,
+                    State = r.Company.Address.State,
+                    ZipCode = r.Company.Address.ZipCode
+                }
+            },
             Owner = new CreateUserCommand(
                 r.Owner.UserEmail,
                 r.Owner.Username,
@@ -37,15 +39,16 @@ public static class RegisterOwnerApiMappers
                     r.Owner.Profile.UserPhone,
                     r.Owner.Profile.Cpf,
                     r.Owner.Profile.Rg,
-                    new CreateAddressCommand(
-                        r.Owner.Profile.Address.Street,
-                        r.Owner.Profile.Address.Number,
-                        r.Owner.Profile.Address.Complement,
-                        r.Owner.Profile.Address.Neighborhood,
-                        r.Owner.Profile.Address.City,
-                        r.Owner.Profile.Address.State,
-                        r.Owner.Profile.Address.ZipCode
-                    )
+                    new CreateAddressCommand
+                    {
+                        Street = r.Owner.Profile.Address.Street,
+                        Number = r.Owner.Profile.Address.Number,
+                        Complement = r.Owner.Profile.Address.Complement,
+                        Neighborhood = r.Owner.Profile.Address.Neighborhood,
+                        City = r.Owner.Profile.Address.City,
+                        State = r.Owner.Profile.Address.State,
+                        ZipCode = r.Owner.Profile.Address.ZipCode
+                    }
                 )
             )
         };

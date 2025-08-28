@@ -1,6 +1,9 @@
-using BaitaHora.Application.Features.Auth.UseCases;
+using BaitaHora.Application.Features.Auth;
+using BaitaHora.Application.Features.Companies.Members.Employee.Patch;
+using BaitaHora.Application.Features.Companies.Members.Employee.Register;
 using BaitaHora.Application.Features.Companies.UseCases;
-using BaitaHora.Application.Features.Users.UseCases;
+using BaitaHora.Application.Features.Onboarding;
+using BaitaHora.Application.Features.Users.CreateUser;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace BaitaHora.Infrastructure.DependencyInjection;

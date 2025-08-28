@@ -1,4 +1,4 @@
-using BaitaHora.Application.Features.Auth.Commands;
+using BaitaHora.Application.Features.Auth;
 using BaitaHora.Contracts.DTOS.Auth;
 
 namespace BaitaHora.Api.Mappers.Auth;

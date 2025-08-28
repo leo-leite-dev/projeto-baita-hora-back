@@ -99,13 +99,4 @@ public sealed class AuthController : ControllerBase
         _cookieWriter.Write(Response, cookie);
         return Ok(new { message = "Logout efetuado." });
     }
-
-    [HttpPost("register-owner")]
-    [AllowAnonymous]
-    public async Task<IActionResult> RegisterOwner([FromBody] RegisterOwnerWithCompanyRequest req, CancellationToken ct)
-    {
-        var cmd = req.ToCommand();
-        var result = await _mediator.Send(cmd, ct);
-        return result.ToActionResult(this, result.Value);
-    }
 }

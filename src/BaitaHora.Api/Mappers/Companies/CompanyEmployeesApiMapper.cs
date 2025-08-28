@@ -1,6 +1,11 @@
-using BaitaHora.Application.Features.Commons.Commands;
-using BaitaHora.Application.Features.Companies.Commands;
-using BaitaHora.Application.Features.Users.Commands;
+using BaitaHora.Application.Features.Addresses.Create;
+using BaitaHora.Application.Features.Addresses.PatchAddress;
+using BaitaHora.Application.Features.Companies.Members.Employee.Patch;
+using BaitaHora.Application.Features.Companies.Members.Employee.Register;
+using BaitaHora.Application.Features.Users.CreateUser;
+using BaitaHora.Application.Features.Users.CreateUserProfile;
+using BaitaHora.Application.Features.Users.PatchUser;
+using BaitaHora.Application.Features.Users.PatchUserProfile;
 using BaitaHora.Contracts.DTOs.Companies;
 using BaitaHora.Contracts.DTOs.Users;
 using BaitaHora.Contracts.DTOS.Adress;
@@ -10,7 +15,16 @@ namespace BaitaHora.Api.Mappers.Companies;
 public static class CompanyEmployeesApiMapper
 {
     public static CreateAddressCommand ToCommand(this CreateAddressRequest a)
-        => new(a.Street, a.Number, a.Complement, a.Neighborhood, a.City, a.State, a.ZipCode);
+      => new CreateAddressCommand
+      {
+          Street = a.Street,
+          Number = a.Number,
+          Complement = a.Complement,
+          Neighborhood = a.Neighborhood,
+          City = a.City,
+          State = a.State,
+          ZipCode = a.ZipCode
+      };
 
     public static CreateUserProfileCommand ToCommand(this CreateUserProfileRequest p)
         => new(p.FullName, p.BirthDate, p.UserPhone, p.Cpf, p.Rg, p.Address.ToCommand());
