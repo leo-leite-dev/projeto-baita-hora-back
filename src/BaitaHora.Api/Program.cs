@@ -9,6 +9,7 @@ using BaitaHora.Application.Ports;
 using BaitaHora.Infrastructure;
 using BaitaHora.Infrastructure.Configuration;
 using BaitaHora.Infrastructure.DependencyInjection;
+using BaitaHora.Infrastructure.Serialization;
 using BaitaHora.Infrastructure.Services.Auth;
 using BaitaHora.Integrations.Social;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -70,7 +71,8 @@ builder.Services.AddHttpClient<IInstagramApi, InstagramApi>(http =>
 
 
 builder.Services.AddAuthorization();
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new DateOnlyJsonConverter()));
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(c =>

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using BaitaHora.Api.Helpers;
 using BaitaHora.Contracts.DTOS.Auth;
 using BaitaHora.Api.Mappers.Auth;
+using BaitaHora.Api.Mappers.Onboarding;
 
 namespace BaitaHora.Api.Controllers.Auth;
 

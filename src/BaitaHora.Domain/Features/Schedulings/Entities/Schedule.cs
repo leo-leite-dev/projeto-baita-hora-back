@@ -77,17 +77,17 @@ public sealed class Schedule : Entity
         Touch();
         return true;
     }
-    public Appointment AddAppointment(Customer customer, DateTime startsAtUtc, CompanyService service, Guid professionalPositionId, string? notes = null)
+    public Appointment AddAppointment(Customer customer, DateTime startsAtUtc, CompanyServiceOffering serviceOffering, Guid professionalPositionId, string? notes = null)
     {
         if (customer is null)
             throw new ArgumentNullException(nameof(customer));
 
-        if (service is null || !service.IsActive)
-            throw new SchedulingException("Serviço inválido ou inativo.");
+        // if (serviceOffering is null || !serviceOffering.IsActive)
+        //     throw new SchedulingException("Serviço inválido ou inativo.");
 
-        var isLinked = service.PositionLinks.Any(l => l.PositionId == professionalPositionId);
-        if (!isLinked)
-            throw new SchedulingException("O profissional não executa este serviço.");
+        // var isLinked = serviceOffering.PositionLinks.Any(l => l.PositionId == professionalPositionId);
+        // if (!isLinked)
+        //     throw new SchedulingException("O profissional não executa este serviço.");
 
         var tz = TimeZoneInfo.FindSystemTimeZoneById(TimeZone);
         var startsLocal = TimeZoneInfo.ConvertTimeFromUtc(startsAtUtc, tz);
@@ -106,7 +106,7 @@ public sealed class Schedule : Entity
             throw new SchedulingException("Há um compromisso no período selecionado.");
 
         var appt = Appointment.CreateForCustomer(
-            Id, startsAtUtc, SlotDuration, customer, service.Id, service.ServiceName, notes);
+            Id, startsAtUtc, SlotDuration, customer, serviceOffering.Id, serviceOffering.ServiceOfferingName, notes);
 
         _appointments.Add(appt);
         Touch();

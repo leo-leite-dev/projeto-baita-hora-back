@@ -9,7 +9,7 @@ namespace BaitaHora.Infrastructure.Repositories.Companies
     {
         public CompanyRepository(AppDbContext context) : base(context) { }
 
-        public async Task<Company?> GetByIdWithMembersAndPositionsAsync(Guid companyId, CancellationToken ct)
+        public async Task<Company?> GetDetailsByIdAsync(Guid companyId, CancellationToken ct)
         {
             return await _context.Companies
                 .Where(c => c.Id == companyId)

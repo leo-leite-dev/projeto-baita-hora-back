@@ -1,6 +1,5 @@
 using BaitaHora.Domain.Features.Common.ValueObjects;
 using BaitaHora.Domain.Features.Users.Entities;
-using BaitaHora.Domain.Features.Users.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
@@ -15,33 +14,46 @@ public sealed class UserConfiguration : IEntityTypeConfiguration<User>
         builder.HasKey(u => u.Id);
 
         var usernameConverter = new ValueConverter<Username, string>(
-            toProvider => toProvider.Value,
-            fromProvider => Username.Parse(fromProvider)
-        );
+            v => v.Value,
+            v => Username.Parse(v));
 
         var emailConverter = new ValueConverter<Email, string>(
-            toProvider => toProvider.Value,
-            fromProvider => Email.Parse(fromProvider)
-        );
-
-        builder.Property(u => u.Role)
-            .HasConversion<string>()
-            .HasMaxLength(50)
-            .IsRequired();
+            v => v.Value,
+            v => Email.Parse(v));
 
         builder.Property(u => u.Username)
             .HasConversion(usernameConverter)
             .HasMaxLength(50)
-            .HasColumnType("citext")   
+            .HasColumnType("citext")
+            .HasColumnName("username")
             .IsRequired();
 
         builder.Property(u => u.UserEmail)
             .HasConversion(emailConverter)
             .HasMaxLength(256)
-            .HasColumnType("citext")  
+            .HasColumnType("citext")
+            .HasColumnName("email")
             .IsRequired();
 
         builder.Property(u => u.PasswordHash)
+            .HasColumnName("password_hash")
+            .IsRequired();
+
+        builder.Property(u => u.IsActive)
+            .HasColumnName("is_active")
+            .HasDefaultValue(true)
+            .IsRequired();
+
+        builder.Property(u => u.PasswordResetToken)
+            .HasColumnName("pwd_reset_token")
+            .HasMaxLength(200);
+
+        builder.Property(u => u.PasswordResetTokenExpiresAt)
+            .HasColumnName("pwd_reset_expires_at");
+
+        builder.Property(u => u.TokenVersion)
+            .HasColumnName("token_version")
+            .HasDefaultValue(0)
             .IsRequired();
 
         builder.HasOne(u => u.Profile)

@@ -14,29 +14,31 @@ public sealed class User : Entity
     public string PasswordHash { get; private set; } = string.Empty;
 
     public bool IsActive { get; private set; } = true;
-    public CompanyRole Role { get; private set; }
+    // public CompanyRole Role { get; private set; }
 
     public string? PasswordResetToken { get; private set; }
     public DateTime? PasswordResetTokenExpiresAt { get; private set; }
 
     public Guid ProfileId { get; private set; }
-    public UserProfile Profile { get; private set; } = null!;
+    public UserProfile Profile { get; private set; } = default!;
 
     public int TokenVersion { get; private set; } = 0;
 
     private User() { }
 
-    public static User Create(Email UserEmail, Username username, string rawPassword, UserProfile profile, Func<string, string> hashFunction)
+    public static User Create(Email userEmail, Username username, string rawPassword, UserProfile profile, Func<string, string> hashFunction)
     {
         if (profile is null) throw new UserException("Perfil do usuário é obrigatório.");
 
-        var user = new User();
-        user.SetEmail(UserEmail);
-        user.SetUsername(username);
-
-        user.Profile = profile;
-        user.ProfileId = profile.Id;
-        user.IsActive = true;
+        var user = new User()
+        {
+            UserEmail = userEmail,
+            Username = username,
+            PasswordHash = rawPassword,
+            Profile = profile,
+            ProfileId = profile.Id,
+            IsActive = true,
+        };
 
         user.SetPassword(rawPassword, hashFunction);
 
@@ -44,15 +46,15 @@ public sealed class User : Entity
         return user;
     }
 
-    public bool SetRole(CompanyRole newRole)
-    {
-        if (newRole == CompanyRole.Unknown)
-            throw new UserException("Role inválida.");
+    // public bool SetRole(CompanyRole newRole)
+    // {
+    //     if (newRole == CompanyRole.Unknown)
+    //         throw new UserException("Role inválida.");
 
-        if (Role == newRole) return false;
-        Role = newRole;
-        return true;
-    }
+    //     if (Role == newRole) return false;
+    //     Role = newRole;
+    //     return true;
+    // }
 
     public bool SetEmail(Email newEmail)
     {
@@ -66,9 +68,11 @@ public sealed class User : Entity
         return true;
     }
 
-    public bool SetUsername(Username newUsername)
+    public bool RenameUserName(Username newUsername)
     {
-        if (Username.Equals(newUsername)) return false;
+        if (Username.Equals(newUsername))
+            return false;
+
         Username = newUsername;
         return true;
     }

@@ -1,3 +1,8 @@
-namespace BaitaHora.Application.Features.Companies.Responses;
+namespace BaitaHora.Application.Features.Companies.Positions.Create;
 
-public sealed record CreateCompanyPositionResponse(Guid CompanyId, string PositionName);
+public sealed record CreateCompanyPositionResponse(
+    Guid PositionId,
+    Guid CompanyId,
+    string PositionName,
+    string AccessLevel
+);

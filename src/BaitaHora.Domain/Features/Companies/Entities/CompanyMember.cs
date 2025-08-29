@@ -22,7 +22,6 @@ public sealed class CompanyMember : Entity
     public CompanyPermission DirectPermissionMask { get; private set; } = CompanyPermission.None;
 
     public DateTime JoinedAt { get; private set; }
-    public bool IsActive { get; private set; }
 
     private CompanyMember() { }
 
@@ -37,13 +36,15 @@ public sealed class CompanyMember : Entity
         CompanyId = companyId;
         UserId = userId;
         JoinedAt = DateTime.UtcNow;
-        IsActive = true;
     }
 
     internal static CompanyMember CreateFounder(Guid companyId, Guid userId)
     {
-        var member = new CompanyMember(companyId, userId);
-        member.Role = CompanyRole.Owner;
+        var member = new CompanyMember(companyId, userId)
+        {
+            Role = CompanyRole.Owner
+        };
+
         return member;
     }
 
@@ -57,7 +58,17 @@ public sealed class CompanyMember : Entity
         return member;
     }
 
-    public (bool changed, bool requiresSessionRefresh) SetRole(CompanyRole newRole, bool allowOwnerLevel = false)
+
+    public (bool changed, bool requiresSessionRefresh) ChangeRole(CompanyRole newRole)
+        => SetRole(newRole, allowOwnerLevel: false);
+
+    internal (bool changed, bool requiresSessionRefresh) SetRoleFromPosition(CompanyPosition position)
+    {
+        var allowOwnerLevel = position.IsSystem && position.AccessLevel == CompanyRole.Owner;
+        return SetRole(position.AccessLevel, allowOwnerLevel);
+    }
+
+    private (bool changed, bool requiresSessionRefresh) SetRole(CompanyRole newRole, bool allowOwnerLevel)
     {
         if (newRole == CompanyRole.Owner && !allowOwnerLevel)
             throw new CompanyException("Promoção a Owner é proibida. Owner só no ato de criar a empresa.");
@@ -69,21 +80,21 @@ public sealed class CompanyMember : Entity
             return (false, false);
 
         Role = newRole;
-
         return (true, true);
     }
 
-    public bool SetPrimaryPosition(CompanyPosition position)
+    public void SetPrimaryPosition(CompanyPosition position)
     {
         if (position.CompanyId != CompanyId)
-            throw new CompanyException("O cargo pertence a outra empresa.");
+            throw new CompanyException("Cargo não pertence a esta empresa.");
+
         if (!position.IsActive)
-            throw new CompanyException("Não é possível atribuir um cargo inativo.");
+            throw new CompanyException("Não é possível atribuir cargo inativo.");
 
         PrimaryPositionId = position.Id;
         PrimaryPosition = position;
-        Touch();
-        return true;
+
+        SetRoleFromPosition(position);
     }
 
     public bool ClearPrimaryPosition()
@@ -98,11 +109,13 @@ public sealed class CompanyMember : Entity
 
     public CompanyPermission GetEffectivePermissions()
     {
-        if (Role == CompanyRole.Owner) return CompanyPermission.All;
+        if (Role == CompanyRole.Owner)
+            return CompanyPermission.All;
 
         var mask = CompanyPermission.None;
         if (PrimaryPosition is not null)
             mask |= PrimaryPosition.PermissionMask;
+
         mask |= DirectPermissionMask;
         return mask;
     }
@@ -124,14 +137,4 @@ public sealed class CompanyMember : Entity
     public bool ClearDirectPermissions()
         => SetDirectPermissions(CompanyPermission.None);
 
-    public bool SetActive(bool isActive)
-    {
-        if (IsActive == isActive) return false;
-        IsActive = isActive;
-        Touch();
-        return true;
-    }
-
-    public bool Activate() => SetActive(true);
-    public bool Deactivate() => SetActive(false);
 }

@@ -1,7 +1,4 @@
-using BaitaHora.Application.Features.Addresses.Common;
-
 namespace BaitaHora.Application.Features.Addresses.Create;
-
 
 public sealed record CreateAddressCommand : IAddressLike
 {

@@ -1,4 +1,5 @@
 using BaitaHora.Domain.Features.Common.Exceptions;
+using Caelum.Stella.CSharp.Validation;
 
 namespace BaitaHora.Domain.Features.Users.ValueObjects;
 
@@ -21,31 +22,19 @@ public readonly record struct CPF
         if (string.IsNullOrWhiteSpace(input)) return false;
 
         var s = new string(input.Where(char.IsDigit).ToArray());
+        if (s.Length != 11) return false;
 
-        if (s.Length != 11)
-            return false;
-
-        if (s.Distinct().Count() == 1)
-            return false;
-
-        var a = s.Select(c => c - '0').ToArray();
-        var sum = 0;
-        for (int i = 0; i < 9; i++)
-            sum += a[i] * (10 - i);
-
-        var d1 = sum % 11 < 2 ? 0 : 11 - (sum % 11);
-        if (a[9] != d1) return false;
-
-        sum = 0;
-        for (int i = 0; i < 10; i++)
-            sum += a[i] * (11 - i);
-
-        var d2 = sum % 11 < 2 ? 0 : 11 - (sum % 11);
-        if (a[10] != d2) return false;
+        var isValid = new CPFValidator().IsValid(s);
+        if (!isValid) return false;
 
         cpf = new CPF(s);
         return true;
     }
+
+    public string Format()
+        => Value.Length == 11
+            ? $"{Value[..3]}.{Value[3..6]}.{Value[6..9]}-{Value[9..]}"
+            : Value;
 
     public override string ToString() => Value;
 }

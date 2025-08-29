@@ -1,6 +1,5 @@
-using BaitaHora.Application.Features.Addresses.Common;
-using FluentValidation;
 using DomainAddress = BaitaHora.Domain.Features.Common.ValueObjects.Address;
+using FluentValidation;
 
 namespace BaitaHora.Application.Features.Addresses.PatchAddress;
 
@@ -17,8 +16,8 @@ public sealed class PatchAddressCommandValidator
             RuleFor(x => x).Custom((x, ctx) =>
             {
                 var ok = DomainAddress.TryParse(
-                    x.Street!, x.Number!, x.Complement, x.Neighborhood!,
-                    x.City!, x.State!, x.ZipCode!, out _, out var errors);
+                    x.NewStreet!, x.NewNumber!, x.NewComplement, x.NewNeighborhood!,
+                    x.NewCity!, x.NewState!, x.NewZipCode!, out _, out var errors);
 
                 if (!ok) foreach (var e in errors) ctx.AddFailure(e.Message);
             });

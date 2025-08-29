@@ -15,23 +15,24 @@ public sealed class UserProfileConfiguration : IEntityTypeConfiguration<UserProf
         builder.HasKey(p => p.Id);
 
         builder.Property(p => p.FullName)
-            .HasMaxLength(200)
+            .HasMaxLength(120)
             .IsRequired();
 
         var cpfConverter = new ValueConverter<CPF, string>(
-            toProvider => toProvider.Value,
-            fromProvider => CPF.Parse(fromProvider)
-        );
+            v => v.Value,
+            v => CPF.Parse(v));
 
         var rgConverter = new ValueConverter<RG?, string?>(
-            toProvider => toProvider.HasValue ? toProvider.Value.Value : null,
-            fromProvider => string.IsNullOrEmpty(fromProvider) ? null : RG.Parse(fromProvider)
-        );
+            v => v.HasValue ? v.Value.Value : null,
+            v => string.IsNullOrWhiteSpace(v) ? null : RG.Parse(v!));
 
         var phoneConverter = new ValueConverter<Phone, string>(
-            toProvider => toProvider.Value,
-            fromProvider => Phone.Parse(fromProvider)
-        );
+            v => v.Value,
+            v => Phone.Parse(v));
+
+        var dobConverter = new ValueConverter<DateOfBirth?, DateOnly?>(
+            v => v.HasValue ? v.Value.Value : (DateOnly?)null,
+            v => v.HasValue ? DateOfBirth.Parse(v.Value) : (DateOfBirth?)null);
 
         builder.Property(p => p.Cpf)
             .HasConversion(cpfConverter)
@@ -40,7 +41,8 @@ public sealed class UserProfileConfiguration : IEntityTypeConfiguration<UserProf
 
         builder.Property(p => p.Rg)
             .HasConversion(rgConverter)
-            .HasMaxLength(20);
+            .HasMaxLength(20)
+            .HasColumnName("rg");
 
         builder.Property(p => p.UserPhone)
             .HasConversion(phoneConverter)
@@ -48,6 +50,7 @@ public sealed class UserProfileConfiguration : IEntityTypeConfiguration<UserProf
             .IsRequired();
 
         builder.Property(p => p.BirthDate)
+            .HasConversion(dobConverter)
             .HasColumnType("date");
 
         builder.OwnsOne(p => p.Address, addr =>
@@ -65,11 +68,11 @@ public sealed class UserProfileConfiguration : IEntityTypeConfiguration<UserProf
         builder.Property(p => p.ProfileImageUrl)
             .HasMaxLength(512);
 
-        builder.Property(x => x.Rg)
-            .HasMaxLength(20)
-            .HasColumnName("rg");
+        builder.HasIndex(p => p.Cpf)
+            .HasDatabaseName("ux_user_profiles_cpf")
+            .IsUnique();
 
-        builder.HasIndex(x => x.Rg)
+        builder.HasIndex(p => p.Rg)
             .HasDatabaseName("ux_user_profiles_rg")
             .IsUnique()
             .HasFilter("\"rg\" IS NOT NULL");

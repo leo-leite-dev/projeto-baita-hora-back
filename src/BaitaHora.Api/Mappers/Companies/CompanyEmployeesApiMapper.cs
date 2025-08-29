@@ -1,76 +1,28 @@
-using BaitaHora.Application.Features.Addresses.Create;
-using BaitaHora.Application.Features.Addresses.PatchAddress;
-using BaitaHora.Application.Features.Companies.Members.Employee.Patch;
+using BaitaHora.Api.Mappers.Users;
 using BaitaHora.Application.Features.Companies.Members.Employee.Register;
-using BaitaHora.Application.Features.Users.CreateUser;
-using BaitaHora.Application.Features.Users.CreateUserProfile;
 using BaitaHora.Application.Features.Users.PatchUser;
-using BaitaHora.Application.Features.Users.PatchUserProfile;
-using BaitaHora.Contracts.DTOs.Companies;
-using BaitaHora.Contracts.DTOs.Users;
-using BaitaHora.Contracts.DTOS.Adress;
+using BaitaHora.Contracts.DTOs.Companies.Members;
 
 namespace BaitaHora.Api.Mappers.Companies;
 
 public static class CompanyEmployeesApiMapper
 {
-    public static CreateAddressCommand ToCommand(this CreateAddressRequest a)
-      => new CreateAddressCommand
-      {
-          Street = a.Street,
-          Number = a.Number,
-          Complement = a.Complement,
-          Neighborhood = a.Neighborhood,
-          City = a.City,
-          State = a.State,
-          ZipCode = a.ZipCode
-      };
 
-    public static CreateUserProfileCommand ToCommand(this CreateUserProfileRequest p)
-        => new(p.FullName, p.BirthDate, p.UserPhone, p.Cpf, p.Rg, p.Address.ToCommand());
-
-    public static CreateUserCommand ToUserCommand(this RegisterEmployeeRequest r)
-        => new(r.Employee.UserEmail, r.Employee.Username, r.Employee.RawPassword, r.Employee.Profile.ToCommand());
-
-    public static RegisterEmployeeCommand ToCommand(this RegisterEmployeeRequest r, Guid companyId)
-        => new()
+    public static RegisterEmployeeCommand ToCommand(
+        this RegisterEmployeeRequest r, Guid companyId)
+        => new RegisterEmployeeCommand
         {
             CompanyId = companyId,
             PositionId = r.PositionId,
             Employee = r.ToUserCommand(),
         };
 
-
     public static PatchEmployeeCommand ToCommand(
         this PatchEmployeeRequest r, Guid companyId, Guid employeeId)
-        => new()
+        => new PatchEmployeeCommand
         {
             CompanyId = companyId,
             EmployeeId = employeeId,
-            PositionId = r.PositionId,
-
-            Employee = r.Employee is null ? null : new PatchUserCommand
-            {
-                UserEmail = r.Employee.UserEmail,
-                Username = r.Employee.Username,
-                Profile = r.Employee.Profile is null ? null : new PatchUserProfileCommand
-                {
-                    FullName = r.Employee.Profile.FullName,
-                    BirthDate = r.Employee.Profile.BirthDate,
-                    UserPhone = r.Employee.Profile.UserPhone,
-                    Cpf = r.Employee.Profile.Cpf,
-                    Rg = r.Employee.Profile.Rg,
-                    Address = r.Employee.Profile.Address is null ? null : new PatchAddressCommand
-                    {
-                        Street = r.Employee.Profile.Address.Street,
-                        Number = r.Employee.Profile.Address.Number,
-                        Complement = r.Employee.Profile.Address.Complement,
-                        Neighborhood = r.Employee.Profile.Address.Neighborhood,
-                        City = r.Employee.Profile.Address.City,
-                        State = r.Employee.Profile.Address.State,
-                        ZipCode = r.Employee.Profile.Address.ZipCode,
-                    }
-                }
-            }
+            NewEmployee = r.Employee?.ToUserCommand() ?? new PatchUserCommand()
         };
 }

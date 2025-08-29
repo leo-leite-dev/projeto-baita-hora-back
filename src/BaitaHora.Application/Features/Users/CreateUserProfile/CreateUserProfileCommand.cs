@@ -4,9 +4,9 @@ namespace BaitaHora.Application.Features.Users.CreateUserProfile;
 
 public sealed record CreateUserProfileCommand(
     string FullName,
-    DateTime? BirthDate,
-    string UserPhone,
     string Cpf,
     string? Rg,
+    string UserPhone,
+    DateOnly? BirthDate,
     CreateAddressCommand Address
 );

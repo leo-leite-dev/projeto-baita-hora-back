@@ -8,15 +8,16 @@ public sealed class PostgresDbErrorTranslator : IDbErrorTranslator
     private static readonly IReadOnlyDictionary<string, string> Explicit =
         new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
+            // ServicesOffering
+            ["ux_cso_company_position_name"] = "Ja existe um serviço com esse nome",
+           
             // Positions
             ["ux_company_positions_companyid_name"] = "Já existe um cargo com esse nome.",
-            ["ux_company_positions_companyid_name_normalized"] = "Já existe um cargo com esse nome.",
 
             // Companies
             ["ux_companies_cnpj"] = "Já existe uma empresa com esse CNPJ.",
             ["ux_companies_email"] = "Já existe uma empresa com esse e-mail.",
             ["ux_companies_name"] = "Já existe uma empresa com essa razão social.",
-            ["ux_company_services_companyid_servicename"] = "Já existe um serviço com esse nome.",
 
             // Users
             ["ux_users_username"] = "Nome de usuário já em uso.",

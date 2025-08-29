@@ -28,10 +28,19 @@ public class GenericRepository<T> : IGenericRepository<T> where T : Entity
     public Task UpdateAsync(T entity, CancellationToken ct = default)
     {
         if (entity is null) throw new ArgumentNullException(nameof(entity));
+
         entity.Touch();
-        _set.Update(entity);
+
+        var entry = _context.Entry(entity);
+        if (entry.State == EntityState.Detached)
+        {
+            _set.Attach(entity);
+            _context.Entry(entity).State = EntityState.Modified;
+        }
+
         return Task.CompletedTask;
     }
+
 
     public Task DeleteAsync(T entity, CancellationToken ct = default)
     {

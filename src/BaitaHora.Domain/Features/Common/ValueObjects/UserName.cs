@@ -7,7 +7,7 @@ public readonly record struct Username
     private Username(string value) => Value = value;
 
     private static readonly Regex Pattern = new(
-        @"^(?=.{3,20}$)(?![._])(?!.*[._]{2})[a-z0-9._]+(?<![._])(?=.*[a-z]).*$",
+        @"^(?=.{3,20}$)(?=.*[a-z])(?![._])(?!.*[._]{2})[a-z0-9._]+(?<![._])$",
         RegexOptions.Compiled);
 
     private static readonly HashSet<string> Reserved = new(StringComparer.OrdinalIgnoreCase)
@@ -19,7 +19,8 @@ public readonly record struct Username
 
     public static Username Parse(string input)
     {
-        if (input is null) throw new UserException("Username obrigatório.");
+        if (input is null)
+            throw new UserException("Username obrigatório.");
 
         var norm = input.Trim().ToLowerInvariant();
 
@@ -28,14 +29,29 @@ public readonly record struct Username
 
         if (!Pattern.IsMatch(norm))
             throw new UserException(
-                "Username inválido. Use 3–20 chars: letras, números, ponto ou underline; " +
-                "não comece/termine com . ou _; evite repetição de separadores.");
+                "Username inválido. Use 3–20 caracteres (letras, números, ponto ou underline); " +
+                "não comece/termine com . ou _; sem repetição de separadores.");
 
         return new Username(norm);
     }
 
     public static bool TryParse(string? input, out Username result)
-    { try { result = Parse(input!); return true; } catch { result = default; return false; } }
+    {
+        result = default;
+        if (string.IsNullOrWhiteSpace(input))
+            return false;
+
+        var norm = input.Trim().ToLowerInvariant();
+
+        if (Reserved.Contains(norm))
+            return false;
+
+        if (!Pattern.IsMatch(norm))
+            return false;
+
+        result = new Username(norm);
+        return true;
+    }
 
     public override string ToString() => Value;
     public static implicit operator string(Username u) => u.Value;

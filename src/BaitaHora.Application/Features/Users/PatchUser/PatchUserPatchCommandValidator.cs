@@ -9,14 +9,14 @@ public sealed class PatchUserCommandValidator : AbstractValidator<PatchUserComma
 {
     public PatchUserCommandValidator()
     {
-        When(x => !string.IsNullOrWhiteSpace(x.UserEmail), () =>
+        When(x => !string.IsNullOrWhiteSpace(x.NewUserEmail), () =>
         {
-            RuleFor(x => x.UserEmail!).EmailVo();
+            RuleFor(x => x.NewUserEmail!).EmailVo();
         });
 
-        When(x => !string.IsNullOrWhiteSpace(x.Username), () =>
+        When(x => !string.IsNullOrWhiteSpace(x.NewUsername), () =>
         {
-            RuleFor(x => x.Username!)
+            RuleFor(x => x.NewUsername!)
                 .MinimumLength(3).WithMessage("O username deve ter pelo menos 3 caracteres.")
                 .MaximumLength(50).WithMessage("O username deve ter no máximo 50 caracteres.")
                 .Must(u => Regex.IsMatch(u, "^[A-Za-z0-9._-]+$"))
@@ -29,9 +29,9 @@ public sealed class PatchUserCommandValidator : AbstractValidator<PatchUserComma
                     .WithMessage("Username inválido.");
         });
 
-        When(x => x.Profile is not null, () =>
+        When(x => x.NewProfile is not null, () =>
         {
-            RuleFor(x => x.Profile!).SetValidator(new PatchUserProfileCommandValidator());
+            RuleFor(x => x.NewProfile!).SetValidator(new PatchUserProfileCommandValidator());
         });
     }
 }

@@ -2,7 +2,7 @@ using BaitaHora.Application.Features.Addresses.Create;
 
 namespace BaitaHora.Application.Features.Companies.Common.Create;
 
-public abstract record CreateCompanyBaseCommand
+public abstract record CreateCompanyBaseCommand : ICompanyLike
 {
     public string CompanyName { get; init; } = default!;
     public string Cnpj { get; init; } = default!;
@@ -10,4 +10,10 @@ public abstract record CreateCompanyBaseCommand
     public string CompanyEmail { get; init; } = default!;
     public string CompanyPhone { get; init; } = default!;
     public CreateAddressCommand Address { get; init; } = default!;
+
+    string? ICompanyLike.CompanyName => CompanyName;
+    string? ICompanyLike.Cnpj => Cnpj;
+    string? ICompanyLike.TradeName => TradeName;
+    string? ICompanyLike.CompanyEmail => CompanyEmail;
+    string? ICompanyLike.CompanyPhone => CompanyPhone;
 }

@@ -1,17 +1,29 @@
-using BaitaHora.Application.Features.Companies.Commands;
-using BaitaHora.Contracts.DTOs.Companies;
+using BaitaHora.Application.Features.Companies.ServiceOffering.Patch;
+using BaitaHora.Contracts.DTOs.Companies.Company.Create;
+using BaitaHora.Contracts.DTOs.Companies.Company.Patch;
 
 namespace BaitaHora.Api.Mappers.Companies;
 
-public static class CompanyServicesApiMapper
+public static class CompanyServiceOfferingsApiMappers
 {
-    public static CreateCompanyServiceCommand ToCommand(this CreateCompanyServiceRequest r, Guid companyId)
-        => new()
+    public static CreateCompanyServiceOfferingCommand ToCommand(
+        this CreateCompanyServiceOfferingRequest r, Guid companyId)
+        => new CreateCompanyServiceOfferingCommand
         {
             CompanyId = companyId,
-            ServiceName = r.ServiceName,
+            ServiceOfferingName = r.ServiceOfferingName,
             Amount = r.Amount,
             Currency = r.Currency,
-            PositionIds = r.PositionIds ?? Array.Empty<Guid>()
+        };
+
+    public static PatchCompanyServiceOfferingCommand ToCommand(
+        this PatchCompanyServiceOfferingRequest r, Guid companyId, Guid serviceOfferingId)
+        => new PatchCompanyServiceOfferingCommand
+        {
+            CompanyId = companyId,
+            ServiceOfferingId = serviceOfferingId,
+            ServiceOfferingName = r.ServiceOfferingName,
+            Amount = r.Amount,
+            Currency = r.Currency,
         };
 }

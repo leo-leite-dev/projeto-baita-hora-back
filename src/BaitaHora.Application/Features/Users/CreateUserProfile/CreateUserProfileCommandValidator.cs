@@ -42,9 +42,9 @@ public sealed class CreateUserProfileCommandValidator : AbstractValidator<Create
             .When(x => !string.IsNullOrWhiteSpace(x.UserPhone));
 
         RuleFor(x => x.BirthDate)
-            .Must(d => d == null || d.Value.Date <= DateTime.UtcNow.Date)
+            .Must(d => d == null || d.Value <= DateOnly.FromDateTime(DateTime.UtcNow))
                 .WithMessage("A data de nascimento não pode estar no futuro.")
-            .Must(d => d == null || d.Value.Date >= DateTime.UtcNow.Date.AddYears(-120))
+            .Must(d => d == null || d.Value >= DateOnly.FromDateTime(DateTime.UtcNow.AddYears(-120)))
                 .WithMessage("Data de nascimento muito antiga.")
             .Must(IsAdult)
                 .WithMessage("Usuário deve ter pelo menos 18 anos.")
@@ -68,12 +68,16 @@ public sealed class CreateUserProfileCommandValidator : AbstractValidator<Create
         return Regex.Replace(s, @"\D", string.Empty).Length;
     }
 
-    private static bool IsAdult(DateTime? birthDate)
+    private static bool IsAdult(DateOnly? birthDate)
     {
         if (!birthDate.HasValue) return true;
-        var birth = birthDate.Value.Date;
-        var today = DateTime.UtcNow.Date;
-        var age = today.Year - birth.Year - (birth > today.AddYears(-(today.Year - birth.Year)) ? 1 : 0);
+
+        var birth = birthDate.Value;
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+
+        var age = today.Year - birth.Year;
+        if (birth > today.AddYears(-age)) age--;
+
         return age >= 18;
     }
 }

@@ -1,10 +1,7 @@
 using BaitaHora.Application.Common.Results;
-using BaitaHora.Application.Features.Companies.Commands;
-using BaitaHora.Application.Features.Companies.Responses;
-using BaitaHora.Application.Features.Companies.UseCases;
 using MediatR;
 
-namespace BaitaHora.Application.Features.Companies.Handlers;
+namespace BaitaHora.Application.Features.Companies.Positions.Create;
 
 public sealed class CreateCompanyPositionHandler
     : IRequestHandler<CreateCompanyPositionCommand, Result<CreateCompanyPositionResponse>>

@@ -1,4 +1,5 @@
 using BaitaHora.Domain.Features.Common.Exceptions;
+using System.Text.RegularExpressions;
 
 namespace BaitaHora.Domain.Features.Users.ValueObjects;
 
@@ -22,11 +23,13 @@ public readonly record struct RG
 
         var normalized = new string(input.Where(char.IsLetterOrDigit).ToArray()).ToUpperInvariant();
 
-        if (normalized.Length < 5) return false;
+        if (normalized.Length < 5 || normalized.Length > 12)
+            return false;
+
+        if (!Regex.IsMatch(normalized, @"^\d{5,11}[0-9X]?$"))
+            return false;
 
         rg = new RG(normalized);
         return true;
     }
-
-    public override string ToString() => Value;
 }

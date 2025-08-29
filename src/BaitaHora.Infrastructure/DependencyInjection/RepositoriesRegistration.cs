@@ -21,7 +21,7 @@ public static class RepositoriesRegistration
         services.AddScoped<ICompanyRepository, CompanyRepository>();
         services.AddScoped<ICompanyMemberRepository, CompanyMemberRepository>();
         services.AddScoped<ICompanyPositionRepository, CompanyPositionRepository>();
-        services.AddScoped<ICompanyServiceRepository, CompanyServiceRepository>();
+        services.AddScoped<ICompanyServiceOfferingRepository, CompanyServiceOfferingRepository>();
         services.AddScoped<IScheduleRepository, ScheduleRepository>();
        
         return services;

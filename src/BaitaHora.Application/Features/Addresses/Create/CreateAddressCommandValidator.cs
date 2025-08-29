@@ -1,6 +1,5 @@
-using BaitaHora.Application.Features.Addresses.Common;
-using FluentValidation;
 using DomainAddress = BaitaHora.Domain.Features.Common.ValueObjects.Address;
+using FluentValidation;
 
 namespace BaitaHora.Application.Features.Addresses.Create;
 

@@ -12,27 +12,49 @@ public sealed class UserProfile : Entity
     public CPF Cpf { get; private set; } = default!;
     public RG? Rg { get; private set; }
 
-    public DateOnly? BirthDate { get; private set; }
+    public DateOfBirth? BirthDate { get; private set; }
     public Phone UserPhone { get; private set; }
     public Address Address { get; private set; } = default!;
     public string? ProfileImageUrl { get; private set; }
 
     private UserProfile() { }
 
-    public static UserProfile Create(string fullName, CPF cpf, Phone userPhone, Address address)
+    public static UserProfile Create(string fullName, CPF cpf, RG? rg, Phone userPhone, DateOfBirth? birthDate, Address address)
     {
         if (address is null) throw new UserException("Endereço é obrigatório.");
 
-        var profile = new UserProfile();
-        profile.SetAddress(address);
-        profile.SetFullName(fullName);
-        profile.SetCpf(cpf);
-        profile.SetPhone(userPhone);
+        {
+            var profile = new UserProfile
+            {
+                FullName = fullName.Trim(),
+                Cpf = cpf,
+                Rg = rg,
+                UserPhone = userPhone,
+                BirthDate = birthDate,
+                Address = address
+            };
 
-        return profile;
+            profile.ValidateInvariants();
+            return profile;
+        }
     }
 
-    public bool SetFullName(string newFullName)
+    private void ValidateInvariants()
+    {
+        if (string.IsNullOrWhiteSpace(FullName))
+            throw new UserException("Nome completo é obrigatório.");
+
+        if (FullName.Length > 120)
+            throw new UserException("Nome completo deve ter no máximo 120 caracteres.");
+
+        if (Cpf == default)
+            throw new CompanyException("CPF é obrigatório.");
+
+        if (UserPhone == default)
+            throw new CompanyException("Telefone é obrigatório.");
+    }
+
+    public bool RenameFullName(string newFullName)
     {
         var value = (newFullName ?? string.Empty).Trim();
         if (value.Length < 3 || value.Length > 200)
@@ -43,59 +65,39 @@ public sealed class UserProfile : Entity
         return true;
     }
 
-    public bool SetCpf(CPF newCpf)
+    public bool ChangeCpf(CPF newCpf)
     {
         if (Cpf.Equals(newCpf)) return false;
         Cpf = newCpf;
         return true;
     }
 
-    public bool SetRg(RG? newRg)
+    public bool ChangeRg(RG? newRg)
     {
         if (Nullable.Equals(Rg, newRg)) return false;
         Rg = newRg;
         return true;
     }
 
-    public bool SetBirthDate(DateOnly? newBirthDate)
-    {
-        DateOnly? normalized = null;
-        if (newBirthDate.HasValue)
-        {
-            var birth = newBirthDate.Value;
-            var today = DateOnly.FromDateTime(DateTime.UtcNow);
-
-            if (birth > today)
-                throw new UserException("A data de nascimento não pode estar no futuro.");
-            if (birth < today.AddYears(-120))
-                throw new UserException("Data de nascimento muito antiga.");
-
-            var age = today.Year - birth.Year;
-            if (birth > today.AddYears(-age))
-                age--;
-
-            if (age < 18)
-                throw new UserException("Usuário deve ter pelo menos 18 anos.");
-
-            normalized = birth;
-        }
-
-        if (BirthDate.HasValue == normalized.HasValue &&
-            (!BirthDate.HasValue || BirthDate.Value == normalized!.Value))
-            return false;
-
-        BirthDate = normalized;
-        return true;
-    }
-
-    public bool SetPhone(Phone newPhone)
+    public bool ChangePhone(Phone newPhone)
     {
         if (UserPhone.Equals(newPhone)) return false;
         UserPhone = newPhone;
         return true;
     }
 
-    public bool SetAddress(Address newAddress)
+    public bool ChangeBirthDate(DateOfBirth? newDob)
+    {
+        if (BirthDate.HasValue == newDob.HasValue &&
+            (!BirthDate.HasValue || BirthDate!.Value.Equals(newDob!.Value)))
+            return false;
+
+        BirthDate = newDob;
+        Touch();
+        return true;
+    }
+
+    public bool ChangeAddress(Address newAddress)
     {
         if (newAddress is null) throw new UserException("Endereço é obrigatório.");
         if (Address is not null && Equals(Address, newAddress)) return false;
@@ -104,7 +106,7 @@ public sealed class UserProfile : Entity
         return true;
     }
 
-    public bool SetProfileImageUrl(string? url)
+    public bool ChangeProfileImageUrl(string? url)
     {
         if (url is null) return false;
         var trimmed = url.Trim();

@@ -69,6 +69,24 @@ public sealed class ExceptionHttpMappingMiddleware
             _logger.LogError(ex, "Erro de banco não tratado. SqlState={SqlState}", pex.SqlState);
             await WriteProblem(ctx, StatusCodes.Status400BadRequest, "Erro de dados", "Erro ao persistir dados.");
         }
+        catch (ArgumentOutOfRangeException ex)
+        {
+            if (ctx.Response.HasStarted)
+            {
+                _logger.LogError(ex, "ArgumentOutOfRange após resposta iniciada. TraceId={TraceId}", ctx.TraceIdentifier);
+                return;
+            }
+
+            _logger.LogWarning(ex, "Valor inválido para parâmetro {ParamName}", ex.ParamName);
+
+            var param = ex.ParamName ?? "parâmetro";
+            var value = ex.ActualValue?.ToString() ?? "desconhecido";
+            var detail = $"O valor enviado para '{param}' não é aceito. Valor recebido: '{value}'. " +
+                         $"Valores permitidos: Manager, Staff ou Viewer.";
+
+            await WriteProblem(ctx, StatusCodes.Status400BadRequest, "Parâmetro inválido", detail
+            );
+        }
         catch (Exception ex)
         {
             if (ctx.Response.HasStarted) { _logger.LogError(ex, "Erro inesperado após resposta iniciada. TraceId={TraceId}", ctx.TraceIdentifier); return; }

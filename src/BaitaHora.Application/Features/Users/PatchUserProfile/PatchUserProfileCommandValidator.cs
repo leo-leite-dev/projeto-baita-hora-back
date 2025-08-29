@@ -8,23 +8,23 @@ public sealed class PatchUserProfileCommandValidator : AbstractValidator<PatchUs
     public PatchUserProfileCommandValidator()
     {
         // Nome: só valida se veio
-        When(p => !string.IsNullOrWhiteSpace(p.FullName), () =>
+        When(p => !string.IsNullOrWhiteSpace(p.NewFullName), () =>
         {
-            RuleFor(p => p.FullName!)
+            RuleFor(p => p.NewFullName!)
                 .MaximumLength(200)
                 .WithMessage("Nome muito longo (máx 200).");
         });
 
         // BirthDate (DateOnly?): se vier, não pode ser futura
-        When(p => p.BirthDate.HasValue, () =>
+        When(p => p.NewBirthDate.HasValue, () =>
         {
-            RuleFor(p => p.BirthDate!.Value)
+            RuleFor(p => p.NewBirthDate!.Value)
                 .Must(d => d <= DateOnly.FromDateTime(DateTime.UtcNow))
                 .WithMessage("Data de nascimento não pode ser no futuro.");
         });
 
         // Telefone: só valida se vier
-        When(p => !string.IsNullOrWhiteSpace(p.UserPhone), () =>
+        When(p => !string.IsNullOrWhiteSpace(p.NewUserPhone), () =>
         {
             // Opção A: se tiver Phone.TryParse
             // RuleFor(p => p.UserPhone!)
@@ -32,13 +32,13 @@ public sealed class PatchUserProfileCommandValidator : AbstractValidator<PatchUs
             //    .WithMessage("Telefone inválido.");
 
             // Opção B: regex simples (mantém flexível)
-            RuleFor(p => p.UserPhone!)
+            RuleFor(p => p.NewUserPhone!)
                 .Matches(@"^\+?\d[\d\s\-()]{7,}$")
                 .WithMessage("Telefone inválido.");
         });
 
         // CPF: só valida se vier
-        When(p => !string.IsNullOrWhiteSpace(p.Cpf), () =>
+        When(p => !string.IsNullOrWhiteSpace(p.NewCpf), () =>
         {
             // Opção A: VO
             // RuleFor(p => p.Cpf!)
@@ -46,13 +46,13 @@ public sealed class PatchUserProfileCommandValidator : AbstractValidator<PatchUs
             //     .WithMessage("CPF inválido.");
 
             // Opção B: regex (###.###.###-## ou 11 dígitos)
-            RuleFor(p => p.Cpf!)
+            RuleFor(p => p.NewCpf!)
                 .Matches(@"^\d{11}$|^\d{3}\.?\d{3}\.?\d{3}\-?\d{2}$")
                 .WithMessage("CPF inválido.");
         });
 
         // RG: só valida se vier
-        When(p => !string.IsNullOrWhiteSpace(p.Rg), () =>
+        When(p => !string.IsNullOrWhiteSpace(p.NewRg), () =>
         {
             // Opção A: VO
             // RuleFor(p => p.Rg!)
@@ -60,7 +60,7 @@ public sealed class PatchUserProfileCommandValidator : AbstractValidator<PatchUs
             //     .WithMessage("RG inválido.");
 
             // Opção B: regra simples
-            RuleFor(p => p.Rg!)
+            RuleFor(p => p.NewRg!)
                 .Matches(@"^[A-Za-z0-9.\-\/]{5,20}$")
                 .WithMessage("RG inválido.");
         });

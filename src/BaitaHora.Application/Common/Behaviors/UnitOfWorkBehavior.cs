@@ -1,6 +1,7 @@
 using BaitaHora.Application.Common.Persistence;
 using BaitaHora.Application.Common.Results;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace BaitaHora.Application.Common.Behaviors;
 
@@ -16,10 +17,20 @@ public sealed class UnitOfWorkBehavior<TRequest, TResponse>
     where TRequest : notnull
 {
     private readonly ITransactionalUnitOfWork _uow;
+    private readonly ILogger<UnitOfWorkBehavior<TRequest, TResponse>> _log;
 
-    public UnitOfWorkBehavior(ITransactionalUnitOfWork uow) => _uow = uow;
+    public UnitOfWorkBehavior(
+        ITransactionalUnitOfWork uow,
+        ILogger<UnitOfWorkBehavior<TRequest, TResponse>> log)
+    {
+        _uow = uow;
+        _log = log;
+    }
 
-    public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken ct)
+    public async Task<TResponse> Handle(
+        TRequest request,
+        RequestHandlerDelegate<TResponse> next,
+        CancellationToken ct)
     {
         if (request is not ITransactionalRequest)
             return await next();
@@ -41,7 +52,11 @@ public sealed class UnitOfWorkBehavior<TRequest, TResponse>
 
             if (!shouldCommit)
             {
-                if (ownsTx && tx is not null) await tx.RollbackAsync(ct);
+                if (ownsTx && tx is not null)
+                    await tx.RollbackAsync(ct);
+
+                _log.LogInformation("UoW skip commit (ShouldCommit=false) para {RequestType}.",
+                    typeof(TRequest).Name);
                 return response;
             }
 
@@ -50,12 +65,17 @@ public sealed class UnitOfWorkBehavior<TRequest, TResponse>
             if (ownsTx && tx is not null)
                 await tx.CommitAsync(ct);
 
+            _log.LogDebug("UoW commit concluído para {RequestType}.", typeof(TRequest).Name);
             return response;
         }
-        catch
+        catch (Exception ex)
         {
+            _log.LogError(ex, "Erro durante UoW. Request={RequestType}, HasActiveTx={HasTx}",
+                typeof(TRequest).Name, _uow.HasActiveTransaction);
+
             if (ownsTx && tx is not null)
                 await tx.RollbackAsync(ct);
+
             throw;
         }
         finally

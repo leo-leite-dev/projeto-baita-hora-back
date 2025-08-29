@@ -1,161 +1,62 @@
 using BaitaHora.Application.Common.Results;
 using BaitaHora.Application.Features.Companies.Guards;
+using BaitaHora.Application.Features.Companies.Guards.Interfaces;
 using BaitaHora.Application.Features.Companies.Responses;
-using BaitaHora.Application.IRepositories.Companies;
-using BaitaHora.Application.IRepositories.Users;
-using BaitaHora.Domain.Features.Common.ValueObjects;
-using BaitaHora.Domain.Features.Users.Entities;
-using BaitaHora.Domain.Features.Users.ValueObjects;
+using BaitaHora.Application.Features.Users.Common;
+using BaitaHora.Domain.Features.Companies.Enums;
 
-namespace BaitaHora.Application.Features.Companies.Members.Employee.Patch;
+namespace BaitaHora.Application.Features.Companies.Members.Employee;
 
 public sealed class PatchEmployeeUseCase
 {
-    private readonly IUserRepository _userRepository;
-    private readonly ICompanyMemberRepository _companyMemberRepository;
     private readonly ICompanyGuards _companyGuards;
     private readonly ICompanyMemberGuards _companyMemberGuards;
-    private readonly ICompanyPositionGuards _companyPositionGuards;
+    private readonly IUserGuards _userGuards;
 
     public PatchEmployeeUseCase(
-        IUserRepository userRepository,
-        ICompanyMemberRepository companyMemberRepository,
         ICompanyGuards companyGuards,
         ICompanyMemberGuards companyMemberGuards,
-        ICompanyPositionGuards companyPositionGuards)
+        IUserGuards userGuards)
     {
-        _userRepository = userRepository;
-        _companyMemberRepository = companyMemberRepository;
         _companyGuards = companyGuards;
         _companyMemberGuards = companyMemberGuards;
-        _companyPositionGuards = companyPositionGuards;
+        _userGuards = userGuards;
     }
 
-    public async Task<Result<PatchEmployeeResponse>> HandleAsync(PatchEmployeeCommand request, CancellationToken ct)
+    public async Task<Result<PatchEmployeeResponse>> HandleAsync(
+        PatchEmployeeCommand request, CancellationToken ct)
     {
-        var companyResult = await _companyGuards.GetWithMembersAndPositionsOrNotFoundAsync(request.CompanyId, ct);
-        if (!companyResult.IsSuccess)
-            return companyResult.MapError<PatchEmployeeResponse>();
-        var company = companyResult.Value!;
+        var compRes = await _companyGuards.ExistsCompany(request.CompanyId, ct);
+        if (compRes.IsFailure)
+            return Result<PatchEmployeeResponse>.FromError(compRes);
 
-        var memberResult = _companyMemberGuards.GetMemberOrNotFound(company, request.EmployeeId, requireActive: false);
-        if (!memberResult.IsSuccess)
-            return memberResult.MapError<PatchEmployeeResponse>();
-        var member = memberResult.Value!;
+        var company = compRes.Value!;
 
-        var changed = false;
-        var requiresSessionRefresh = false;
+        var memberRes = _companyMemberGuards.GetMemberOrNotFound(company, request.EmployeeId);
+        if (memberRes.IsFailure)
+            return Result<PatchEmployeeResponse>.FromError(memberRes);
 
-        if (request.PositionId is Guid posId)
+        var member = memberRes.Value!;
+
+        var userRes = await _userGuards.EnsureUserExistsWithProfileAsync(member.UserId, ct);
+        if (userRes.IsFailure)
+            return Result<PatchEmployeeResponse>.FromError(userRes);
+
+        var user = userRes.Value!;
+
+        if (member.Role == CompanyRole.Owner)
         {
-            var positionResult = _companyPositionGuards.GetValidPositionOrBadRequest(company, posId);
-            if (!positionResult.IsSuccess)
-                return positionResult.MapError<PatchEmployeeResponse>();
-
-            var position = positionResult.Value!;
-
-            if (member.SetPrimaryPosition(position))
-                changed = true;
-
-            var (roleChanged, mustRefresh) = member.SetRole(
-                newRole: position.AccessLevel,
-                allowOwnerLevel: false
+            var err = Result.Conflict(
+                "Não é permitido editar o fundador (Owner) pelo endpoint de funcionários.",
+                ResultCodes.Conflict.BusinessRule
             );
 
-            if (roleChanged)
-                changed = true;
-            if (mustRefresh)
-                requiresSessionRefresh = true;
+            return Result<PatchEmployeeResponse>.FromError(err); 
         }
 
-        User? user = null;
-        if (request.Employee is not null)
-        {
-            user = await _userRepository.GetByIdAsync(member.UserId, ct);
-            if (user is null)
-                return Result<PatchEmployeeResponse>.NotFound("Membro da companhia não encontrado.");
+        PatchUserApplier.Apply(user, request.NewEmployee);
 
-            var changedUser = false;
-
-            if (!string.IsNullOrWhiteSpace(request.Employee.UserEmail))
-                changedUser |= user.SetEmail(Email.Parse(request.Employee.UserEmail));
-
-            if (!string.IsNullOrWhiteSpace(request.Employee.Username))
-                changedUser |= user.SetUsername(Username.Parse(request.Employee.Username));
-
-            user = await _userRepository.GetByIdWithProfileAsync(member.UserId, ct);
-            if (user is null)
-                return Result<PatchEmployeeResponse>.NotFound("Membro da empresa não encontrado.");
-
-            if (request.Employee.Profile is not null)
-            {
-                var p = request.Employee.Profile;
-
-                if (!string.IsNullOrWhiteSpace(p.FullName))
-                    changedUser |= user.Profile.SetFullName(p.FullName);
-
-                if (p.BirthDate is { } birthDate)
-                    changedUser |= user.Profile.SetBirthDate(birthDate);
-
-                if (!string.IsNullOrWhiteSpace(p.UserPhone))
-                    changedUser |= user.Profile.SetPhone(Phone.Parse(p.UserPhone));
-
-                if (!string.IsNullOrWhiteSpace(p.Cpf))
-                    changedUser |= user.Profile.SetCpf(CPF.Parse(p.Cpf));
-
-                if (!string.IsNullOrWhiteSpace(p.Rg))
-                    changedUser |= user.Profile.SetRg(RG.Parse(p.Rg));
-
-                if (p.Address is not null)
-                {
-                    var addr = Address.Create(
-                        street: p.Address.Street,
-                        number: p.Address.Number,
-                        complement: p.Address.Complement,
-                        neighborhood: p.Address.Neighborhood,
-                        city: p.Address.City,
-                        state: p.Address.State,
-                        zipCode: p.Address.ZipCode
-                    );
-                    changedUser |= user.Profile.SetAddress(addr);
-                }
-            }
-
-            if (changedUser)
-            {
-                changed = true;
-                await _userRepository.UpdateAsync(user, ct);
-            }
-        }
-
-        if (!changed)
-        {
-            var ok = new PatchEmployeeResponse(
-                EmployeeId: member.UserId,
-                EmployeeName: member.User.Profile.FullName
-            );
-            return Result<PatchEmployeeResponse>.Ok(ok);
-        }
-
-        await _companyMemberRepository.UpdateAsync(member, ct);
-
-        if (requiresSessionRefresh)
-        {
-            if (user is null)
-            {
-                user = await _userRepository.GetByIdAsync(member.UserId, ct);
-                if (user is null)
-                    return Result<PatchEmployeeResponse>.NotFound("Membro da companhia não encontrado.");
-            }
-
-            if (user.IncrementTokenVersion())
-                await _userRepository.UpdateAsync(user, ct);
-        }
-
-        var response = new PatchEmployeeResponse(
-            EmployeeId: member.UserId,
-            EmployeeName: member.User.Profile.FullName
-        );
-        return Result<PatchEmployeeResponse>.Ok(response);
+        var response = new PatchEmployeeResponse(user.Id, user.Profile.FullName);
+        return Result<PatchEmployeeResponse>.Created(response);
     }
 }

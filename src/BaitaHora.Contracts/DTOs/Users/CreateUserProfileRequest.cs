@@ -4,9 +4,9 @@ namespace BaitaHora.Contracts.DTOs.Users;
 
 public sealed record CreateUserProfileRequest(
     string FullName,
-    string UserPhone,
-    DateTime? BirthDate,
     string Cpf,
     string? Rg,
+    string UserPhone,
+    DateOnly? BirthDate,
     CreateAddressRequest Address
 );
