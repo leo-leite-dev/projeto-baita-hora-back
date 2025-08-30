@@ -9,7 +9,7 @@ using MediatR;
 namespace BaitaHora.Application.Features.Companies.Members.Employee.Register;
 
 public sealed record RegisterEmployeeCommand
-    : IRequest<Result<RegisterEmployeeResponse>>, ITransactionalRequest, IAuthorizableRequest
+    : IRequest<Result<RegisterEmployeeResponse>>, IAuthorizableRequest, ITransactionalRequest
 {
     public required Guid CompanyId { get; init; }
     public required Guid PositionId { get; init; }

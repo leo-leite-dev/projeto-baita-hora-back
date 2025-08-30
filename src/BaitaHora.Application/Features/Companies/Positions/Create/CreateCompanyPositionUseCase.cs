@@ -1,4 +1,5 @@
 using BaitaHora.Application.Common.Results;
+using BaitaHora.Application.Features.Companies.Guards.Interfaces;
 using BaitaHora.Application.IRepositories.Companies;
 
 namespace BaitaHora.Application.Features.Companies.Positions.Create;
@@ -6,23 +7,37 @@ namespace BaitaHora.Application.Features.Companies.Positions.Create;
 public sealed class CreateCompanyPositionUseCase
 {
     private readonly ICompanyRepository _companyRepository;
+    private readonly ICompanyPositionRepository _companyPositionRepository;
+    private readonly ICompanyGuards _companyGuards;
 
-    public CreateCompanyPositionUseCase(ICompanyRepository companyRepository)
-        => _companyRepository = companyRepository;
+    public CreateCompanyPositionUseCase(
+        ICompanyGuards companyGuards,
+        ICompanyRepository companyRepository,
+        ICompanyPositionRepository companyPositionRepository)
+    {
+        _companyGuards = companyGuards;
+        _companyRepository = companyRepository;
+        _companyPositionRepository = companyPositionRepository;
+    }
 
     public async Task<Result<CreateCompanyPositionResponse>> HandleAsync(
         CreateCompanyPositionCommand cmd, CancellationToken ct)
     {
-        var company = await _companyRepository.GetDetailsByIdAsync(cmd.CompanyId, ct);
-        if (company is null)
-            return Result<CreateCompanyPositionResponse>.NotFound("Empresa não encontrada.");
+        var compRes = await _companyGuards.ExistsCompany(cmd.CompanyId, ct);
+        if (compRes.IsFailure)
+            return Result<CreateCompanyPositionResponse>.FromError(compRes);
+
+        var company = compRes.Value!;
 
         var position = company.AddPosition(cmd.PositionName, cmd.AccessLevel);
+
+        await _companyPositionRepository.AddAsync(position);
+        await _companyRepository.UpdateAsync(company);
 
         var response = new CreateCompanyPositionResponse(
             position.Id,
             company.Id,
-            position.PositionName,
+            position.Name,
             position.AccessLevel.ToString()
         );
 

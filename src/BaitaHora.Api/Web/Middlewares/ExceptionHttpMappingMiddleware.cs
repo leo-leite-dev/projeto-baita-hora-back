@@ -81,8 +81,7 @@ public sealed class ExceptionHttpMappingMiddleware
 
             var param = ex.ParamName ?? "parâmetro";
             var value = ex.ActualValue?.ToString() ?? "desconhecido";
-            var detail = $"O valor enviado para '{param}' não é aceito. Valor recebido: '{value}'. " +
-                         $"Valores permitidos: Manager, Staff ou Viewer.";
+            var detail = $"O valor enviado para '{param}' não é aceito. Valor recebido: '{value}'.";
 
             await WriteProblem(ctx, StatusCodes.Status400BadRequest, "Parâmetro inválido", detail
             );

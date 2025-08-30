@@ -19,7 +19,6 @@ namespace BaitaHora.Infrastructure.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    name = table.Column<string>(type: "citext", maxLength: 120, nullable: false),
                     cnpj = table.Column<string>(type: "character varying(18)", maxLength: 18, nullable: false),
                     addr_street = table.Column<string>(type: "character varying(120)", maxLength: 120, nullable: false),
                     addr_number = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
@@ -31,6 +30,7 @@ namespace BaitaHora.Infrastructure.Data.Migrations
                     phone = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: false),
                     email = table.Column<string>(type: "citext", maxLength: 256, nullable: false),
                     trade_name = table.Column<string>(type: "character varying(120)", maxLength: 120, nullable: true),
+                    name = table.Column<string>(type: "citext", maxLength: 120, nullable: false),
                     created_at_utc = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     updated_at_utc = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     is_active = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true)
@@ -91,6 +91,7 @@ namespace BaitaHora.Infrastructure.Data.Migrations
                     window_start_local = table.Column<TimeSpan>(type: "interval", nullable: false),
                     window_end_local = table.Column<TimeSpan>(type: "interval", nullable: false),
                     slot_anchor_local = table.Column<TimeSpan>(type: "interval", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
                     created_at_utc = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     updated_at_utc = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false)
@@ -118,6 +119,7 @@ namespace BaitaHora.Infrastructure.Data.Migrations
                     Address_State = table.Column<string>(type: "character varying(2)", maxLength: 2, nullable: false),
                     Address_ZipCode = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: false),
                     ProfileImageUrl = table.Column<string>(type: "character varying(512)", maxLength: 512, nullable: true),
+                    Name = table.Column<string>(type: "text", nullable: false),
                     CreatedAtUtc = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     UpdatedAtUtc = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false)
@@ -133,13 +135,13 @@ namespace BaitaHora.Infrastructure.Data.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     company_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    name = table.Column<string>(type: "citext", maxLength: 60, nullable: false),
                     permission_mask = table.Column<int>(type: "integer", nullable: false),
                     access_level = table.Column<string>(type: "character varying(50)", unicode: false, maxLength: 50, nullable: false),
-                    is_active = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
                     is_system = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
+                    name = table.Column<string>(type: "citext", maxLength: 60, nullable: false),
                     created_at_utc = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    updated_at_utc = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true)
+                    updated_at_utc = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    is_active = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true)
                 },
                 constraints: table =>
                 {
@@ -158,9 +160,9 @@ namespace BaitaHora.Infrastructure.Data.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     company_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     price_amount = table.Column<decimal>(type: "numeric(12,2)", precision: 12, scale: 2, nullable: false),
                     price_currency = table.Column<string>(type: "character varying(3)", maxLength: 3, nullable: false),
+                    name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     created_at_utc = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     updated_at_utc = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     is_active = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true)
@@ -213,6 +215,7 @@ namespace BaitaHora.Infrastructure.Data.Migrations
                     notes = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
                     cancellation_reason = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
                     status = table.Column<int>(type: "integer", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
                     created_at_utc = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     updated_at_utc = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false)
@@ -241,6 +244,7 @@ namespace BaitaHora.Infrastructure.Data.Migrations
                     pwd_reset_expires_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     ProfileId = table.Column<Guid>(type: "uuid", nullable: false),
                     token_version = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
+                    Name = table.Column<string>(type: "text", nullable: false),
                     CreatedAtUtc = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     UpdatedAtUtc = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true)
                 },
@@ -290,9 +294,10 @@ namespace BaitaHora.Infrastructure.Data.Migrations
                     primary_position_id = table.Column<Guid>(type: "uuid", nullable: true),
                     direct_permission_mask = table.Column<int>(type: "integer", nullable: false),
                     joined_at_utc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    is_active = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
+                    Name = table.Column<string>(type: "text", nullable: false),
                     CreatedAtUtc = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAtUtc = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true)
+                    UpdatedAtUtc = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    is_active = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true)
                 },
                 constraints: table =>
                 {

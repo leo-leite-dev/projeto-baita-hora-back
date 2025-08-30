@@ -13,6 +13,6 @@ public sealed record PatchOwnerCommand
     public required PatchUserCommand NewOwner { get; init; }
 
     public Guid ResourceId => CompanyId;
-    public IEnumerable<CompanyPermission> RequiredPermissions => new[] { CompanyPermission.ManageMember };
+    public IEnumerable<CompanyPermission> RequiredPermissions => [CompanyPermission.All];
     public bool RequireAllPermissions => true;
 }

@@ -9,7 +9,6 @@ namespace BaitaHora.Domain.Features.Companies.Entities;
 
 public sealed class Company : Entity
 {
-    public string CompanyName { get; private set; } = string.Empty;
     public CNPJ Cnpj { get; private set; } = default!;
     public Address Address { get; private set; } = default!;
     public Phone CompanyPhone { get; private set; }
@@ -25,8 +24,8 @@ public sealed class Company : Entity
     private readonly List<CompanyPosition> _companyPositions = new();
     public IReadOnlyCollection<CompanyPosition> Positions => _companyPositions.AsReadOnly();
 
-    private readonly List<CompanyServiceOffering> _companyServiceOfferings = new();
-    public IReadOnlyCollection<CompanyServiceOffering> ServiceOfferings => _companyServiceOfferings.AsReadOnly();
+    private readonly List<ServiceOffering> _ServiceOfferings = new();
+    public IReadOnlyCollection<ServiceOffering> ServiceOfferings => _ServiceOfferings.AsReadOnly();
 
     private Company() { }
 
@@ -37,10 +36,10 @@ public sealed class Company : Entity
 
         var company = new Company
         {
-            CompanyName = companyName.Trim(),
+            Name = companyName.Trim(),
             Cnpj = cnpj,
             Address = address,
-            TradeName = ActivatableEntity.NormalizeSpaces(tradeName),
+            TradeName = NormalizeSpaces(tradeName),
             CompanyPhone = companyPhone,
             CompanyEmail = companyEmail,
         };
@@ -51,10 +50,11 @@ public sealed class Company : Entity
 
     public bool Rename(string newName)
     {
-        if (CompanyName.Equals(newName))
+        if (Name.Equals(newName))
             return false;
 
-        CompanyName = newName;
+        ValidateInvariants();
+        Name = newName;
         return true;
     }
 
@@ -72,11 +72,12 @@ public sealed class Company : Entity
 
     public bool ChangeTradeName(string? newTradeName)
     {
-        var normalized = ActivatableEntity.NormalizeSpaces(newTradeName);
+        var normalized = NormalizeSpaces(newTradeName);
 
-        if (string.Equals(ActivatableEntity.NormalizeSpaces(TradeName), normalized, StringComparison.Ordinal))
+        if (string.Equals(NormalizeSpaces(TradeName), normalized, StringComparison.Ordinal))
             return false;
 
+        ValidateInvariants();
         TradeName = normalized;
         return true;
     }
@@ -102,10 +103,10 @@ public sealed class Company : Entity
     private void ValidateInvariants()
     {
 
-        if (string.IsNullOrWhiteSpace(CompanyName))
+        if (string.IsNullOrWhiteSpace(Name))
             throw new CompanyException("Nome completo é obrigatório.");
 
-        if (CompanyName.Length < 3 || CompanyName.Length > 120)
+        if (Name.Length < 3 || Name.Length > 120)
             throw new UserException("Nome completo deve ter de 3 a 120 caracteres.");
 
         if (Cnpj == default)
@@ -185,13 +186,13 @@ public sealed class Company : Entity
 
     public CompanyPosition AddPosition(string positionName, CompanyRole accessLevel, bool isSystem = false)
     {
-        positionName = ActivatableEntity.NormalizeSpaces(positionName);
+        positionName = NormalizeSpaces(positionName);
 
         if (string.IsNullOrWhiteSpace(positionName))
             throw new CompanyException("Nome do cargo é obrigatório.");
 
         if (_companyPositions.Any(p =>
-                string.Equals(ActivatableEntity.NormalizeSpaces(p.PositionName), positionName, StringComparison.OrdinalIgnoreCase)))
+                string.Equals(NormalizeSpaces(p.Name), positionName, StringComparison.OrdinalIgnoreCase)))
             throw new CompanyException("Já existe um cargo com esse nome.");
 
         var position = CompanyPosition.Create(
@@ -210,7 +211,7 @@ public sealed class Company : Entity
         var position = _companyPositions.SingleOrDefault(p => p.Id == positionId && p.IsActive)
             ?? throw new CompanyException("Cargo não encontrado ou inativo.");
 
-        var service = _companyServiceOfferings.SingleOrDefault(s => s.Id == serviceOfferingId)
+        var service = _ServiceOfferings.SingleOrDefault(s => s.Id == serviceOfferingId)
             ?? throw new CompanyException("Serviço não encontrado.");
 
         if (position.CompanyId != Id || service.CompanyId != Id)
@@ -222,65 +223,78 @@ public sealed class Company : Entity
 
     public bool RenamePosition(Guid positionId, string newName)
     {
-        newName = ActivatableEntity.NormalizeSpaces(newName);
+        newName = NormalizeSpaces(newName);
         var pos = _companyPositions.SingleOrDefault(p => p.Id == positionId)
             ?? throw new CompanyException("Cargo não encontrado.");
 
         if (_companyPositions.Any(p => p.Id != positionId &&
-                string.Equals(ActivatableEntity.NormalizeSpaces(p.PositionName), newName, StringComparison.OrdinalIgnoreCase)))
+                string.Equals(NormalizeSpaces(p.Name), newName, StringComparison.OrdinalIgnoreCase)))
             throw new CompanyException("Já existe um cargo com esse nome.");
 
         return pos.Rename(newName);
     }
 
-    public bool DeactivatePosition(Guid positionId)
-    {
-        var pos = _companyPositions.SingleOrDefault(p => p.Id == positionId)
-            ?? throw new CompanyException("Cargo não encontrado.");
+    // public bool DeactivatePosition(Guid positionId)
+    // {
+    //     var pos = _companyPositions.SingleOrDefault(p => p.Id == positionId)
+    //         ?? throw new CompanyException("Cargo não encontrado.");
 
-        if (_members.Any(m => m.PrimaryPositionId == pos.Id && m.IsActive))
-            throw new CompanyException("Não é possível desativar um cargo em uso.");
+    //     if (_members.Any(m => m.PrimaryPositionId == pos.Id && m.IsActive))
+    //         throw new CompanyException("Não é possível desativar um cargo em uso.");
 
-        return pos.Deactivate();
-    }
+    //     return pos.Deactivate();
+    // }
 
-    public bool ActivatePosition(Guid positionId)
-    {
-        var pos = _companyPositions.SingleOrDefault(p => p.Id == positionId)
-            ?? throw new CompanyException("Cargo não encontrado.");
+    // public bool ActivatePosition(Guid positionId)
+    // {
+    //     var pos = _companyPositions.SingleOrDefault(p => p.Id == positionId)
+    //         ?? throw new CompanyException("Cargo não encontrado.");
 
-        return pos.Activate();
-    }
+    //     return pos.Activate();
+    // }
 
     // ===== Service Offerings (ONE-TO-MANY) =====
-    public CompanyServiceOffering AddServiceOffering(string serviceName, Money price)
+    public ServiceOffering AddServiceOffering(string serviceName, Money price)
     {
-        var service = CompanyServiceOffering.Create(Id, serviceName, price);
+        if (!IsActive)
+            throw new CompanyException("Não é possível adicionar serviços em uma empresa inativa.");
 
-        _companyServiceOfferings.Add(service);
+        var normalized = NormalizeAndValidateName(serviceName);
+
+        var exists = _ServiceOfferings.Any(s =>
+            s.IsActive && NameEquals(s.Name, normalized));
+
+        var service = ServiceOffering.Create(Id, serviceName, price);
+
+        if (exists)
+            throw new CompanyException($"Já existe um serviço ativo com o nome '{normalized}'.");
+
+        _ServiceOfferings.Add(service);
 
         return service;
     }
 
     public bool RenameServiceOffering(Guid serviceOfferingId, string newName)
     {
-        newName = ActivatableEntity.NormalizeSpaces(newName);
-        var svc = _companyServiceOfferings.SingleOrDefault(s => s.Id == serviceOfferingId)
+        var service = _ServiceOfferings.SingleOrDefault(s => s.Id == serviceOfferingId)
             ?? throw new CompanyException("Serviço não encontrado.");
 
-        // Se a sua unicidade for global por empresa (CompanyId + ServiceName)
-        if (_companyServiceOfferings.Any(s => s.Id != serviceOfferingId &&
-               string.Equals(ActivatableEntity.NormalizeSpaces(s.ServiceOfferingName), newName, StringComparison.OrdinalIgnoreCase)))
-            throw new CompanyException("Já existe um serviço com esse nome.");
+        var normalized = NormalizeAndValidateName(newName);
 
-        return svc.Rename(newName);
+        var exists = _ServiceOfferings.Any(s =>
+         s.IsActive && s.Id != serviceOfferingId && NameEquals(s.Name, normalized));
+
+        if (exists)
+            throw new CompanyException($"Já existe um serviço ativo com o nome '{normalized}'.");
+
+        return service.Rename(normalized);
     }
 
     public void RemoveServiceOffering(Guid serviceOfferingId)
     {
-        var svc = _companyServiceOfferings.SingleOrDefault(s => s.Id == serviceOfferingId)
+        var svc = _ServiceOfferings.SingleOrDefault(s => s.Id == serviceOfferingId)
             ?? throw new CompanyException("Serviço não encontrado.");
-        _companyServiceOfferings.Remove(svc);
+        _ServiceOfferings.Remove(svc);
     }
 
     // ===== Helpers =====
@@ -288,7 +302,7 @@ public sealed class Company : Entity
     private CompanyPosition EnsurePositionByName(string positionName, CompanyRole accessLevel, bool isSystem = false)
     {
         var position = _companyPositions
-            .FirstOrDefault(p => p.PositionName.Equals(positionName, StringComparison.OrdinalIgnoreCase));
+            .FirstOrDefault(p => p.Name.Equals(positionName, StringComparison.OrdinalIgnoreCase));
 
 
         if (position != null)

@@ -2,6 +2,7 @@ using BaitaHora.Application.Common.Caching;
 using BaitaHora.Application.Features.Companies.Guards;
 using BaitaHora.Application.Features.Companies.Guards.Interfaces;
 using BaitaHora.Application.IServices.Companies;
+using BaitaHora.Infrastructure.Services.Companies;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace BaitaHora.Infrastructure.DependencyInjection;

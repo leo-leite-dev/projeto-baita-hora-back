@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace BaitaHora.Infrastructure.Data.Configurations;
 
-public sealed class CompanyServiceOfferingConfiguration : IEntityTypeConfiguration<CompanyServiceOffering>
+public sealed class ServiceOfferingConfiguration : IEntityTypeConfiguration<ServiceOffering>
 {
-    public void Configure(EntityTypeBuilder<CompanyServiceOffering> b)
+    public void Configure(EntityTypeBuilder<ServiceOffering> b)
     {
         b.ToTable("company_service_offerings");
 
@@ -16,7 +16,7 @@ public sealed class CompanyServiceOfferingConfiguration : IEntityTypeConfigurati
             .HasColumnName("company_id")
             .IsRequired();
 
-        b.Property(x => x.ServiceOfferingName)
+        b.Property(x => x.Name)
             .HasColumnName("name")
             .HasMaxLength(200)
             .IsRequired();
@@ -42,7 +42,7 @@ public sealed class CompanyServiceOfferingConfiguration : IEntityTypeConfigurati
                  .IsRequired();
         });
 
-        b.HasIndex(x => new { x.CompanyId, x.ServiceOfferingName })
+        b.HasIndex(x => new { x.CompanyId, x.Name })
             .IsUnique()
             .HasDatabaseName("ux_cso_company_name");
 

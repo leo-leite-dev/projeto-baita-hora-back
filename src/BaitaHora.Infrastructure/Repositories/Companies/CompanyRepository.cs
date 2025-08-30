@@ -9,12 +9,22 @@ namespace BaitaHora.Infrastructure.Repositories.Companies
     {
         public CompanyRepository(AppDbContext context) : base(context) { }
 
+        public async Task<Company?> GetWithServiceOfferingsAsync(Guid id, CancellationToken ct)
+        {
+            return await _context.Companies
+                .AsTracking()
+                .Where(c => c.Id == id)
+                .Include(c => c.ServiceOfferings)
+                .AsSplitQuery()
+                .SingleOrDefaultAsync(ct);
+        }
+
         public async Task<Company?> GetDetailsByIdAsync(Guid companyId, CancellationToken ct)
         {
             return await _context.Companies
                 .Where(c => c.Id == companyId)
                 .Include(c => c.Members)
-                .ThenInclude(m => m.PrimaryPosition)  
+                .ThenInclude(m => m.PrimaryPosition)
                 .Include(c => c.Positions)
                 .AsSplitQuery()
                 .SingleOrDefaultAsync(ct);

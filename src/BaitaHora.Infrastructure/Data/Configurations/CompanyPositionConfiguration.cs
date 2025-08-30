@@ -16,7 +16,7 @@ public sealed class CompanyPositionConfiguration : IEntityTypeConfiguration<Comp
             .HasColumnName("company_id")
             .IsRequired();
 
-        b.Property(p => p.PositionName)
+        b.Property(p => p.Name)
             .HasColumnName("name")
             .HasMaxLength(60)
             .HasColumnType("citext")
@@ -65,14 +65,14 @@ public sealed class CompanyPositionConfiguration : IEntityTypeConfiguration<Comp
             {
                 j.ToTable("company_position_service_offerings");
                 j.Property<Guid>("CompanyPositionId").HasColumnName("position_id");
-                j.Property<Guid>("CompanyServiceOfferingId").HasColumnName("service_offering_id");
-                j.HasKey("CompanyPositionId", "CompanyServiceOfferingId");
+                j.Property<Guid>("ServiceOfferingId").HasColumnName("service_offering_id");
+                j.HasKey("CompanyPositionId", "ServiceOfferingId");
 
                 j.HasIndex("CompanyPositionId").HasDatabaseName("ix_cpso_position");
-                j.HasIndex("CompanyServiceOfferingId").HasDatabaseName("ix_cpso_service");
+                j.HasIndex("ServiceOfferingId").HasDatabaseName("ix_cpso_service");
             });
 
-        b.HasIndex(p => new { p.CompanyId, p.PositionName })
+        b.HasIndex(p => new { p.CompanyId, p.Name })
             .IsUnique()
             .HasDatabaseName("ux_company_positions_companyid_name");
 

@@ -5,19 +5,19 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BaitaHora.Infrastructure.Repositories;
 
-public sealed class CompanyServiceOfferingRepository : GenericRepository<CompanyServiceOffering>, ICompanyServiceOfferingRepository
+public sealed class ServiceOfferingRepository : GenericRepository<ServiceOffering>, IServiceOfferingRepository
 {
-    public CompanyServiceOfferingRepository(AppDbContext context) : base(context) { }
+    public ServiceOfferingRepository(AppDbContext context) : base(context) { }
 
-    // public Task<CompanyServiceOffering?> GetActiveByIdAsync(Guid id, CancellationToken ct = default)
+    // public Task<ServiceOffering?> GetActiveByIdAsync(Guid id, CancellationToken ct = default)
     //     => _set.AsNoTracking().FirstOrDefaultAsync(s => s.Id == id && s.IsActive, ct);
 
-    public async Task<IReadOnlyList<CompanyServiceOffering>> ListByCompanyAsync(Guid companyId, CancellationToken ct = default)
+    public async Task<IReadOnlyList<ServiceOffering>> ListByCompanyAsync(Guid companyId, CancellationToken ct = default)
         => await _set.AsNoTracking()
             .Where(s => s.CompanyId == companyId)
             .ToListAsync(ct);
 
-    // public async Task<IReadOnlyList<CompanyServiceOffering>> ListActiveByPositionAsync(Guid positionId, CancellationToken ct = default)
+    // public async Task<IReadOnlyList<ServiceOffering>> ListActiveByPositionAsync(Guid positionId, CancellationToken ct = default)
     //     => await _set.AsNoTracking()
     //         .Where(s => s.IsActive && s.PositionLinks.Any(l => l.PositionId == positionId))
     //         .ToListAsync(ct);

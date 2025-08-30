@@ -3,14 +3,14 @@ using MediatR;
 
 namespace BaitaHora.Application.Features.Companies.Catalog.Create;
 
-public sealed class CreateCompanyServiceOfferingHandler
-    : IRequestHandler<CreateCompanyServiceOfferingCommand, Result<CreateCompanyServiceOfferingResponse>>
+public sealed class CreateServiceOfferingHandler
+    : IRequestHandler<CreateServiceOfferingCommand, Result<CreateServiceOfferingResponse>>
 {
-    private readonly CreateCompanyServiceOfferingUseCase _useCase;
-    public CreateCompanyServiceOfferingHandler(CreateCompanyServiceOfferingUseCase useCase)
+    private readonly CreateServiceOfferingUseCase _useCase;
+    public CreateServiceOfferingHandler(CreateServiceOfferingUseCase useCase)
     => _useCase = useCase;
 
-    public Task<Result<CreateCompanyServiceOfferingResponse>> Handle(
-        CreateCompanyServiceOfferingCommand request, CancellationToken ct)
+    public Task<Result<CreateServiceOfferingResponse>> Handle(
+        CreateServiceOfferingCommand request, CancellationToken ct)
         => _useCase.HandleAsync(request, ct);
 }

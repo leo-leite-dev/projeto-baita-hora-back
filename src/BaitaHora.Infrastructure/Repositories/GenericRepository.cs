@@ -41,7 +41,6 @@ public class GenericRepository<T> : IGenericRepository<T> where T : Entity
         return Task.CompletedTask;
     }
 
-
     public Task DeleteAsync(T entity, CancellationToken ct = default)
     {
         if (entity is null) throw new ArgumentNullException(nameof(entity));

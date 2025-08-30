@@ -1,6 +1,6 @@
 namespace BaitaHora.Contracts.DTOs.Companies.Company.Create;
 
-public sealed record CreateCompanyServiceOfferingRequest(
+public sealed record CreateServiceOfferingRequest(
     string ServiceOfferingName,
     decimal Amount,
     string Currency

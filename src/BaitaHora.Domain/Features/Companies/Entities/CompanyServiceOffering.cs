@@ -4,45 +4,37 @@ using BaitaHora.Domain.Common.ValueObjects;
 
 namespace BaitaHora.Domain.Features.Companies.Entities;
 
-public sealed class CompanyServiceOffering : Entity
+public sealed class ServiceOffering : Entity
 {
     public Guid CompanyId { get; private set; }
-
-    public string ServiceOfferingName { get; private set; } = null!;
     public Money Price { get; private set; }
 
-    private CompanyServiceOffering() { }
+    private ServiceOffering() { }
 
-    public static CompanyServiceOffering Create(Guid companyId, string serviceOfferingName, Money price)
+    public static ServiceOffering Create(Guid companyId, string serviceName, Money price)
     {
         if (companyId == Guid.Empty)
             throw new CompanyException("CompanyId inválido.");
 
-        if (string.IsNullOrWhiteSpace(serviceOfferingName))
-            throw new CompanyException("Nome do serviço é obrigatório.");
-
-        if (price.Amount <= 0)
-            throw new CompanyException("Preço deve ser maior que zero.");
-
-        var serviceOfferig = new CompanyServiceOffering
+        var service = new ServiceOffering
         {
             CompanyId = companyId,
-            ServiceOfferingName = ActivatableEntity.NormalizeSpaces(serviceOfferingName),
+            Name = NormalizeAndValidateName(serviceName),
             Price = price,
         };
 
-        return serviceOfferig;
+        service.ValidatePriceInvariants();
+        return service;
     }
 
     public bool Rename(string newName)
     {
-        if (string.IsNullOrWhiteSpace(newName))
-            throw new CompanyException("Nome do serviço é obrigatório.");
+        var normalized = NormalizeAndValidateName(newName);
 
-        var normalized = ActivatableEntity.NormalizeSpaces(newName);
-        if (ServiceOfferingName == normalized) return false;
+        if (string.Equals(Name, normalized, StringComparison.OrdinalIgnoreCase))
+            return false;
 
-        ServiceOfferingName = normalized;
+        Name = normalized;
         Touch();
         return true;
     }
@@ -50,6 +42,14 @@ public sealed class CompanyServiceOffering : Entity
     public void ChangePrice(Money newPrice)
     {
         Price = newPrice;
+
+        ValidatePriceInvariants();
         Touch();
+    }
+
+    private void ValidatePriceInvariants()
+    {
+        if (Price.Amount <= 0)
+            throw new CompanyException("Preço deve ser maior que zero.");
     }
 }

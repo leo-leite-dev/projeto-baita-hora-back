@@ -77,7 +77,7 @@ public sealed class Schedule : Entity
         Touch();
         return true;
     }
-    public Appointment AddAppointment(Customer customer, DateTime startsAtUtc, CompanyServiceOffering serviceOffering, Guid professionalPositionId, string? notes = null)
+    public Appointment AddAppointment(Customer customer, DateTime startsAtUtc, ServiceOffering serviceOffering, Guid professionalPositionId, string? notes = null)
     {
         if (customer is null)
             throw new ArgumentNullException(nameof(customer));
@@ -106,7 +106,7 @@ public sealed class Schedule : Entity
             throw new SchedulingException("Há um compromisso no período selecionado.");
 
         var appt = Appointment.CreateForCustomer(
-            Id, startsAtUtc, SlotDuration, customer, serviceOffering.Id, serviceOffering.ServiceOfferingName, notes);
+            Id, startsAtUtc, SlotDuration, customer, serviceOffering.Id, serviceOffering.Name, notes);
 
         _appointments.Add(appt);
         Touch();

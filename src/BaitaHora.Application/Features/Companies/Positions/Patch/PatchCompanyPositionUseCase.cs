@@ -36,7 +36,7 @@ public sealed class PatchCompanyPositionUseCase
         if (request.NewAccessLevel.HasValue)
             position.ChangeAccessLevel(request.NewAccessLevel.Value);
 
-        var response = new PatchCompanyPositionResponse(position.Id, position.PositionName);
+        var response = new PatchCompanyPositionResponse(position.Id, position.Name);
         return Result<PatchCompanyPositionResponse>.Ok(response);
     }
 }

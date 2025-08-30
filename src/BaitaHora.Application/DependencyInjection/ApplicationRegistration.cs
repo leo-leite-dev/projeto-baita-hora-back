@@ -1,9 +1,7 @@
 using BaitaHora.Application.Common.Behaviors;
-using MediatR;
+using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
-using FluentValidation; 
-
 
 namespace BaitaHora.Application.DependencyInjection;
 
@@ -12,15 +10,18 @@ public static class ApplicationRegistration
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
         services.AddMediatR(cfg =>
-            cfg.RegisterServicesFromAssembly(typeof(ApplicationRegistration).Assembly));
-        services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+        {
+            cfg.RegisterServicesFromAssembly(typeof(ApplicationRegistration).Assembly);
 
-        services.AddScoped(typeof(IPipelineBehavior<,>), typeof(PersistenceExceptionMappingBehavior<,>));
-        services.AddScoped(typeof(IPipelineBehavior<,>), typeof(AuthorizationBehavior<,>));
-        services.AddScoped(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
-        services.AddScoped(typeof(IPipelineBehavior<,>), typeof(UnitOfWorkBehavior<,>));
-        services.AddScoped(typeof(IPipelineBehavior<,>), typeof(DomainEventsBehavior<,>));
-        services.AddScoped(typeof(IPipelineBehavior<,>), typeof(IntegrationEventsBehavior<,>));
+            cfg.AddOpenBehavior(typeof(PersistenceExceptionMappingBehavior<,>));
+            cfg.AddOpenBehavior(typeof(AuthorizationBehavior<,>));
+            cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
+            cfg.AddOpenBehavior(typeof(UnitOfWorkBehavior<,>));
+            cfg.AddOpenBehavior(typeof(DomainEventsBehavior<,>));
+            cfg.AddOpenBehavior(typeof(IntegrationEventsBehavior<,>));
+        });
+
+        services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
         return services;
     }

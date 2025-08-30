@@ -8,13 +8,12 @@ namespace BaitaHora.Domain.Features.Companies.Entities;
 public sealed class CompanyPosition : Entity
 {
     public Guid CompanyId { get; private set; }
-    public string PositionName { get; private set; } = null!;
+
     public CompanyPermission PermissionMask { get; private set; }
     public CompanyRole AccessLevel { get; private set; }
-    public bool IsActive { get; private set; }
     public bool IsSystem { get; private set; }
 
-    public ICollection<CompanyServiceOffering> ServiceOfferings { get; private set; } = new List<CompanyServiceOffering>();
+    public ICollection<ServiceOffering> ServiceOfferings { get; private set; } = new List<ServiceOffering>();
     private readonly List<CompanyMember> _members = new();
     public IReadOnlyCollection<CompanyMember> Members => _members;
 
@@ -36,14 +35,12 @@ public sealed class CompanyPosition : Entity
 
         var position = new CompanyPosition
         {
-            PositionName = positionName,
+            Name = NormalizeSpaces(positionName),
             CompanyId = companyId,
             AccessLevel = accessLevel,
-            IsActive = true,
             IsSystem = isSystem,
             PermissionMask = permissionMask
         };
-
 
         return position;
     }
@@ -60,10 +57,10 @@ public sealed class CompanyPosition : Entity
         if (isFounderName && !isFounderSystem)
             throw new CompanyException("Cargo 'Fundador' só é permitido para a posição de sistema do fundador.");
 
-        if (string.Equals(PositionName, normalized, StringComparison.Ordinal))
+        if (string.Equals(Name, normalized, StringComparison.Ordinal))
             return false;
 
-        PositionName = normalized;
+        Name = normalized;
         return true;
     }
 
@@ -87,20 +84,5 @@ public sealed class CompanyPosition : Entity
         }
 
         PermissionMask = newMask;
-    }
-
-    public bool Deactivate()
-    {
-        if (!IsActive) return false;
-
-        IsActive = false;
-        return true;
-    }
-
-    public bool Activate()
-    {
-        if (IsActive) return false;
-        IsActive = true;
-        return true;
     }
 }

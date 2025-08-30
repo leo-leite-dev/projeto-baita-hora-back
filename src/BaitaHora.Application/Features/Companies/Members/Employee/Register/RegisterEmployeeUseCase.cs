@@ -3,13 +3,10 @@ using BaitaHora.Application.Features.Companies.Guards;
 using BaitaHora.Application.Features.Companies.Guards.Interfaces;
 using BaitaHora.Application.Features.Companies.Responses;
 using BaitaHora.Application.Features.Users.Common;
-using BaitaHora.Application.Features.Users.CreateUser;
 using BaitaHora.Application.IRepositories.Companies;
 using BaitaHora.Application.IRepositories.Users;
 using BaitaHora.Application.IServices.Auth;
-using BaitaHora.Domain.Features.Common.ValueObjects;
 using BaitaHora.Domain.Features.Users.Entities;
-using BaitaHora.Domain.Features.Users.ValueObjects;
 
 namespace BaitaHora.Application.Features.Companies.Members.Employee.Register;
 
@@ -78,7 +75,7 @@ public sealed class RegisterEmployeeUseCase
             user.Username.Value,
             user.UserEmail.Value,
             position.Id,
-            position.PositionName);
+            position.Name);
 
         return Result<RegisterEmployeeResponse>.Created(response);
     }

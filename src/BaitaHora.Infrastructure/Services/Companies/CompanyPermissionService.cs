@@ -4,6 +4,8 @@ using BaitaHora.Application.IServices.Companies;
 using BaitaHora.Domain.Features.Companies.Enums;
 using BaitaHora.Domain.Permissions;
 
+namespace BaitaHora.Infrastructure.Services.Companies;
+
 public sealed class CompanyPermissionService : ICompanyPermissionService
 {
     private readonly ICompanyMemberRepository _companyMemberRepository;

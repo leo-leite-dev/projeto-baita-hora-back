@@ -9,7 +9,7 @@ public sealed class PostgresDbErrorTranslator : IDbErrorTranslator
         new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             // ServicesOffering
-            ["ux_cso_company_position_name"] = "Ja existe um serviço com esse nome",
+            ["ux_cso_company_name"] = "Ja existe um serviço com esse nome",
            
             // Positions
             ["ux_company_positions_companyid_name"] = "Já existe um cargo com esse nome.",

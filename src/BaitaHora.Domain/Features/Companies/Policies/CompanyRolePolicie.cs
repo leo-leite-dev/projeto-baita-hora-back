@@ -17,18 +17,17 @@ public static class CompanyRolePolicies
         new Dictionary<CompanyRole, CompanyPermission>
         {
             [CompanyRole.Owner] =
-                CompanyPermission.ManageMember
-              | CompanyPermission.RemoveMember
-              | CompanyPermission.ManageRoles
-              | CompanyPermission.ManagePositions
-              | CompanyPermission.ManageCompany,
+                CompanyPermission.All,
 
             [CompanyRole.Manager] =
                 CompanyPermission.ManageMember
-              | CompanyPermission.ManagePositions,
+              | CompanyPermission.ManageCompany
+              | CompanyPermission.EnableServiceOfferings
+              | CompanyPermission.DisableServiceOfferings
+              | CompanyPermission.DisablePositions,
 
             [CompanyRole.Staff] =
-                CompanyPermission.None,
+                CompanyPermission.ManageMember,
 
             [CompanyRole.Viewer] =
                 CompanyPermission.None

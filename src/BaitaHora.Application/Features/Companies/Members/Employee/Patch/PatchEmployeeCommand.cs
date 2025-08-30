@@ -14,6 +14,5 @@ public sealed record PatchEmployeeCommand
     public required PatchUserCommand NewEmployee { get; init; }
 
     public Guid ResourceId => CompanyId;
-    public IEnumerable<CompanyPermission> RequiredPermissions => new[] { CompanyPermission.ManageMember };
-    public bool RequireAllPermissions => true;
+    public IEnumerable<CompanyPermission> RequiredPermissions => [CompanyPermission.ManageMember];
 }

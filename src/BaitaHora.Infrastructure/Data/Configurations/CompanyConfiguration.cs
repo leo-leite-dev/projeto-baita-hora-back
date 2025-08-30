@@ -27,7 +27,7 @@ public sealed class CompanyConfiguration : IEntityTypeConfiguration<Company>
                   v => v.Value,
                   v => Phone.Parse(v));
 
-              builder.Property(c => c.CompanyName)
+              builder.Property(c => c.Name)
                      .HasColumnName("name")
                      .HasMaxLength(120)
                      .HasColumnType("citext")
@@ -93,10 +93,10 @@ public sealed class CompanyConfiguration : IEntityTypeConfiguration<Company>
                      .UsePropertyAccessMode(PropertyAccessMode.Field);
 
               builder.Navigation(c => c.ServiceOfferings)
-                     .HasField("_companyServiceOfferings")
+                     .HasField("_ServiceOfferings")
                      .UsePropertyAccessMode(PropertyAccessMode.Field);
 
-              builder.HasIndex(c => c.CompanyName)
+              builder.HasIndex(c => c.Name)
                      .IsUnique()
                      .HasDatabaseName("ux_companies_name");
 

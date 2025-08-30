@@ -10,6 +10,6 @@ public interface ICompanyPermissionService
 
     Task<CompanyPermission?> GetMaskAsync(Guid companyId, Guid userId, CancellationToken ct);
 
-    bool Has(CompanyPermission mask, CompanyPermission required);          // ALL por flag
+    bool Has(CompanyPermission mask, CompanyPermission required);       
     bool HasAny(CompanyPermission mask, IEnumerable<CompanyPermission> required);
 }

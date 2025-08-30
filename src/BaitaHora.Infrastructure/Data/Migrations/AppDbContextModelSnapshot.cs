@@ -62,6 +62,10 @@ namespace BaitaHora.Infrastructure.Data.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("Notes")
                         .HasMaxLength(1000)
                         .HasColumnType("character varying(1000)")
@@ -127,12 +131,6 @@ namespace BaitaHora.Infrastructure.Data.Migrations
                         .HasColumnType("citext")
                         .HasColumnName("email");
 
-                    b.Property<string>("CompanyName")
-                        .IsRequired()
-                        .HasMaxLength(120)
-                        .HasColumnType("citext")
-                        .HasColumnName("name");
-
                     b.Property<string>("CompanyPhone")
                         .IsRequired()
                         .HasMaxLength(32)
@@ -148,6 +146,12 @@ namespace BaitaHora.Infrastructure.Data.Migrations
                         .HasColumnType("boolean")
                         .HasDefaultValue(true)
                         .HasColumnName("is_active");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("citext")
+                        .HasColumnName("name");
 
                     b.Property<string>("TradeName")
                         .HasMaxLength(120)
@@ -168,7 +172,7 @@ namespace BaitaHora.Infrastructure.Data.Migrations
                         .IsUnique()
                         .HasDatabaseName("ux_companies_email");
 
-                    b.HasIndex("CompanyName")
+                    b.HasIndex("Name")
                         .IsUnique()
                         .HasDatabaseName("ux_companies_name");
 
@@ -226,6 +230,10 @@ namespace BaitaHora.Infrastructure.Data.Migrations
                     b.Property<DateTime>("JoinedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("joined_at_utc");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<Guid?>("PrimaryPositionId")
                         .HasColumnType("uuid")
@@ -296,15 +304,15 @@ namespace BaitaHora.Infrastructure.Data.Migrations
                         .HasDefaultValue(false)
                         .HasColumnName("is_system");
 
-                    b.Property<int>("PermissionMask")
-                        .HasColumnType("integer")
-                        .HasColumnName("permission_mask");
-
-                    b.Property<string>("PositionName")
+                    b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(60)
                         .HasColumnType("citext")
                         .HasColumnName("name");
+
+                    b.Property<int>("PermissionMask")
+                        .HasColumnType("integer")
+                        .HasColumnName("permission_mask");
 
                     b.Property<DateTimeOffset?>("UpdatedAtUtc")
                         .HasColumnType("timestamp with time zone")
@@ -315,14 +323,14 @@ namespace BaitaHora.Infrastructure.Data.Migrations
                     b.HasIndex("CompanyId")
                         .HasDatabaseName("ix_company_positions_companyid");
 
-                    b.HasIndex("CompanyId", "PositionName")
+                    b.HasIndex("CompanyId", "Name")
                         .IsUnique()
                         .HasDatabaseName("ux_company_positions_companyid_name");
 
                     b.ToTable("company_positions", (string)null);
                 });
 
-            modelBuilder.Entity("BaitaHora.Domain.Features.Companies.Entities.CompanyServiceOffering", b =>
+            modelBuilder.Entity("BaitaHora.Domain.Features.Companies.Entities.ServiceOffering", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -342,7 +350,7 @@ namespace BaitaHora.Infrastructure.Data.Migrations
                         .HasDefaultValue(true)
                         .HasColumnName("is_active");
 
-                    b.Property<string>("ServiceOfferingName")
+                    b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)")
@@ -352,7 +360,7 @@ namespace BaitaHora.Infrastructure.Data.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at_utc");
 
-                    b.ComplexProperty<Dictionary<string, object>>("Price", "BaitaHora.Domain.Features.Companies.Entities.CompanyServiceOffering.Price#Money", b1 =>
+                    b.ComplexProperty<Dictionary<string, object>>("Price", "BaitaHora.Domain.Features.Companies.Entities.ServiceOffering.Price#Money", b1 =>
                         {
                             b1.Property<decimal>("Amount")
                                 .HasPrecision(12, 2)
@@ -371,7 +379,7 @@ namespace BaitaHora.Infrastructure.Data.Migrations
                     b.HasIndex("CompanyId")
                         .HasDatabaseName("ix_cso_company");
 
-                    b.HasIndex("CompanyId", "ServiceOfferingName")
+                    b.HasIndex("CompanyId", "Name")
                         .IsUnique()
                         .HasDatabaseName("ux_cso_company_name");
 
@@ -390,6 +398,10 @@ namespace BaitaHora.Infrastructure.Data.Migrations
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<TimeSpan>("SlotAnchorLocal")
                         .HasColumnType("interval")
@@ -443,6 +455,10 @@ namespace BaitaHora.Infrastructure.Data.Migrations
                         .HasColumnType("boolean")
                         .HasDefaultValue(true)
                         .HasColumnName("is_active");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
@@ -522,6 +538,10 @@ namespace BaitaHora.Infrastructure.Data.Migrations
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("ProfileImageUrl")
                         .HasMaxLength(512)
@@ -650,22 +670,22 @@ namespace BaitaHora.Infrastructure.Data.Migrations
                     b.ToTable("login_sessions", (string)null);
                 });
 
-            modelBuilder.Entity("CompanyPositionCompanyServiceOffering", b =>
+            modelBuilder.Entity("CompanyPositionServiceOffering", b =>
                 {
                     b.Property<Guid>("CompanyPositionId")
                         .HasColumnType("uuid")
                         .HasColumnName("position_id");
 
-                    b.Property<Guid>("CompanyServiceOfferingId")
+                    b.Property<Guid>("ServiceOfferingId")
                         .HasColumnType("uuid")
                         .HasColumnName("service_offering_id");
 
-                    b.HasKey("CompanyPositionId", "CompanyServiceOfferingId");
+                    b.HasKey("CompanyPositionId", "ServiceOfferingId");
 
                     b.HasIndex("CompanyPositionId")
                         .HasDatabaseName("ix_cpso_position");
 
-                    b.HasIndex("CompanyServiceOfferingId")
+                    b.HasIndex("ServiceOfferingId")
                         .HasDatabaseName("ix_cpso_service");
 
                     b.ToTable("company_position_service_offerings", (string)null);
@@ -786,7 +806,7 @@ namespace BaitaHora.Infrastructure.Data.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("BaitaHora.Domain.Features.Companies.Entities.CompanyServiceOffering", b =>
+            modelBuilder.Entity("BaitaHora.Domain.Features.Companies.Entities.ServiceOffering", b =>
                 {
                     b.HasOne("BaitaHora.Domain.Features.Companies.Entities.Company", null)
                         .WithMany("ServiceOfferings")
@@ -859,7 +879,7 @@ namespace BaitaHora.Infrastructure.Data.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("CompanyPositionCompanyServiceOffering", b =>
+            modelBuilder.Entity("CompanyPositionServiceOffering", b =>
                 {
                     b.HasOne("BaitaHora.Domain.Features.Companies.Entities.CompanyPosition", null)
                         .WithMany()
@@ -867,9 +887,9 @@ namespace BaitaHora.Infrastructure.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("BaitaHora.Domain.Features.Companies.Entities.CompanyServiceOffering", null)
+                    b.HasOne("BaitaHora.Domain.Features.Companies.Entities.ServiceOffering", null)
                         .WithMany()
-                        .HasForeignKey("CompanyServiceOfferingId")
+                        .HasForeignKey("ServiceOfferingId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

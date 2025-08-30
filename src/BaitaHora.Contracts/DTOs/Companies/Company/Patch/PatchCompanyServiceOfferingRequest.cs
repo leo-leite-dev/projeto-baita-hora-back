@@ -1,8 +1,7 @@
 namespace BaitaHora.Contracts.DTOs.Companies.Company.Patch;
 
-public sealed record PatchCompanyServiceOfferingRequest(
+public sealed record PatchServiceOfferingRequest(
     string? ServiceOfferingName,
     decimal? Amount,
-    string? Currency,
-    Guid? PositionId
+    string? Currency
 );
