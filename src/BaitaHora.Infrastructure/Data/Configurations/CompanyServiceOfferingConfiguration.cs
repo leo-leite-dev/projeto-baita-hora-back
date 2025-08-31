@@ -4,13 +4,16 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace BaitaHora.Infrastructure.Data.Configurations;
 
-public sealed class ServiceOfferingConfiguration : IEntityTypeConfiguration<ServiceOffering>
+public sealed class CompanyServiceOfferingConfiguration : IEntityTypeConfiguration<ServiceOffering>
 {
     public void Configure(EntityTypeBuilder<ServiceOffering> b)
     {
         b.ToTable("company_service_offerings");
 
         b.HasKey(x => x.Id);
+
+        b.Property(p => p.Id)
+         .ValueGeneratedNever();
 
         b.Property(x => x.CompanyId)
             .HasColumnName("company_id")
@@ -27,7 +30,7 @@ public sealed class ServiceOfferingConfiguration : IEntityTypeConfiguration<Serv
         b.Property(x => x.IsActive)
             .HasColumnName("is_active")
             .IsRequired()
-            .HasDefaultValue(true); 
+            .HasDefaultValue(true);
 
         b.ComplexProperty(x => x.Price, price =>
         {

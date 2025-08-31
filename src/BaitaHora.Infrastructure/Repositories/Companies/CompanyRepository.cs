@@ -19,15 +19,26 @@ namespace BaitaHora.Infrastructure.Repositories.Companies
                 .SingleOrDefaultAsync(ct);
         }
 
-        public async Task<Company?> GetDetailsByIdAsync(Guid companyId, CancellationToken ct)
+        public async Task<Company?> GetWithPositionAndServiceOfferingsAsync(Guid id, CancellationToken ct)
         {
             return await _context.Companies
-                .Where(c => c.Id == companyId)
-                .Include(c => c.Members)
-                .ThenInclude(m => m.PrimaryPosition)
+                .AsTracking()
+                .Where(c => c.Id == id)
                 .Include(c => c.Positions)
+                    .ThenInclude(p => p.ServiceOfferings)
+                .Include(c => c.ServiceOfferings)    
                 .AsSplitQuery()
                 .SingleOrDefaultAsync(ct);
+        }
+
+        public async Task<Company?> GetByIdWithPositionsAndMembersAsync(Guid companyId, CancellationToken ct)
+        {
+            return await _context.Companies
+                .AsTracking()
+                .Include(c => c.Positions)
+                .Include(c => c.Members)
+                .AsSplitQuery()
+                .SingleOrDefaultAsync(c => c.Id == companyId, ct);
         }
 
         public async Task AddImageAsync(CompanyImage image, CancellationToken ct = default)

@@ -1,46 +1,41 @@
 using BaitaHora.Application.Common.Results;
 using BaitaHora.Application.Features.Companies.Guards.Interfaces;
-using BaitaHora.Application.IRepositories.Companies;
 
 namespace BaitaHora.Application.Features.Companies.Positions.Create;
 
-public sealed class CreateCompanyPositionUseCase
+public sealed class CreatePositionUseCase
 {
-    private readonly ICompanyRepository _companyRepository;
-    private readonly ICompanyPositionRepository _companyPositionRepository;
+
     private readonly ICompanyGuards _companyGuards;
 
-    public CreateCompanyPositionUseCase(
-        ICompanyGuards companyGuards,
-        ICompanyRepository companyRepository,
-        ICompanyPositionRepository companyPositionRepository)
+    public CreatePositionUseCase(
+        ICompanyGuards companyGuards)
     {
         _companyGuards = companyGuards;
-        _companyRepository = companyRepository;
-        _companyPositionRepository = companyPositionRepository;
     }
 
-    public async Task<Result<CreateCompanyPositionResponse>> HandleAsync(
-        CreateCompanyPositionCommand cmd, CancellationToken ct)
+    public async Task<Result<CreatePositionResponse>> HandleAsync(
+        CreatePositionCommand cmd, CancellationToken ct)
     {
-        var compRes = await _companyGuards.ExistsCompany(cmd.CompanyId, ct);
+        var compRes = await _companyGuards.GetWithPositionsAndServiceOfferings(cmd.CompanyId, ct);
         if (compRes.IsFailure)
-            return Result<CreateCompanyPositionResponse>.FromError(compRes);
+            return Result<CreatePositionResponse>.FromError(compRes);
 
         var company = compRes.Value!;
 
-        var position = company.AddPosition(cmd.PositionName, cmd.AccessLevel);
+        var position = company.AddPosition(
+            positionName: cmd.PositionName,
+            accessLevel: cmd.AccessLevel,
+            serviceOfferingIds: cmd.ServiceOfferingIds
+        );
 
-        await _companyPositionRepository.AddAsync(position);
-        await _companyRepository.UpdateAsync(company);
-
-        var response = new CreateCompanyPositionResponse(
-            position.Id,
+        var response = new CreatePositionResponse(
             company.Id,
+            position.Id,
             position.Name,
             position.AccessLevel.ToString()
         );
 
-        return Result<CreateCompanyPositionResponse>.Created(response);
+        return Result<CreatePositionResponse>.Created(response);
     }
 }

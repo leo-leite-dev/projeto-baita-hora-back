@@ -1,11 +1,10 @@
-using System.Linq;
 using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
 using BaitaHora.Application.Common.Results;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Npgsql;
+using BaitaHora.Application.Common.Errors;
 
 namespace BaitaHora.Infrastructure.Data.Behaviors;
 
@@ -13,11 +12,14 @@ public sealed class EfPersistenceExceptionMappingBehavior<TReq, TRes> : IPipelin
     where TReq : notnull
 {
     private readonly ILogger<EfPersistenceExceptionMappingBehavior<TReq, TRes>> _log;
+    private readonly IDbErrorTranslator _dbErrors;
 
     public EfPersistenceExceptionMappingBehavior(
-        ILogger<EfPersistenceExceptionMappingBehavior<TReq, TRes>> log)
+        ILogger<EfPersistenceExceptionMappingBehavior<TReq, TRes>> log,
+        IDbErrorTranslator dbErrors)
     {
         _log = log;
+        _dbErrors = dbErrors;
     }
 
     public async Task<TRes> Handle(TReq request, RequestHandlerDelegate<TRes> next, CancellationToken ct)
@@ -28,7 +30,6 @@ public sealed class EfPersistenceExceptionMappingBehavior<TReq, TRes> : IPipelin
         }
         catch (DbUpdateConcurrencyException ex)
         {
-            // Loga cada entry envolvida na concorrência com o máximo de contexto útil
             foreach (var entry in ex.Entries)
             {
                 var entityName = entry.Metadata.Name;
@@ -70,12 +71,26 @@ public sealed class EfPersistenceExceptionMappingBehavior<TReq, TRes> : IPipelin
                     ex.InnerException?.Message ?? "<null>");
             }
 
-            // Converter para Result/Result<T> se o handler usa esse contrato
             return MapToResultConflict("Conflito de concorrência: o recurso foi modificado por outro processo.");
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is PostgresException pg)
+        {
+            _log.LogError(ex,
+                "EF Persistência (PG): SqlState={SqlState} Constraint={Constraint} Message={Message} Request={RequestType}",
+                pg.SqlState, pg.ConstraintName, pg.MessageText, typeof(TReq).Name);
+
+            if (pg.SqlState == PostgresErrorCodes.UniqueViolation)
+            {
+                var friendly = _dbErrors.TryTranslateUniqueViolation(pg.ConstraintName, pg.Detail)
+                               ?? "Violação de unicidade.";
+
+                return MapToResultConflict(friendly);
+            }
+
+            return MapToResultConflict("Erro de persistência no banco de dados.");
         }
         catch (DbUpdateException ex)
         {
-            // DbUpdateException geral (FK/UNIQUE/etc.)
             _log.LogError(ex,
                 "EF Persistência: {Message}. Request={RequestType} Inner={Inner}",
                 ex.Message,
@@ -88,7 +103,6 @@ public sealed class EfPersistenceExceptionMappingBehavior<TReq, TRes> : IPipelin
 
     private TRes MapToResultConflict(string message)
     {
-        // Result<T>
         if (typeof(TRes).IsGenericType &&
             typeof(TRes).GetGenericTypeDefinition() == typeof(Result<>))
         {
@@ -100,13 +114,9 @@ public sealed class EfPersistenceExceptionMappingBehavior<TReq, TRes> : IPipelin
             return (TRes)make.Invoke(null, new object?[] { default, message })!;
         }
 
-        // Result (não genérico), se existir na sua API
         if (typeof(TRes) == typeof(Result))
-        {
             return (TRes)(object)Result.Conflict(message);
-        }
 
-        // Se o handler não retorna Result, repropaga (middleware HTTP trata)
         throw new DbUpdateException(message);
     }
 }

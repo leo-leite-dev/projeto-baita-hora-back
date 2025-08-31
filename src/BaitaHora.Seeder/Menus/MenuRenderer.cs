@@ -50,7 +50,7 @@ public static class MenuRenderer
         Console.WriteLine(" 4) Limpar token");
         Console.WriteLine(" 5) Registrar OWNER + COMPANY");
         Console.WriteLine(" 6) Registrar EMPLOYEE");
-        Console.WriteLine(" 7) Criar POSITION (nome digitado)");
+        Console.WriteLine(" 7) Criar Position (nome digitado)");
         Console.WriteLine(" 9) Ver/decodificar JWT atual");
         Console.WriteLine(" 8) Trocar BaseUrl");
         Console.WriteLine("10) Editar EMPLOYEE");

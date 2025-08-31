@@ -7,7 +7,6 @@ using BaitaHora.Infrastructure.Repositories.Companies;
 using Microsoft.Extensions.DependencyInjection;
 using BaitaHora.Application.Features.Schedules;
 using BaitaHora.Infrastructure.Data.Repositories.Schedulings;
-using BaitaHora.Infrastructure.Repositories;
 
 namespace BaitaHora.Infrastructure.DependencyInjection;
 
@@ -21,7 +20,6 @@ public static class RepositoriesRegistration
         services.AddScoped<ICompanyRepository, CompanyRepository>();
         services.AddScoped<ICompanyMemberRepository, CompanyMemberRepository>();
         services.AddScoped<ICompanyPositionRepository, CompanyPositionRepository>();
-        services.AddScoped<IServiceOfferingRepository, ServiceOfferingRepository>();
         services.AddScoped<IScheduleRepository, ScheduleRepository>();
        
         return services;

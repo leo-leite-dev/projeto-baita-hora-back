@@ -21,9 +21,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BaitaHora.Shared\BaitaHora.Shared.csproj" />
-    <ProjectReference Include="..\BaitaHora.Contracts\BaitaHora.Contracts.csproj" />
     <ProjectReference Include="..\BaitaHora.Application\BaitaHora.Application.csproj" />
     <ProjectReference Include="..\BaitaHora.Infrastructure\BaitaHora.Infrastructure.csproj" />
+    <ProjectReference Include="..\BaitaHora.Contracts\BaitaHora.Contracts.csproj" />
   </ItemGroup>
 
 </Project>

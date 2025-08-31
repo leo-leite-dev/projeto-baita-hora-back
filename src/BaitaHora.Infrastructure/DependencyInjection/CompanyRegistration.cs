@@ -15,7 +15,7 @@ public static class CompanyRegistration
         services.AddScoped<IUserGuards, UserGuards>();
         services.AddScoped<ICompanyPermissionService, CompanyPermissionService>();
         services.AddScoped<ICompanyGuards, CompanyGuards>();
-        services.AddScoped<ICompanyPositionGuards, CompanyPositionGuards>();
+        services.AddScoped<IPositionGuards, PositionGuards>();
         services.AddScoped<ICompanyMemberGuards, CompanyMemberGuards>();
 
         return services;

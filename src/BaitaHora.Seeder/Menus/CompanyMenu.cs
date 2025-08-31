@@ -11,7 +11,7 @@ public sealed class CompanyMenu : IMenu
         Console.WriteLine("== Companhia ==");
         Console.WriteLine(" 1) Registrar OWNER + COMPANY");
         Console.WriteLine(" 2) Editar COMPANY (renomear)");
-        Console.WriteLine(" 3) Criar POSITION");
+        Console.WriteLine(" 3) Criar Position");
         Console.WriteLine(" 9) Voltar");
         Console.Write("Opção: ");
         var op = (Console.ReadLine() ?? "").Trim();

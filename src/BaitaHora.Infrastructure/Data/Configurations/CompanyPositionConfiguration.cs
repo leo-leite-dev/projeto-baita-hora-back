@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace BaitaHora.Infrastructure.Data.Configurations;
 
-public sealed class CompanyPositionConfiguration : IEntityTypeConfiguration<CompanyPosition>
+public sealed class PositionConfiguration : IEntityTypeConfiguration<CompanyPosition>
 {
     public void Configure(EntityTypeBuilder<CompanyPosition> b)
     {
@@ -12,14 +12,17 @@ public sealed class CompanyPositionConfiguration : IEntityTypeConfiguration<Comp
 
         b.HasKey(p => p.Id);
 
+        b.Property(p => p.Id)
+         .ValueGeneratedNever();
+
         b.Property(p => p.CompanyId)
             .HasColumnName("company_id")
             .IsRequired();
 
         b.Property(p => p.Name)
             .HasColumnName("name")
-            .HasMaxLength(60)
             .HasColumnType("citext")
+            .HasMaxLength(60)
             .IsRequired();
 
         b.Property(p => p.AccessLevel)
@@ -50,27 +53,48 @@ public sealed class CompanyPositionConfiguration : IEntityTypeConfiguration<Comp
         b.Property(p => p.UpdatedAtUtc)
             .HasColumnName("updated_at_utc");
 
-        b.Navigation(p => p.Members)
-            .HasField("_members")
-            .UsePropertyAccessMode(PropertyAccessMode.Field);
-
         b.HasOne<Company>()
             .WithMany(c => c.Positions)
             .HasForeignKey(p => p.CompanyId)
             .OnDelete(DeleteBehavior.Cascade);
 
         b.HasMany(p => p.ServiceOfferings)
-            .WithMany()
-            .UsingEntity(j =>
-            {
-                j.ToTable("company_position_service_offerings");
-                j.Property<Guid>("CompanyPositionId").HasColumnName("position_id");
-                j.Property<Guid>("ServiceOfferingId").HasColumnName("service_offering_id");
-                j.HasKey("CompanyPositionId", "ServiceOfferingId");
+         .WithMany()
+         .UsingEntity<Dictionary<string, object>>(
+             "company_position_service_offerings",
+             right => right
+                 .HasOne<ServiceOffering>()
+                 .WithMany()
+                 .HasForeignKey("company_service_offering_id")
+                 .OnDelete(DeleteBehavior.Cascade),
+             left => left
+                 .HasOne<CompanyPosition>()
+                 .WithMany()
+                 .HasForeignKey("position_id")
+                 .OnDelete(DeleteBehavior.Cascade),
+             join =>
+             {
+                 join.ToTable("company_position_service_offerings");
 
-                j.HasIndex("CompanyPositionId").HasDatabaseName("ix_cpso_position");
-                j.HasIndex("ServiceOfferingId").HasDatabaseName("ix_cpso_service");
-            });
+                 join.HasKey("position_id", "company_service_offering_id");
+
+                 join.IndexerProperty<Guid>("position_id")
+                     .HasColumnName("position_id");
+
+                 join.IndexerProperty<Guid>("company_service_offering_id")
+                     .HasColumnName("company_service_offering_id");
+
+                 join.HasIndex("position_id").HasDatabaseName("ix_cpso_position");
+                 join.HasIndex("company_service_offering_id").HasDatabaseName("ix_cpso_company_service");
+             });
+
+        b.Navigation(p => p.Members)
+            .HasField("_members")
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
+
+        b.Navigation(p => p.ServiceOfferings)
+            .HasField("_serviceOfferings")
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
 
         b.HasIndex(p => new { p.CompanyId, p.Name })
             .IsUnique()

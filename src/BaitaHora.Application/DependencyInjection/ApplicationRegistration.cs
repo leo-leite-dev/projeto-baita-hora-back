@@ -13,16 +13,15 @@ public static class ApplicationRegistration
         {
             cfg.RegisterServicesFromAssembly(typeof(ApplicationRegistration).Assembly);
 
-            cfg.AddOpenBehavior(typeof(PersistenceExceptionMappingBehavior<,>));
             cfg.AddOpenBehavior(typeof(AuthorizationBehavior<,>));
             cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
             cfg.AddOpenBehavior(typeof(UnitOfWorkBehavior<,>));
             cfg.AddOpenBehavior(typeof(DomainEventsBehavior<,>));
             cfg.AddOpenBehavior(typeof(IntegrationEventsBehavior<,>));
+            cfg.AddOpenBehavior(typeof(ExceptionHandlingBehavior<,>));
         });
 
         services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
-
         return services;
     }
 }

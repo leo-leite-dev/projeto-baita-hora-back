@@ -51,7 +51,7 @@ public sealed class CompanyMember : Entity
     internal static CompanyMember CreateMember(Guid companyId, Guid userId, CompanyRole role)
     {
         if (role == CompanyRole.Owner)
-            throw new CompanyException("Metodo inválido para criação de Owner.");
+            throw new CompanyException("Método inválido para criação de Owner.");
 
         var member = new CompanyMember(companyId, userId);
         member.Role = role;
@@ -113,6 +113,7 @@ public sealed class CompanyMember : Entity
             return CompanyPermission.All;
 
         var mask = CompanyPermission.None;
+
         if (PrimaryPosition is not null)
             mask |= PrimaryPosition.PermissionMask;
 
@@ -136,5 +137,4 @@ public sealed class CompanyMember : Entity
 
     public bool ClearDirectPermissions()
         => SetDirectPermissions(CompanyPermission.None);
-
 }

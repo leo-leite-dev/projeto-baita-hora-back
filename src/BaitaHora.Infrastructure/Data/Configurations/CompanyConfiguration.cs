@@ -89,11 +89,11 @@ public sealed class CompanyConfiguration : IEntityTypeConfiguration<Company>
                      .UsePropertyAccessMode(PropertyAccessMode.Field);
 
               builder.Navigation(c => c.Positions)
-                     .HasField("_companyPositions")
+                     .HasField("_positions")
                      .UsePropertyAccessMode(PropertyAccessMode.Field);
 
               builder.Navigation(c => c.ServiceOfferings)
-                     .HasField("_ServiceOfferings")
+                     .HasField("_serviceOfferings")
                      .UsePropertyAccessMode(PropertyAccessMode.Field);
 
               builder.HasIndex(c => c.Name)

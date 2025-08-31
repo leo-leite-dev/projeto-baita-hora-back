@@ -16,6 +16,9 @@ public class GenericRepository<T> : IGenericRepository<T> where T : Entity
         _set = _context.Set<T>();
     }
 
+    public void MarkAsAdded(T entity)
+        => _context.Entry(entity).State = EntityState.Added;
+
     public Task<T?> GetByIdAsync(Guid id, CancellationToken ct = default)
         => _set.FindAsync(new object?[] { id }, ct).AsTask();
 

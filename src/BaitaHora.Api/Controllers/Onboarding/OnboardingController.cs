@@ -2,11 +2,11 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using BaitaHora.Api.Helpers;
-using BaitaHora.Contracts.DTOS.Auth;
 using BaitaHora.Api.Mappers.Auth;
 using BaitaHora.Api.Mappers.Onboarding;
+using BaitaHora.Contracts.DTOS.Auth;
 
-namespace BaitaHora.Api.Controllers.Auth;
+namespace BaitaHora.Api.Controllers.Onboarding;
 
 [ApiController]
 [Route("api/onboarding")]

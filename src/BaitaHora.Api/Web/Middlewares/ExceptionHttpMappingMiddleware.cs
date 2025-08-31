@@ -2,7 +2,6 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
-using BaitaHora.Domain.Features.Common.Exceptions;
 using BaitaHora.Application.Common.Errors;
 
 namespace BaitaHora.Api.Web.Middlewares;
@@ -28,24 +27,6 @@ public sealed class ExceptionHttpMappingMiddleware
         try
         {
             await _next(ctx);
-        }
-        catch (UserException ex)
-        {
-            if (ctx.Response.HasStarted) { _logger.LogError(ex, "Erro após resposta iniciada. TraceId={TraceId}", ctx.TraceIdentifier); return; }
-            _logger.LogWarning(ex, "Erro de domínio (usuário) capturado.");
-            await WriteProblem(ctx, StatusCodes.Status409Conflict, "Conflito de negócio (usuário)", ex.Message);
-        }
-        catch (CompanyException ex)
-        {
-            if (ctx.Response.HasStarted) { _logger.LogError(ex, "Erro após resposta iniciada. TraceId={TraceId}", ctx.TraceIdentifier); return; }
-            _logger.LogWarning(ex, "Erro de domínio (empresa) capturado.");
-            await WriteProblem(ctx, StatusCodes.Status409Conflict, "Conflito de negócio (empresa)", ex.Message);
-        }
-        catch (DomainException ex)
-        {
-            if (ctx.Response.HasStarted) { _logger.LogError(ex, "Erro após resposta iniciada. TraceId={TraceId}", ctx.TraceIdentifier); return; }
-            _logger.LogWarning(ex, "Erro de domínio genérico capturado.");
-            await WriteProblem(ctx, StatusCodes.Status422UnprocessableEntity, "Regra de domínio violada", ex.Message);
         }
         catch (DbUpdateException ex) when (ex.InnerException is PostgresException pex)
         {
@@ -83,12 +64,15 @@ public sealed class ExceptionHttpMappingMiddleware
             var value = ex.ActualValue?.ToString() ?? "desconhecido";
             var detail = $"O valor enviado para '{param}' não é aceito. Valor recebido: '{value}'.";
 
-            await WriteProblem(ctx, StatusCodes.Status400BadRequest, "Parâmetro inválido", detail
-            );
+            await WriteProblem(ctx, StatusCodes.Status400BadRequest, "Parâmetro inválido", detail);
         }
         catch (Exception ex)
         {
-            if (ctx.Response.HasStarted) { _logger.LogError(ex, "Erro inesperado após resposta iniciada. TraceId={TraceId}", ctx.TraceIdentifier); return; }
+            if (ctx.Response.HasStarted)
+            {
+                _logger.LogError(ex, "Erro inesperado após resposta iniciada. TraceId={TraceId}", ctx.TraceIdentifier);
+                return;
+            }
             var traceId = ctx.TraceIdentifier;
             _logger.LogError(ex, "Erro inesperado. TraceId: {TraceId}", traceId);
             await WriteProblem(ctx, StatusCodes.Status500InternalServerError, "Erro interno no servidor", $"Ocorreu um erro inesperado. TraceId: {traceId}");

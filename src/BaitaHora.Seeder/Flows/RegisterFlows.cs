@@ -41,7 +41,7 @@ public static class RegisterFlows
         var roleInput = Console.ReadLine();
         var role = Enum.TryParse<CompanyRole>(roleInput, true, out var parsed) ? parsed : CompanyRole.Staff;
 
-        var req = new CreateCompanyPositionRequest(name.Trim(), role);
+        var req = new CreatePositionRequest(name.Trim(), role);
         var path = $"/api/companies/{companyId:D}/positions";
 
         ConsoleHelper.Info($"POST {path}");

@@ -17,18 +17,18 @@ public sealed class ServiceOfferingsController : ControllerBase
     public ServiceOfferingsController(ISender mediator) => _mediator = mediator;
 
     [HttpPost]
-    public async Task<IActionResult> Create(
+    public async Task<IActionResult> CreateService(
         [FromRoute] Guid companyId,
         [FromBody] CreateServiceOfferingRequest req,
         CancellationToken ct)
     {
         var cmd = req.ToCommand(companyId);
         var result = await _mediator.Send(cmd, ct);
-        return result.ToActionResult(this, result.Value);
+        return result.ToActionResult(this);
     }
 
     [HttpPatch("{serviceOfferingId:guid}")]
-    public async Task<IActionResult> Patch(
+    public async Task<IActionResult> PatchService(
         [FromRoute] Guid companyId,
         [FromRoute] Guid serviceOfferingId,
         [FromBody] PatchServiceOfferingRequest req,
@@ -36,24 +36,11 @@ public sealed class ServiceOfferingsController : ControllerBase
     {
         var cmd = req.ToCommand(companyId, serviceOfferingId);
         var result = await _mediator.Send(cmd, ct);
-        return result.ToActionResult(this, result.Value);
-    }
-
-    [HttpPatch("{serviceOfferingId:guid}/disable")]
-    public async Task<IActionResult> Disable(
-        [FromRoute] Guid companyId,
-        [FromRoute] Guid serviceOfferingId,
-        CancellationToken ct)
-    {
-        var cmd = ServiceOfferingsApiMappers.ToDisableCommand(companyId, serviceOfferingId);
-        var result = await _mediator.Send(cmd, ct);
-
-        if (result.IsSuccess) return NoContent();
         return result.ToActionResult(this);
     }
 
     [HttpDelete("{serviceOfferingId:guid}")]
-    public async Task<IActionResult> Remove(
+    public async Task<IActionResult> RemoveService(
         [FromRoute] Guid companyId,
         [FromRoute] Guid serviceOfferingId,
         CancellationToken ct)
@@ -65,13 +52,26 @@ public sealed class ServiceOfferingsController : ControllerBase
         return result.ToActionResult(this);
     }
 
-    [HttpPatch("{serviceOfferingId:guid}/activate")]
-    public async Task<IActionResult> Activate(
+    [HttpPatch("disable")]
+    public async Task<IActionResult> DisableService(
+       [FromRoute] Guid companyId,
+       [FromBody] DisableServiceOfferingsRequest req,
+       CancellationToken ct)
+    {
+        var cmd = req.ToCommand(companyId);
+        var result = await _mediator.Send(cmd, ct);
+
+        if (result.IsSuccess) return NoContent();
+        return result.ToActionResult(this);
+    }
+
+    [HttpPatch("activate")]
+    public async Task<IActionResult> ActivateMany(
         [FromRoute] Guid companyId,
-        [FromRoute] Guid serviceOfferingId,
+        [FromBody] ActivateServiceOfferingsRequest req,
         CancellationToken ct)
     {
-        var cmd = ServiceOfferingsApiMappers.ToActivateCommand(companyId, serviceOfferingId);
+        var cmd = req.ToCommand(companyId);
         var result = await _mediator.Send(cmd, ct);
 
         if (result.IsSuccess) return NoContent();

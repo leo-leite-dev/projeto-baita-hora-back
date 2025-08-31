@@ -1,17 +1,22 @@
 using BaitaHora.Application.Features.Auth;
-using BaitaHora.Application.Features.Companies.Catalog.Create;
+
+using BaitaHora.Application.Features.Onboarding;
+using BaitaHora.Application.Features.Companies.Members.Owner;
 using BaitaHora.Application.Features.Companies.Members.Employee;
 using BaitaHora.Application.Features.Companies.Members.Employee.Register;
-using BaitaHora.Application.Features.Companies.Members.Owner;
 using BaitaHora.Application.Features.Companies.Positions.Create;
 using BaitaHora.Application.Features.Companies.Positions.Patch;
-using BaitaHora.Application.Features.Companies.ServiceOffering.Activate;
-using BaitaHora.Application.Features.Companies.ServiceOffering.Disable;
+using BaitaHora.Application.Features.Companies.Positions.Remove;
 using BaitaHora.Application.Features.Companies.ServiceOffering.Patch;
 using BaitaHora.Application.Features.Companies.ServiceOffering.Remove;
-using BaitaHora.Application.Features.Onboarding;
-using BaitaHora.Application.Features.Users.CreateUser;
+using BaitaHora.Application.Features.Companies.Catalog.Create;
 using Microsoft.Extensions.DependencyInjection;
+using BaitaHora.Application.Features.Users.CreateUser;
+using BaitaHora.Application.Features.Companies.Positions.Remove.ServicesFromPosition;
+using BaitaHora.Application.Features.Companies.ServiceOffering.Disable;
+using BaitaHora.Application.Features.Companies.Positions.Disable;
+using BaitaHora.Application.Features.Companies.ServiceOfferings.Enable;
+using BaitaHora.Application.Features.Companies.Positions.Enable;
 
 namespace BaitaHora.Infrastructure.DependencyInjection;
 
@@ -19,19 +24,33 @@ public static class UseCasesRegistration
 {
     public static IServiceCollection AddUseCases(this IServiceCollection services)
     {
+        // Auth
         services.AddScoped<AuthenticateUseCase>();
+        services.AddScoped<ToggleUserActiveUseCase>();
+
+        // Onboarding
         services.AddScoped<RegisterOwnerWithCompanyUseCase>();
         services.AddScoped<RegisterEmployeeUseCase>();
-        services.AddScoped<CreateCompanyPositionUseCase>();
-        services.AddScoped<CreateServiceOfferingUseCase>();
+
+        // Companies → Members
         services.AddScoped<PatchOwnerUseCase>();
         services.AddScoped<PatchEmployeeUseCase>();
-        services.AddScoped<PatchCompanyPositionUseCase>();
+
+        // Companies → Positions
+        services.AddScoped<CreatePositionUseCase>();
+        services.AddScoped<PatchPositionUseCase>();
+        services.AddScoped<RemovePositionUseCase>();
+        services.AddScoped<RemoveServicesFromPositionUseCase>();
+        services.AddScoped<ActivatePositionsUseCase>();
+        services.AddScoped<DisablePositionsUseCase>();
+
+        // Companies → Service Offerings
+        services.AddScoped<CreateServiceOfferingUseCase>();
         services.AddScoped<PatchServiceOfferingUseCase>();
         services.AddScoped<RemoveServiceOfferingUseCase>();
-        services.AddScoped<ActivateServiceOfferingUseCase>();
-        services.AddScoped<DisableServiceOfferingUseCase>();
-        services.AddScoped<ToggleUserActiveUseCase>();
+        services.AddScoped<ActivateServiceOfferingsUseCase>();
+        services.AddScoped<DisableServiceOfferingsUseCase>();
+
         return services;
     }
 }

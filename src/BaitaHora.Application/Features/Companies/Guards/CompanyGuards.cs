@@ -26,23 +26,55 @@ public sealed class CompanyGuards : ICompanyGuards
 
     public async Task<Result<Company>> ExistsCompany(Guid companyId, CancellationToken ct)
     {
+        if (companyId == Guid.Empty)
+            return Result<Company>.BadRequest("CompanyId inválido.");
+
         var company = await _companyRepository.GetByIdAsync(companyId, ct);
         return company is null
             ? Result<Company>.NotFound("Empresa não encontrada.")
             : Result<Company>.Ok(company);
     }
 
-    public async Task<Result<Company>> GetWithServiceOfferingsOrNotFoundAsync(Guid companyId, CancellationToken ct)
+    public async Task<Result<Company>> GetWithServiceOfferings(Guid companyId, CancellationToken ct)
     {
+        if (companyId == Guid.Empty)
+            return Result<Company>.BadRequest("CompanyId inválido.");
+
         var company = await _companyRepository.GetWithServiceOfferingsAsync(companyId, ct);
         return company is null
             ? Result<Company>.NotFound("Empresa não encontrada.")
             : Result<Company>.Ok(company);
     }
 
-    public async Task<Result<CompanyMember>> GetActiveMembershipOrForbiddenAsync(
-        Guid companyId, Guid userId, CancellationToken ct)
+    public async Task<Result<Company>> GetWithPositionsAndServiceOfferings(Guid companyId, CancellationToken ct)
     {
+        if (companyId == Guid.Empty)
+            return Result<Company>.BadRequest("CompanyId inválido.");
+
+        var company = await _companyRepository.GetWithPositionAndServiceOfferingsAsync(companyId, ct);
+        return company is null
+            ? Result<Company>.NotFound("Empresa não encontrada.")
+            : Result<Company>.Ok(company);
+    }
+
+    public async Task<Result<Company>> GetWithPositionsAndMembers(Guid companyId, CancellationToken ct)
+    {
+        if (companyId == Guid.Empty)
+            return Result<Company>.BadRequest("CompanyId inválido.");
+
+        var company = await _companyRepository.GetByIdWithPositionsAndMembersAsync(companyId, ct);
+        return company is null
+            ? Result<Company>.NotFound("Empresa não encontrada.")
+            : Result<Company>.Ok(company);
+    }
+
+    public async Task<Result<CompanyMember>> GetActiveMembership(Guid companyId, Guid userId, CancellationToken ct)
+    {
+        if (companyId == Guid.Empty)
+            return Result<CompanyMember>.BadRequest("CompanyId inválido.");
+        if (userId == Guid.Empty)
+            return Result<CompanyMember>.BadRequest("UserId inválido.");
+
         var member = await _memberRepository.GetByCompanyAndUserWithPositionAsync(companyId, userId, ct);
 
         if (member is null)
@@ -54,9 +86,18 @@ public sealed class CompanyGuards : ICompanyGuards
         return Result<CompanyMember>.Ok(member);
     }
 
-    public async Task<Result<bool>> HasPermissionsOrForbiddenAsync(Guid companyId, Guid userId, IEnumerable<CompanyPermission> required, CancellationToken ct, bool requireAll = true)
+    public async Task<Result<bool>> HasPermissions(Guid companyId, Guid userId, IEnumerable<CompanyPermission> required, CancellationToken ct, bool requireAll = true)
     {
-        var memRes = await GetActiveMembershipOrForbiddenAsync(companyId, userId, ct);
+        if (companyId == Guid.Empty)
+            return Result<bool>.BadRequest("CompanyId inválido.");
+
+        if (userId == Guid.Empty)
+            return Result<bool>.BadRequest("UserId inválido.");
+
+        if (required is null)
+            return Result<bool>.BadRequest("Conjunto de permissões requerido é nulo.");
+
+        var memRes = await GetActiveMembership(companyId, userId, ct);
         if (memRes.IsFailure)
             return Result<bool>.FromError(memRes);
 
@@ -64,19 +105,24 @@ public sealed class CompanyGuards : ICompanyGuards
         if (mask is null)
             return Result<bool>.Forbidden("Usuário não é membro ativo da empresa.");
 
+        var requiredList = required as IList<CompanyPermission> ?? required.ToList();
         bool ok = requireAll
-            ? required.All(p => _permissionService.Has(mask.Value, p))
-            : _permissionService.HasAny(mask.Value, required);
+            ? requiredList.All(p => _permissionService.Has(mask.Value, p))
+            : _permissionService.HasAny(mask.Value, requiredList);
 
         return ok
             ? Result<bool>.Ok(true)
-            : Result<bool>.Forbidden($"Permissão insuficiente. Requer: {string.Join(", ", required)}.");
+            : Result<bool>.Forbidden($"Permissão insuficiente. Requer: {string.Join(", ", requiredList)}.");
     }
 
-    public async Task<Result<CompanyRole>> GetUserRoleOrForbiddenAsync(
-        Guid companyId, Guid userId, CancellationToken ct)
+    public async Task<Result<CompanyRole>> GetUserRole(Guid companyId, Guid userId, CancellationToken ct)
     {
-        var memRes = await GetActiveMembershipOrForbiddenAsync(companyId, userId, ct);
+        if (companyId == Guid.Empty)
+            return Result<CompanyRole>.BadRequest("CompanyId inválido.");
+        if (userId == Guid.Empty)
+            return Result<CompanyRole>.BadRequest("UserId inválido.");
+
+        var memRes = await GetActiveMembership(companyId, userId, ct);
         if (memRes.IsFailure)
             return Result<CompanyRole>.FromError(memRes);
 

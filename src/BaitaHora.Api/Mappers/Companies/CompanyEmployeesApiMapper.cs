@@ -7,7 +7,6 @@ namespace BaitaHora.Api.Mappers.Companies;
 
 public static class CompanyEmployeesApiMapper
 {
-
     public static RegisterEmployeeCommand ToCommand(
         this RegisterEmployeeRequest r, Guid companyId)
         => new RegisterEmployeeCommand

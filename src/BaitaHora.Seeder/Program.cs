@@ -15,7 +15,7 @@ class Program
             Console.WriteLine("=== BaitaHora • Seeder CLI (mínimo) ===");
             Console.WriteLine(" 1) Criar OWNER + COMPANY");
             Console.WriteLine(" 2) Criar EMPLOYEE");
-            Console.WriteLine(" 3) Criar POSITION");
+            Console.WriteLine(" 3) Criar Position");
             Console.WriteLine(" 0) Sair");
             Console.Write("Opção: ");
 
@@ -85,8 +85,8 @@ class Program
         if (string.IsNullOrWhiteSpace(name)) name = "Staff";
 
         // Papel padrão: Staff (pode ajustar aqui conforme necessidade)
-        var payload = PayloadBuilder.BuildCreateCompanyPosition(name, CompanyRole.Staff);
-        Console.WriteLine("\nPayload POSITION:");
+        var payload = PayloadBuilder.BuildCreatePosition(name, CompanyRole.Staff);
+        Console.WriteLine("\nPayload Position:");
         DumpJson(payload);
 
         // Aqui: POST /api/company/positions

@@ -1,11 +1,12 @@
+using BaitaHora.Application.Features.Companies.Positions.Validators;
 using FluentValidation;
 
 namespace BaitaHora.Application.Features.Companies.Positions.Create;
 
-public sealed class CreateCompanyPositionCommandValidator
-    : CompanyPositionValidatorBase<CreateCompanyPositionCommand>
+public sealed class CreatePositionCommandValidator
+    : PositionValidatorBase<CreatePositionCommand>
 {
-    public CreateCompanyPositionCommandValidator()
+    public CreatePositionCommandValidator()
         : base(required: true,
                nameSelector: x => x.PositionName,
                levelSelector: x => x.AccessLevel)

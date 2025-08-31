@@ -7,7 +7,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace BaitaHora.Api.Controllers;
+namespace BaitaHora.Api.Controllers.Users;
 
 [ApiController]
 [Route(ApiRoutes.UsersPrefix + "/{companyId:guid}")]

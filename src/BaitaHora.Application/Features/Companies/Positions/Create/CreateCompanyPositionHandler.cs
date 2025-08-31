@@ -3,15 +3,15 @@ using MediatR;
 
 namespace BaitaHora.Application.Features.Companies.Positions.Create;
 
-public sealed class CreateCompanyPositionHandler
-    : IRequestHandler<CreateCompanyPositionCommand, Result<CreateCompanyPositionResponse>>
+public sealed class CreatePositionHandler
+    : IRequestHandler<CreatePositionCommand, Result<CreatePositionResponse>>
 {
-    private readonly CreateCompanyPositionUseCase _useCase;
+    private readonly CreatePositionUseCase _useCase;
 
-    public CreateCompanyPositionHandler(CreateCompanyPositionUseCase useCase)
+    public CreatePositionHandler(CreatePositionUseCase useCase)
         => _useCase = useCase;
 
-    public Task<Result<CreateCompanyPositionResponse>>  Handle(
-        CreateCompanyPositionCommand request, CancellationToken ct)
+    public Task<Result<CreatePositionResponse>>  Handle(
+        CreatePositionCommand request, CancellationToken ct)
         => _useCase.HandleAsync(request, ct);
 }

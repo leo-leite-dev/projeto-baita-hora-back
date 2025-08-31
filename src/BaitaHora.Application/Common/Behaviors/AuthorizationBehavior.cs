@@ -33,11 +33,11 @@ public sealed class AuthorizationBehavior<TRequest, TResponse>
         if (companyRes.IsFailure)
             return Make<TResponse>.NotFound(companyRes.Error ?? "Empresa não encontrada.");
 
-        var memberRes = await _companyGuards.GetActiveMembershipOrForbiddenAsync(req.ResourceId, userId, ct);
+        var memberRes = await _companyGuards.GetActiveMembership(req.ResourceId, userId, ct);
         if (memberRes.IsFailure)
             return Make<TResponse>.Forbidden(memberRes.Error ?? "Usuário não é membro ativo da empresa.");
 
-        var permsRes = await _companyGuards.HasPermissionsOrForbiddenAsync(
+        var permsRes = await _companyGuards.HasPermissions(
             req.ResourceId, userId, req.RequiredPermissions, ct, requireAll: req.RequireAllPermissions);
         if (permsRes.IsFailure)
             return Make<TResponse>.Forbidden(permsRes.Error ?? "Permissão insuficiente.");

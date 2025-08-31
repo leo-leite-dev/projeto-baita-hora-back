@@ -16,14 +16,14 @@ public sealed class RegisterEmployeeUseCase
     private readonly ICompanyMemberRepository _companyMemberRepository;
     private readonly IPasswordService _passwordService;
     private readonly ICompanyGuards _companyGuards;
-    private readonly ICompanyPositionGuards _companyPositionGuards;
+    private readonly IPositionGuards _companyPositionGuards;
 
     public RegisterEmployeeUseCase(
         IUserRepository userRepository,
         ICompanyMemberRepository companyMemberRepository,
         IPasswordService passwordService,
         ICompanyGuards companyGuards,
-        ICompanyPositionGuards companyPositionGuards)
+        IPositionGuards companyPositionGuards)
     {
         _userRepository = userRepository;
         _companyMemberRepository = companyMemberRepository;

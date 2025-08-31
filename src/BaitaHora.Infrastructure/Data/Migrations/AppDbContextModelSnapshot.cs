@@ -274,7 +274,6 @@ namespace BaitaHora.Infrastructure.Data.Migrations
             modelBuilder.Entity("BaitaHora.Domain.Features.Companies.Entities.CompanyPosition", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<string>("AccessLevel")
@@ -333,7 +332,6 @@ namespace BaitaHora.Infrastructure.Data.Migrations
             modelBuilder.Entity("BaitaHora.Domain.Features.Companies.Entities.ServiceOffering", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("CompanyId")
@@ -670,23 +668,23 @@ namespace BaitaHora.Infrastructure.Data.Migrations
                     b.ToTable("login_sessions", (string)null);
                 });
 
-            modelBuilder.Entity("CompanyPositionServiceOffering", b =>
+            modelBuilder.Entity("company_position_service_offerings", b =>
                 {
-                    b.Property<Guid>("CompanyPositionId")
+                    b.Property<Guid>("position_id")
                         .HasColumnType("uuid")
                         .HasColumnName("position_id");
 
-                    b.Property<Guid>("ServiceOfferingId")
+                    b.Property<Guid>("company_service_offering_id")
                         .HasColumnType("uuid")
-                        .HasColumnName("service_offering_id");
+                        .HasColumnName("company_service_offering_id");
 
-                    b.HasKey("CompanyPositionId", "ServiceOfferingId");
+                    b.HasKey("position_id", "company_service_offering_id");
 
-                    b.HasIndex("CompanyPositionId")
+                    b.HasIndex("company_service_offering_id")
+                        .HasDatabaseName("ix_cpso_company_service");
+
+                    b.HasIndex("position_id")
                         .HasDatabaseName("ix_cpso_position");
-
-                    b.HasIndex("ServiceOfferingId")
-                        .HasDatabaseName("ix_cpso_service");
 
                     b.ToTable("company_position_service_offerings", (string)null);
                 });
@@ -879,17 +877,17 @@ namespace BaitaHora.Infrastructure.Data.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("CompanyPositionServiceOffering", b =>
+            modelBuilder.Entity("company_position_service_offerings", b =>
                 {
-                    b.HasOne("BaitaHora.Domain.Features.Companies.Entities.CompanyPosition", null)
+                    b.HasOne("BaitaHora.Domain.Features.Companies.Entities.ServiceOffering", null)
                         .WithMany()
-                        .HasForeignKey("CompanyPositionId")
+                        .HasForeignKey("company_service_offering_id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("BaitaHora.Domain.Features.Companies.Entities.ServiceOffering", null)
+                    b.HasOne("BaitaHora.Domain.Features.Companies.Entities.CompanyPosition", null)
                         .WithMany()
-                        .HasForeignKey("ServiceOfferingId")
+                        .HasForeignKey("position_id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

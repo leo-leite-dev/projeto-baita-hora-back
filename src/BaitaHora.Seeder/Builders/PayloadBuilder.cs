@@ -23,12 +23,12 @@ public static class PayloadBuilder
     public static RegisterEmployeeRequest BuildRegisterEmployee(Guid positionId, CreateUserRequest employee)
         => new(PositionId: positionId, Employee: employee);
 
-    public static CreateCompanyPositionRequest BuildCreateCompanyPosition(string name, CompanyRole role)
+    public static CreatePositionRequest BuildCreatePosition(string name, CompanyRole role)
         => new(name, role);
 
-    public static CreateCompanyPositionRequest BuildCreateCompanyPosition(CompanyRole role)
+    public static CreatePositionRequest BuildCreatePosition(CompanyRole role)
     {
-        var def = CompanyPositionBuilder.Default();
-        return new CreateCompanyPositionRequest(def.PositionName, role);
+        var def = PositionBuilder.Default();
+        return new CreatePositionRequest(def.PositionName, role);
     }
 }

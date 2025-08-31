@@ -7,13 +7,14 @@ using MediatR;
 
 namespace BaitaHora.Application.Features.Companies.Positions.Create;
 
-public sealed record CreateCompanyPositionCommand
-    : IRequest<Result<CreateCompanyPositionResponse>>, IAuthorizableRequest, ITransactionalRequest
+public sealed record CreatePositionCommand
+    : IRequest<Result<CreatePositionResponse>>, IAuthorizableRequest, ITransactionalRequest
 {
     public Guid CompanyId { get; init; }
     public string PositionName { get; init; } = default!;
     public CompanyRole AccessLevel { get; init; }
 
+    public IEnumerable<Guid> ServiceOfferingIds { get; init; } = Array.Empty<Guid>();
 
     public Guid ResourceId => CompanyId;
     public IEnumerable<CompanyPermission> RequiredPermissions => [CompanyPermission.ManageCompany];

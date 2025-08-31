@@ -1,7 +1,7 @@
-using BaitaHora.Application.Features.Companies.ServiceOffering.Activate;
-using BaitaHora.Application.Features.Companies.ServiceOffering.Disable;
 using BaitaHora.Application.Features.Companies.ServiceOffering.Patch;
 using BaitaHora.Application.Features.Companies.ServiceOffering.Remove;
+using BaitaHora.Application.Features.Companies.ServiceOfferings.Disable;
+using BaitaHora.Application.Features.Companies.ServiceOfferings.Enable;
 using BaitaHora.Contracts.DTOs.Companies.Company.Create;
 using BaitaHora.Contracts.DTOs.Companies.Company.Patch;
 
@@ -38,19 +38,25 @@ public static class ServiceOfferingsApiMappers
             ServiceOfferingId = serviceOfferingId
         };
 
-    public static DisableServiceOfferingCommand ToDisableCommand(
-        Guid companyId, Guid serviceOfferingId)
-        => new DisableServiceOfferingCommand
+    public static DisableServiceOfferingsCommand ToCommand(
+        this DisableServiceOfferingsRequest r, Guid companyId)
+        => new DisableServiceOfferingsCommand
         {
             CompanyId = companyId,
-            ServiceOfferingId = serviceOfferingId
+            ServiceOfferingIds = (r?.ServiceOfferingIds ?? Enumerable.Empty<Guid>())
+                .Where(id => id != Guid.Empty)
+                .Distinct()
+                .ToArray()
         };
 
-    public static ActivateServiceOfferingCommand ToActivateCommand(
-        Guid companyId, Guid serviceOfferingId)
+    public static ActivateServiceOfferingsCommand ToCommand(
+        this ActivateServiceOfferingsRequest r, Guid companyId)
         => new()
         {
             CompanyId = companyId,
-            ServiceOfferingId = serviceOfferingId
+            ServiceOfferingIds = (r?.ServiceOfferingIds ?? Enumerable.Empty<Guid>())
+                .Where(id => id != Guid.Empty)
+                .Distinct()
+                .ToArray()
         };
 }

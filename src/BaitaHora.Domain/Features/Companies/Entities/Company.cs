@@ -4,6 +4,7 @@ using BaitaHora.Domain.Features.Common;
 using BaitaHora.Domain.Features.Common.Exceptions;
 using BaitaHora.Domain.Features.Common.ValueObjects;
 using BaitaHora.Domain.Features.Companies.Enums;
+using BaitaHora.Domain.Permissions;
 
 namespace BaitaHora.Domain.Features.Companies.Entities;
 
@@ -21,11 +22,11 @@ public sealed class Company : Entity
     private readonly List<CompanyMember> _members = new();
     public IReadOnlyCollection<CompanyMember> Members => _members.AsReadOnly();
 
-    private readonly List<CompanyPosition> _companyPositions = new();
-    public IReadOnlyCollection<CompanyPosition> Positions => _companyPositions.AsReadOnly();
+    private readonly List<CompanyPosition> _positions = new();
+    public IReadOnlyCollection<CompanyPosition> Positions => _positions.AsReadOnly();
 
-    private readonly List<ServiceOffering> _ServiceOfferings = new();
-    public IReadOnlyCollection<ServiceOffering> ServiceOfferings => _ServiceOfferings.AsReadOnly();
+    private readonly List<ServiceOffering> _serviceOfferings = new();
+    public IReadOnlyCollection<ServiceOffering> ServiceOfferings => _serviceOfferings.AsReadOnly();
 
     private Company() { }
 
@@ -142,6 +143,8 @@ public sealed class Company : Entity
         return member;
     }
 
+    // ===== Member =====
+
     public CompanyMember AddMemberWithPrimaryPosition(Guid userId, CompanyPosition position)
     {
         if (position is null)
@@ -168,7 +171,7 @@ public sealed class Company : Entity
 
     public CompanyMember ChangeMemberPrimaryPosition(Guid userId, Guid newPositionId, bool alignRoleToPosition = false)
     {
-        var newPosition = _companyPositions.SingleOrDefault(p => p.Id == newPositionId && p.IsActive)
+        var newPosition = _positions.SingleOrDefault(p => p.Id == newPositionId && p.IsActive)
             ?? throw new CompanyException("Cargo não encontrado ou inativo.");
 
         var member = _members.SingleOrDefault(m => m.UserId == userId && m.IsActive)
@@ -184,74 +187,115 @@ public sealed class Company : Entity
 
     // ===== Positions =====
 
-    public CompanyPosition AddPosition(string positionName, CompanyRole accessLevel, bool isSystem = false)
+    public CompanyPosition AddPosition(string positionName, CompanyRole accessLevel, IEnumerable<Guid> serviceOfferingIds, bool isSystem = false, CompanyPermission permissionMask = CompanyPermission.None)
     {
-        positionName = NormalizeSpaces(positionName);
+        var normalized = NormalizeSpaces(positionName);
 
-        if (string.IsNullOrWhiteSpace(positionName))
-            throw new CompanyException("Nome do cargo é obrigatório.");
-
-        if (_companyPositions.Any(p =>
-                string.Equals(NormalizeSpaces(p.Name), positionName, StringComparison.OrdinalIgnoreCase)))
+        if (_positions.Any(p => p.IsActive &&
+            string.Equals(NormalizeSpaces(p.Name), normalized, StringComparison.OrdinalIgnoreCase)))
             throw new CompanyException("Já existe um cargo com esse nome.");
 
-        var position = CompanyPosition.Create(
-            companyId: Id,
-            positionName: positionName,
-            accessLevel: accessLevel,
-            isSystem: isSystem
-        );
+        var ids = (serviceOfferingIds ?? Enumerable.Empty<Guid>())
+            .Where(x => x != Guid.Empty)
+            .Distinct()
+            .ToArray();
 
-        _companyPositions.Add(position);
+        if (ids.Length == 0)
+            throw new CompanyException("Um cargo deve ter ao menos um serviço associado.");
+
+        var services = _serviceOfferings.Where(s => ids.Contains(s.Id)).ToList();
+
+        if (services.Count != ids.Length)
+            throw new CompanyException("Um ou mais serviços não foram encontrados.");
+
+        if (services.Any(s => s.CompanyId != Id || !s.IsActive))
+            throw new CompanyException("Serviços devem pertencer à empresa e estar ativos.");
+
+        var position = CompanyPosition.Create(Id, normalized, accessLevel, isSystem, permissionMask);
+
+        position.AddServiceOfferings(services);
+
+        _positions.Add(position);
         return position;
     }
 
-    public void AssignServiceToPosition(Guid positionId, Guid serviceOfferingId)
+    public void AssignServicesToPosition(Guid positionId, IEnumerable<Guid> serviceOfferingIds)
     {
-        var position = _companyPositions.SingleOrDefault(p => p.Id == positionId && p.IsActive)
+        var position = _positions.SingleOrDefault(p => p.Id == positionId && p.IsActive)
             ?? throw new CompanyException("Cargo não encontrado ou inativo.");
 
-        var service = _ServiceOfferings.SingleOrDefault(s => s.Id == serviceOfferingId)
-            ?? throw new CompanyException("Serviço não encontrado.");
+        var ids = (serviceOfferingIds ?? Enumerable.Empty<Guid>())
+                  .Where(x => x != Guid.Empty)
+                  .Distinct()
+                  .ToArray();
 
-        if (position.CompanyId != Id || service.CompanyId != Id)
-            throw new CompanyException("Serviço e cargo devem pertencer à mesma empresa.");
+        if (ids.Length == 0)
+            throw new CompanyException("Um cargo deve ter ao menos um serviço associado.");
 
-        if (!position.ServiceOfferings.Contains(service))
-            position.ServiceOfferings.Add(service);
+        var services = _serviceOfferings.Where(s => ids.Contains(s.Id)).ToList();
+
+        if (services.Count != ids.Length)
+            throw new CompanyException("Um ou mais serviços não foram encontrados.");
+
+        if (services.Any(s => s.CompanyId != Id || !s.IsActive))
+            throw new CompanyException("Serviços devem pertencer à empresa e estar ativos.");
+
+        position.ReplaceServiceOfferings(services);
     }
 
     public bool RenamePosition(Guid positionId, string newName)
     {
         newName = NormalizeSpaces(newName);
-        var pos = _companyPositions.SingleOrDefault(p => p.Id == positionId)
+        var position = _positions.SingleOrDefault(p => p.Id == positionId)
             ?? throw new CompanyException("Cargo não encontrado.");
 
-        if (_companyPositions.Any(p => p.Id != positionId &&
+        if (_positions.Any(p => p.Id != positionId &&
                 string.Equals(NormalizeSpaces(p.Name), newName, StringComparison.OrdinalIgnoreCase)))
             throw new CompanyException("Já existe um cargo com esse nome.");
 
-        return pos.Rename(newName);
+        return position.Rename(newName);
     }
 
-    // public bool DeactivatePosition(Guid positionId)
-    // {
-    //     var pos = _companyPositions.SingleOrDefault(p => p.Id == positionId)
-    //         ?? throw new CompanyException("Cargo não encontrado.");
+    public CompanyPosition ChangePositionAccessLevel(Guid positionId, CompanyRole newLevel, bool alignMembers = false)
+    {
+        var position = _positions.SingleOrDefault(p => p.Id == positionId && p.IsActive)
+            ?? throw new CompanyException("Cargo não encontrado ou inativo.");
 
-    //     if (_members.Any(m => m.PrimaryPositionId == pos.Id && m.IsActive))
-    //         throw new CompanyException("Não é possível desativar um cargo em uso.");
+        if (position.IsSystem && position.AccessLevel == CompanyRole.Owner && newLevel != CompanyRole.Owner)
+            throw new CompanyException("Nível do cargo 'Fundador' do sistema não pode ser alterado.");
 
-    //     return pos.Deactivate();
-    // }
+        position.ChangeAccessLevel(newLevel);
 
-    // public bool ActivatePosition(Guid positionId)
-    // {
-    //     var pos = _companyPositions.SingleOrDefault(p => p.Id == positionId)
-    //         ?? throw new CompanyException("Cargo não encontrado.");
+        if (alignMembers)
+        {
+            foreach (var m in _members.Where(m => m.IsActive && m.PrimaryPositionId == positionId))
+                m.ChangeRole(newLevel);
+        }
 
-    //     return pos.Activate();
-    // }
+        return position;
+    }
+
+    public void RemovePosition(Guid positionId)
+    {
+        var position = _positions.SingleOrDefault(p => p.Id == positionId)
+            ?? throw new CompanyException("Cargo não encontrado.");
+
+        if (position.IsSystem)
+            throw new CompanyException("Cargo do sistema não pode ser removido.");
+
+        if (_members.Any(m => m.PrimaryPositionId == positionId && m.IsActive))
+            throw new CompanyException("Não é possível remover um cargo que ainda possui membros ativos.");
+
+        _positions.Remove(position);
+    }
+
+    public void RemoveServicesFromPosition(Guid positionId, IReadOnlyCollection<Guid> serviceOfferingIds)
+    {
+        var position = _positions.SingleOrDefault(p => p.Id == positionId && p.IsActive)
+            ?? throw new CompanyException("Cargo não encontrado ou inativo.");
+
+        position.RemoveServiceOfferings(serviceOfferingIds);
+    }
 
     // ===== Service Offerings (ONE-TO-MANY) =====
     public ServiceOffering AddServiceOffering(string serviceName, Money price)
@@ -261,27 +305,26 @@ public sealed class Company : Entity
 
         var normalized = NormalizeAndValidateName(serviceName);
 
-        var exists = _ServiceOfferings.Any(s =>
-            s.IsActive && NameEquals(s.Name, normalized));
+        var exists = _serviceOfferings.Any(s => s.IsActive && NameEquals(s.Name, normalized));
 
         var service = ServiceOffering.Create(Id, serviceName, price);
 
         if (exists)
             throw new CompanyException($"Já existe um serviço ativo com o nome '{normalized}'.");
 
-        _ServiceOfferings.Add(service);
+        _serviceOfferings.Add(service);
 
         return service;
     }
 
     public bool RenameServiceOffering(Guid serviceOfferingId, string newName)
     {
-        var service = _ServiceOfferings.SingleOrDefault(s => s.Id == serviceOfferingId)
+        var service = _serviceOfferings.SingleOrDefault(s => s.Id == serviceOfferingId)
             ?? throw new CompanyException("Serviço não encontrado.");
 
         var normalized = NormalizeAndValidateName(newName);
 
-        var exists = _ServiceOfferings.Any(s =>
+        var exists = _serviceOfferings.Any(s =>
          s.IsActive && s.Id != serviceOfferingId && NameEquals(s.Name, normalized));
 
         if (exists)
@@ -292,16 +335,17 @@ public sealed class Company : Entity
 
     public void RemoveServiceOffering(Guid serviceOfferingId)
     {
-        var svc = _ServiceOfferings.SingleOrDefault(s => s.Id == serviceOfferingId)
+        var service = _serviceOfferings.SingleOrDefault(s => s.Id == serviceOfferingId)
             ?? throw new CompanyException("Serviço não encontrado.");
-        _ServiceOfferings.Remove(svc);
+
+        _serviceOfferings.Remove(service);
     }
 
     // ===== Helpers =====
 
     private CompanyPosition EnsurePositionByName(string positionName, CompanyRole accessLevel, bool isSystem = false)
     {
-        var position = _companyPositions
+        var position = _positions
             .FirstOrDefault(p => p.Name.Equals(positionName, StringComparison.OrdinalIgnoreCase));
 
 
@@ -315,7 +359,7 @@ public sealed class Company : Entity
             isSystem: isSystem
         );
 
-        _companyPositions.Add(position);
+        _positions.Add(position);
 
         return position;
     }

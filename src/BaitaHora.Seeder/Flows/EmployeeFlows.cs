@@ -64,7 +64,7 @@ public static class EmployeeFlows
             positionId
         };
 
-        var path = $"/api/companies/{companyId:D}/employees/{employeeId:D}/position";
+        var path = $"/api/companies/{companyId:D}/employees/{employeeId:D}/Position";
         ConsoleHelper.Info($"PUT {path}");
 
         var (status, body) = await SessionState.Api.PutAndReadAsync(SessionState.BaseUrl, path, payload, default);
