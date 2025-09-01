@@ -7,7 +7,7 @@ namespace BaitaHora.Application.Features.Companies.Guards.Interfaces
 {
     public interface ICompanyGuards
     {
-        Task<Result<Company>> ExistsCompany(Guid companyId, CancellationToken ct);
+        Task<Result<Company>> EnsureCompanyExists(Guid companyId, CancellationToken ct);
         Task<Result<Company>> GetWithServiceOfferings(Guid companyId, CancellationToken ct);
         Task<Result<Company>> GetWithPositionsAndServiceOfferings(Guid companyId, CancellationToken ct);
         Task<Result<Company>> GetWithPositionsAndMembers(Guid companyId, CancellationToken ct);

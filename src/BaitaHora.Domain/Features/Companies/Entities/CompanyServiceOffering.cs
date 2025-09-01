@@ -4,19 +4,19 @@ using BaitaHora.Domain.Common.ValueObjects;
 
 namespace BaitaHora.Domain.Features.Companies.Entities;
 
-public sealed class ServiceOffering : Entity
+public sealed class CompanyServiceOffering : Entity
 {
     public Guid CompanyId { get; private set; }
     public Money Price { get; private set; }
 
-    private ServiceOffering() { }
+    private CompanyServiceOffering() { }
 
-    public static ServiceOffering Create(Guid companyId, string serviceName, Money price)
+    public static CompanyServiceOffering Create(Guid companyId, string serviceName, Money price)
     {
         if (companyId == Guid.Empty)
             throw new CompanyException("CompanyId inválido.");
 
-        var service = new ServiceOffering
+        var service = new CompanyServiceOffering
         {
             CompanyId = companyId,
             Name = NormalizeAndValidateName(serviceName),

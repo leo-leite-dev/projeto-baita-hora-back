@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace BaitaHora.Infrastructure.Data.Configurations;
 
-public sealed class CompanyServiceOfferingConfiguration : IEntityTypeConfiguration<ServiceOffering>
+public sealed class CompanyServiceOfferingConfiguration : IEntityTypeConfiguration<CompanyServiceOffering>
 {
-    public void Configure(EntityTypeBuilder<ServiceOffering> b)
+    public void Configure(EntityTypeBuilder<CompanyServiceOffering> b)
     {
         b.ToTable("company_service_offerings");
 

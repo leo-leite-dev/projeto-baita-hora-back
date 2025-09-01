@@ -63,7 +63,7 @@ public sealed class PositionConfiguration : IEntityTypeConfiguration<CompanyPosi
          .UsingEntity<Dictionary<string, object>>(
              "company_position_service_offerings",
              right => right
-                 .HasOne<ServiceOffering>()
+                 .HasOne<CompanyServiceOffering>()
                  .WithMany()
                  .HasForeignKey("company_service_offering_id")
                  .OnDelete(DeleteBehavior.Cascade),

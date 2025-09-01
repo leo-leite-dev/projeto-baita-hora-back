@@ -1,39 +1,47 @@
 using BaitaHora.Application.Common.Results;
+using BaitaHora.Application.Features.Companies.Guards;
 using BaitaHora.Application.Features.Companies.Guards.Interfaces;
 using BaitaHora.Application.Features.Companies.ServiceOfferings.Disable;
-using BaitaHora.Domain.Shared;
 
-namespace BaitaHora.Application.Features.Companies.ServiceOffering.Disable;
-
-public sealed class DisableServiceOfferingsUseCase
+namespace BaitaHora.Application.Features.Companies.ServiceOffering.Disable
 {
-    private readonly ICompanyGuards _companyGuards;
-
-    public DisableServiceOfferingsUseCase(ICompanyGuards companyGuards)
+    public sealed class DisableServiceOfferingsUseCase
     {
-        _companyGuards = companyGuards;
-    }
+        private readonly ICompanyGuards _companyGuards;
+        private readonly ICompanyServiceOfferingGuards _serviceOfferingGuards;
 
-    public async Task<Result<DisableServiceOfferingsResponse>> HandleAsync(
-        DisableServiceOfferingsCommand cmd, CancellationToken ct)
-    {
-        var companyRes = await _companyGuards.GetWithServiceOfferings(cmd.CompanyId, ct);
-        if (companyRes.IsFailure)
-            return Result<DisableServiceOfferingsResponse>.FromError(companyRes);
+        public DisableServiceOfferingsUseCase(
+            ICompanyGuards companyGuards,
+            ICompanyServiceOfferingGuards serviceOfferingGuards)
+        {
+            _companyGuards = companyGuards;
+            _serviceOfferingGuards = serviceOfferingGuards;
+        }
 
-        var company = companyRes.Value!;
+        public async Task<Result<DisableServiceOfferingsResponse>> HandleAsync(
+            DisableServiceOfferingsCommand cmd, CancellationToken ct)
+        {
 
-        var ids = IdSet.Normalize(cmd.ServiceOfferingIds);
-        if (ids.Count == 0)
-            return Result<DisableServiceOfferingsResponse>.BadRequest("Nenhum serviço válido informado.");
+            var compRes = await _companyGuards.GetWithPositionsAndServiceOfferings(cmd.CompanyId, ct);
+            if (compRes.IsFailure)
+                return Result<DisableServiceOfferingsResponse>.FromError(compRes);
 
-        var notFound = IdSet.MissingFrom(ids, company.ServiceOfferings, s => s.Id);
-        if (notFound.Count > 0)
-            return Result<DisableServiceOfferingsResponse>.NotFound($"Serviços não encontrados: {string.Join(", ", notFound)}");
+            var company = compRes.Value!;
 
-        foreach (var s in company.ServiceOfferings.Where(x => ids.Contains(x.Id)))
-            s.Deactivate();
+            var valRes = await _serviceOfferingGuards
+                .ValidateServiceOfferingsForDesactivation(cmd.CompanyId, cmd.ServiceOfferingIds, ct);
+            if (valRes.IsFailure)
+                return Result<DisableServiceOfferingsResponse>.FromError(valRes);
 
-        return Result<DisableServiceOfferingsResponse>.Ok(new(ids));
+            var services = valRes.Value!;
+            var ids = services.Select(s => s.Id).ToArray();
+
+            company.DetachServiceOfferingsFromAllPositions(ids);
+
+            foreach (var s in services)
+                s.Deactivate();
+
+            return Result<DisableServiceOfferingsResponse>.Ok(new(ids));
+        }
     }
 }

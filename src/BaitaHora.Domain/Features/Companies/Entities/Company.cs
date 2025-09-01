@@ -25,8 +25,8 @@ public sealed class Company : Entity
     private readonly List<CompanyPosition> _positions = new();
     public IReadOnlyCollection<CompanyPosition> Positions => _positions.AsReadOnly();
 
-    private readonly List<ServiceOffering> _serviceOfferings = new();
-    public IReadOnlyCollection<ServiceOffering> ServiceOfferings => _serviceOfferings.AsReadOnly();
+    private readonly List<CompanyServiceOffering> _serviceOfferings = new();
+    public IReadOnlyCollection<CompanyServiceOffering> ServiceOfferings => _serviceOfferings.AsReadOnly();
 
     private Company() { }
 
@@ -298,7 +298,7 @@ public sealed class Company : Entity
     }
 
     // ===== Service Offerings (ONE-TO-MANY) =====
-    public ServiceOffering AddServiceOffering(string serviceName, Money price)
+    public CompanyServiceOffering AddServiceOffering(string serviceName, Money price)
     {
         if (!IsActive)
             throw new CompanyException("Não é possível adicionar serviços em uma empresa inativa.");
@@ -307,7 +307,7 @@ public sealed class Company : Entity
 
         var exists = _serviceOfferings.Any(s => s.IsActive && NameEquals(s.Name, normalized));
 
-        var service = ServiceOffering.Create(Id, serviceName, price);
+        var service = CompanyServiceOffering.Create(Id, serviceName, price);
 
         if (exists)
             throw new CompanyException($"Já existe um serviço ativo com o nome '{normalized}'.");
@@ -339,6 +339,40 @@ public sealed class Company : Entity
             ?? throw new CompanyException("Serviço não encontrado.");
 
         _serviceOfferings.Remove(service);
+    }
+
+    // dentro de Company
+    public void DetachServiceOfferingsFromAllPositions(IReadOnlyCollection<Guid> serviceOfferingIds)
+    {
+        var ids = (serviceOfferingIds ?? Array.Empty<Guid>())
+            .Where(x => x != Guid.Empty)
+            .Distinct()
+            .ToArray();
+
+        if (ids.Length == 0) return;
+
+        var blockers = _positions
+            .Where(p => p.IsActive)
+            .Where(p => p.ServiceOfferings.Any())                       
+            .Where(p => p.ServiceOfferings.All(s => ids.Contains(s.Id)))  
+            .Select(p => $"{p.Name} ({p.Id})")
+            .ToArray();
+
+        if (blockers.Length > 0)
+            throw new CompanyException(
+                "Não é possível desativar esses serviços porque deixariam cargos sem serviços: " +
+                string.Join(", ", blockers));
+
+        foreach (var pos in _positions.Where(p => p.IsActive))
+        {
+            var toRemove = pos.ServiceOfferings
+                .Where(s => ids.Contains(s.Id))
+                .Select(s => s.Id)
+                .ToArray();
+
+            if (toRemove.Length > 0)
+                RemoveServicesFromPosition(pos.Id, toRemove);
+        }
     }
 
     // ===== Helpers =====

@@ -1,7 +1,7 @@
 using BaitaHora.Application.Common.Results;
 using MediatR;
 
-namespace BaitaHora.Application.Features.Companies.Positions.Enable;
+namespace BaitaHora.Application.Features.Companies.Positions.Activate;
 
 public sealed class ActivatePositionsHandler
     : IRequestHandler<ActivatePositionsCommand, Result<ActivatePositionsResponse>>

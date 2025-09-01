@@ -4,7 +4,7 @@ using BaitaHora.Application.Common.Results;
 using BaitaHora.Domain.Permissions;
 using MediatR;
 
-namespace BaitaHora.Application.Features.Companies.ServiceOfferings.Enable;
+namespace BaitaHora.Application.Features.Companies.ServiceOfferings.Activate;
 
 public sealed record ActivateServiceOfferingsCommand
     : IRequest<Result<ActivateServiceOfferingsResponse>>, IAuthorizableRequest, ITransactionalRequest

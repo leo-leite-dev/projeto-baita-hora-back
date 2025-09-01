@@ -15,8 +15,8 @@ using BaitaHora.Application.Features.Users.CreateUser;
 using BaitaHora.Application.Features.Companies.Positions.Remove.ServicesFromPosition;
 using BaitaHora.Application.Features.Companies.ServiceOffering.Disable;
 using BaitaHora.Application.Features.Companies.Positions.Disable;
-using BaitaHora.Application.Features.Companies.ServiceOfferings.Enable;
-using BaitaHora.Application.Features.Companies.Positions.Enable;
+using BaitaHora.Application.Features.Companies.Positions.Activate;
+using BaitaHora.Application.Features.Companies.ServiceOfferings.Activate;
 
 namespace BaitaHora.Infrastructure.DependencyInjection;
 

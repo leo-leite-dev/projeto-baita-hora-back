@@ -26,7 +26,7 @@ public sealed class PatchEmployeeUseCase
     public async Task<Result<PatchEmployeeResponse>> HandleAsync(
         PatchEmployeeCommand request, CancellationToken ct)
     {
-        var compRes = await _companyGuards.ExistsCompany(request.CompanyId, ct);
+        var compRes = await _companyGuards.EnsureCompanyExists(request.CompanyId, ct);
         if (compRes.IsFailure)
             return Result<PatchEmployeeResponse>.FromError(compRes);
 

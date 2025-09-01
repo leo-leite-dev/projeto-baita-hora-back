@@ -17,7 +17,7 @@ public sealed class CreateServiceOfferingUseCase
     public async Task<Result<CreateServiceOfferingResponse>> HandleAsync(
         CreateServiceOfferingCommand cmd, CancellationToken ct)
     {
-        var compRes = await _companyGuards.ExistsCompany(cmd.CompanyId, ct);
+        var compRes = await _companyGuards.EnsureCompanyExists(cmd.CompanyId, ct);
         if (compRes.IsFailure)
             return Result<CreateServiceOfferingResponse>.FromError(compRes);
 

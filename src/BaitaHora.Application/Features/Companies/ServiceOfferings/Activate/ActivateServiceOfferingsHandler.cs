@@ -1,7 +1,7 @@
 using BaitaHora.Application.Common.Results;
 using MediatR;
 
-namespace BaitaHora.Application.Features.Companies.ServiceOfferings.Enable;
+namespace BaitaHora.Application.Features.Companies.ServiceOfferings.Activate;
 
 public sealed class ActivateServiceOfferingsHandler
     : IRequestHandler<ActivateServiceOfferingsCommand, Result<ActivateServiceOfferingsResponse>>

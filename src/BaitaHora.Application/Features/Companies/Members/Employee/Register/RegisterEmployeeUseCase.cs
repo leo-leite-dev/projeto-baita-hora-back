@@ -16,14 +16,14 @@ public sealed class RegisterEmployeeUseCase
     private readonly ICompanyMemberRepository _companyMemberRepository;
     private readonly IPasswordService _passwordService;
     private readonly ICompanyGuards _companyGuards;
-    private readonly IPositionGuards _companyPositionGuards;
+    private readonly ICompanyPositionGuards _companyPositionGuards;
 
     public RegisterEmployeeUseCase(
         IUserRepository userRepository,
         ICompanyMemberRepository companyMemberRepository,
         IPasswordService passwordService,
         ICompanyGuards companyGuards,
-        IPositionGuards companyPositionGuards)
+        ICompanyPositionGuards companyPositionGuards)
     {
         _userRepository = userRepository;
         _companyMemberRepository = companyMemberRepository;
@@ -35,7 +35,7 @@ public sealed class RegisterEmployeeUseCase
     public async Task<Result<RegisterEmployeeResponse>> HandleAsync(
         RegisterEmployeeCommand request, CancellationToken ct)
     {
-        var companyResult = await _companyGuards.ExistsCompany(request.CompanyId, ct);
+        var companyResult = await _companyGuards.EnsureCompanyExists(request.CompanyId, ct);
         if (!companyResult.IsSuccess)
             return companyResult.MapError<RegisterEmployeeResponse>();
 

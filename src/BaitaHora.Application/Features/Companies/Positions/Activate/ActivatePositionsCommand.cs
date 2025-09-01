@@ -4,7 +4,7 @@ using BaitaHora.Application.Common.Results;
 using BaitaHora.Domain.Permissions;
 using MediatR;
 
-namespace BaitaHora.Application.Features.Companies.Positions.Enable;
+namespace BaitaHora.Application.Features.Companies.Positions.Activate;
 
 public sealed record ActivatePositionsCommand
     : IRequest<Result<ActivatePositionsResponse>>, IAuthorizableRequest, ITransactionalRequest

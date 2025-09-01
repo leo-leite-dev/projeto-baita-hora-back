@@ -29,7 +29,7 @@ public sealed class AuthorizationBehavior<TRequest, TResponse>
         if (userId == Guid.Empty)
             return Make<TResponse>.Unauthorized("Usuário não autenticado.");
 
-        var companyRes = await _companyGuards.ExistsCompany(req.ResourceId, ct);
+        var companyRes = await _companyGuards.EnsureCompanyExists(req.ResourceId, ct);
         if (companyRes.IsFailure)
             return Make<TResponse>.NotFound(companyRes.Error ?? "Empresa não encontrada.");
 

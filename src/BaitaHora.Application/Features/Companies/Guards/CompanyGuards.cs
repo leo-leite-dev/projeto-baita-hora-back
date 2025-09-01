@@ -24,7 +24,7 @@ public sealed class CompanyGuards : ICompanyGuards
         _permissionService = permissionService;
     }
 
-    public async Task<Result<Company>> ExistsCompany(Guid companyId, CancellationToken ct)
+    public async Task<Result<Company>> EnsureCompanyExists(Guid companyId, CancellationToken ct)
     {
         if (companyId == Guid.Empty)
             return Result<Company>.BadRequest("CompanyId inválido.");

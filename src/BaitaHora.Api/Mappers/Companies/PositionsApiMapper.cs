@@ -1,6 +1,6 @@
+using BaitaHora.Application.Features.Companies.Positions.Activate;
 using BaitaHora.Application.Features.Companies.Positions.Create;
 using BaitaHora.Application.Features.Companies.Positions.Disable;
-using BaitaHora.Application.Features.Companies.Positions.Enable;
 using BaitaHora.Application.Features.Companies.Positions.Patch;
 using BaitaHora.Application.Features.Companies.Positions.Remove.ServicesFromPosition;
 using BaitaHora.Contracts.DTOs.Companies.Company.Create;
@@ -22,14 +22,18 @@ public static class PositionsApiMappers
         };
 
     public static PatchPositionCommand ToCommand(
-          this PatchPositionRequest r, Guid companyId, Guid positionId)
-          => new PatchPositionCommand
-          {
-              CompanyId = companyId,
-              PositionId = positionId,
-              NewPositionName = r.PositionName,
-              NewAccessLevel = r.AccessLevel?.ToDomain(),
-          };
+        this PatchPositionRequest r, Guid companyId, Guid positionId)
+        => new PatchPositionCommand
+        {
+            CompanyId = companyId,
+            PositionId = positionId,
+            NewPositionName = r.PositionName,
+            NewAccessLevel = r.AccessLevel?.ToDomain(),
+            SetServiceOfferingIds = (r.ServiceOfferingIds ?? Enumerable.Empty<Guid>())
+                .Where(id => id != Guid.Empty)
+                .Distinct()
+                .ToArray()
+        };
 
     public static RemoveServicesFromPositionCommand ToCommand(
         this RemoveServicesFromPositionRequest r, Guid companyId, Guid positionId)

@@ -22,6 +22,16 @@ public class GenericRepository<T> : IGenericRepository<T> where T : Entity
     public Task<T?> GetByIdAsync(Guid id, CancellationToken ct = default)
         => _set.FindAsync(new object?[] { id }, ct).AsTask();
 
+    public Task<List<T>> GetByIdsAsync(IReadOnlyCollection<Guid> ids, CancellationToken ct = default)
+    {
+        if (ids is null || ids.Count == 0)
+            return Task.FromResult(new List<T>());
+
+        return _set
+            .Where(e => ids.Contains(e.Id))
+            .ToListAsync(ct);
+    }
+
     public async Task AddAsync(T entity, CancellationToken ct = default)
     {
         if (entity is null) throw new ArgumentNullException(nameof(entity));

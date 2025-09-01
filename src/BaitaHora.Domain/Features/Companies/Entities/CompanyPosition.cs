@@ -13,8 +13,8 @@ public sealed class CompanyPosition : Entity
     public CompanyRole AccessLevel { get; private set; }
     public bool IsSystem { get; private set; }
 
-    private readonly List<ServiceOffering> _serviceOfferings = new();
-    public IReadOnlyCollection<ServiceOffering> ServiceOfferings => _serviceOfferings.AsReadOnly();
+    private readonly List<CompanyServiceOffering> _serviceOfferings = new();
+    public IReadOnlyCollection<CompanyServiceOffering> ServiceOfferings => _serviceOfferings.AsReadOnly();
     private readonly List<CompanyMember> _members = new();
     public IReadOnlyCollection<CompanyMember> Members => _members.AsReadOnly();
 
@@ -43,7 +43,7 @@ public sealed class CompanyPosition : Entity
         };
     }
 
-    internal void AddServiceOffering(ServiceOffering service)
+    internal void AddServiceOffering(CompanyServiceOffering service)
     {
         if (service is null)
             throw new CompanyException("Serviço inválido.");
@@ -60,7 +60,7 @@ public sealed class CompanyPosition : Entity
         _serviceOfferings.Add(service);
     }
 
-    internal void AddServiceOfferings(IEnumerable<ServiceOffering>? services)
+    internal void AddServiceOfferings(IEnumerable<CompanyServiceOffering>? services)
     {
         if (services is null)
             return;
@@ -100,7 +100,7 @@ public sealed class CompanyPosition : Entity
         AccessLevel = newLevel;
     }
 
-    internal void ReplaceServiceOfferings(IEnumerable<ServiceOffering> services)
+    internal void ReplaceServiceOfferings(IEnumerable<CompanyServiceOffering> services)
     {
         if (services is null)
             throw new CompanyException("Serviços inválidos.");
