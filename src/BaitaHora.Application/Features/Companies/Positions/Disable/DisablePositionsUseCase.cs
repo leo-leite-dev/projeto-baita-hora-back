@@ -20,9 +20,9 @@ public sealed class DisablePositionsUseCase
     public async Task<Result<DisablePositionsResponse>> HandleAsync(
         DisablePositionsCommand cmd, CancellationToken ct)
     {
-        var compRes = await _companyGuards.EnsureCompanyExists(cmd.CompanyId, ct);
-        if (compRes.IsFailure)
-            return Result<DisablePositionsResponse>.FromError(compRes);
+        var companyRes = await _companyGuards.EnsureCompanyExists(cmd.CompanyId, ct);
+        if (companyRes.IsFailure)
+            return Result<DisablePositionsResponse>.FromError(companyRes);
 
         var posGuardRes = await _companyPositionGuards.ValidatePositionsForDeactivation(cmd.CompanyId, cmd.PositionIds, ct);
         if (posGuardRes.IsFailure)

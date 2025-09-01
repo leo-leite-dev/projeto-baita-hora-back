@@ -31,7 +31,7 @@ public sealed class PatchServiceOfferingUseCase
 
         var companyRes = await _companyGuards.GetWithServiceOfferings(cmd.CompanyId, ct);
         if (companyRes.IsFailure)
-            return Result<PatchServiceOfferingResponse>.FromError(companyRes); // :contentReference[oaicite:2]{index=2}
+            return Result<PatchServiceOfferingResponse>.FromError(companyRes); 
 
         var company = companyRes.Value!;
 
@@ -74,8 +74,6 @@ public sealed class PatchServiceOfferingUseCase
             var unchanged = new PatchServiceOfferingResponse(serviceOffering.Id, serviceOffering.Name);
             return Result<PatchServiceOfferingResponse>.Ok(unchanged);
         }
-
-        await _companyRepository.UpdateAsync(company, ct);
 
         var response = new PatchServiceOfferingResponse(serviceOffering.Id, serviceOffering.Name);
         return Result<PatchServiceOfferingResponse>.Ok(response);

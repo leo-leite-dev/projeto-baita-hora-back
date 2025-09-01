@@ -1,6 +1,5 @@
 using BaitaHora.Application.Common.Results;
 using BaitaHora.Application.Features.Companies.Guards.Interfaces;
-using BaitaHora.Domain.Features.Common.Exceptions;
 
 namespace BaitaHora.Application.Features.Companies.Positions.Remove;
 
@@ -17,23 +16,16 @@ public sealed class RemovePositionUseCase
     public async Task<Result<RemovePositionResponse>> HandleAsync(
         RemovePositionCommand cmd, CancellationToken ct)
     {
-        var compRes = await _companyGuards.GetWithPositionsAndMembers(cmd.CompanyId, ct);
-        if (compRes.IsFailure)
-            return Result<RemovePositionResponse>.FromError(compRes);
+        var companyRes = await _companyGuards.GetWithPositionsAndMembers(cmd.CompanyId, ct);
+        if (companyRes.IsFailure)
+            return Result<RemovePositionResponse>.FromError(companyRes);
 
-        var company = compRes.Value!;
+        var company = companyRes.Value!;
         var position = company.Positions.FirstOrDefault(p => p.Id == cmd.PositionId);
         if (position is null)
             return Result<RemovePositionResponse>.NotFound("Cargo não encontrado.");
 
-        try
-        {
-            company.RemovePosition(cmd.PositionId);
-        }
-        catch (CompanyException ex)
-        {
-            return Result<RemovePositionResponse>.BadRequest(ex.Message);
-        }
+        company.RemovePosition(cmd.PositionId);
 
         return Result<RemovePositionResponse>.Ok(new(cmd.PositionId));
     }

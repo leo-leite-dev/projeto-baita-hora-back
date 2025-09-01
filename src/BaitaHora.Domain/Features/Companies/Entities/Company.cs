@@ -353,8 +353,8 @@ public sealed class Company : Entity
 
         var blockers = _positions
             .Where(p => p.IsActive)
-            .Where(p => p.ServiceOfferings.Any())                       
-            .Where(p => p.ServiceOfferings.All(s => ids.Contains(s.Id)))  
+            .Where(p => p.ServiceOfferings.Any())
+            .Where(p => p.ServiceOfferings.All(s => ids.Contains(s.Id)))
             .Select(p => $"{p.Name} ({p.Id})")
             .ToArray();
 

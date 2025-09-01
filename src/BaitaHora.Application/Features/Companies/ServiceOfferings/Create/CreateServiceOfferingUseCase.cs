@@ -17,11 +17,11 @@ public sealed class CreateServiceOfferingUseCase
     public async Task<Result<CreateServiceOfferingResponse>> HandleAsync(
         CreateServiceOfferingCommand cmd, CancellationToken ct)
     {
-        var compRes = await _companyGuards.EnsureCompanyExists(cmd.CompanyId, ct);
-        if (compRes.IsFailure)
-            return Result<CreateServiceOfferingResponse>.FromError(compRes);
+        var companyRes = await _companyGuards.EnsureCompanyExists(cmd.CompanyId, ct);
+        if (companyRes.IsFailure)
+            return Result<CreateServiceOfferingResponse>.FromError(companyRes);
 
-        var company = compRes.Value!;
+        var company = companyRes.Value!;
 
         if (string.IsNullOrWhiteSpace(cmd.Currency))
             return Result<CreateServiceOfferingResponse>.BadRequest("Moeda é obrigatória.");

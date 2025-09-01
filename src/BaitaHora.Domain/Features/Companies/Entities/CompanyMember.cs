@@ -94,7 +94,7 @@ public sealed class CompanyMember : Entity
         PrimaryPositionId = position.Id;
         PrimaryPosition = position;
 
-        SetRoleFromPosition(position);
+        Touch();
     }
 
     public bool ClearPrimaryPosition()

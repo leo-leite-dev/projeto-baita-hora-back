@@ -6,22 +6,25 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BaitaHora.Infrastructure.Repositories.Companies
 {
-    public sealed class CompanyMemberRepository
-        : GenericRepository<CompanyMember>, ICompanyMemberRepository
+    public sealed class CompanyMemberRepository : GenericRepository<CompanyMember>, ICompanyMemberRepository
     {
         public CompanyMemberRepository(AppDbContext context) : base(context) { }
-
-        public Task<bool> HasAnyMembershipAsync(Guid userId, CancellationToken ct)
-            => _set.AnyAsync(m => m.UserId == userId, ct);
-
-        public Task<bool> IsMemberOfCompanyAsync(Guid companyId, Guid userId, CancellationToken ct)
-            => _set.AnyAsync(m => m.CompanyId == companyId && m.UserId == userId, ct);
 
         public Task<CompanyMember?> GetMemberAsync(Guid companyId, Guid userId, CancellationToken ct)
             => _set.FirstOrDefaultAsync(m => m.CompanyId == companyId && m.UserId == userId, ct);
 
         public async Task<IReadOnlyList<CompanyMember>> GetByUserIdAsync(Guid userId, CancellationToken ct = default)
             => await _set.Where(m => m.UserId == userId).ToListAsync(ct);
+
+        public Task<List<CompanyMember>> GetByCompanyAndUserIdsAsync(Guid companyId, IReadOnlyCollection<Guid> userIds, CancellationToken ct = default)
+        {
+            if (userIds is null || userIds.Count == 0)
+                return Task.FromResult(new List<CompanyMember>());
+
+            return _set
+                .Where(m => m.CompanyId == companyId && userIds.Contains(m.UserId))
+                .ToListAsync(ct);
+        }
 
         public async Task<CompanyMember?> GetByCompanyAndUserWithPositionAsync(
             Guid companyId, Guid userId, CancellationToken ct = default)

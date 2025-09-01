@@ -16,11 +16,11 @@ public sealed class RemoveServicesFromPositionUseCase
     public async Task<Result<RemoveServicesFromPositionResponse>> HandleAsync(
         RemoveServicesFromPositionCommand cmd, CancellationToken ct)
     {
-        var compRes = await _companyGuards.GetWithPositionsAndServiceOfferings(cmd.CompanyId, ct);
-        if (compRes.IsFailure)
-            return Result<RemoveServicesFromPositionResponse>.FromError(compRes);
+        var companyRes = await _companyGuards.GetWithPositionsAndServiceOfferings(cmd.CompanyId, ct);
+        if (companyRes.IsFailure)
+            return Result<RemoveServicesFromPositionResponse>.FromError(companyRes);
 
-        var company = compRes.Value!;
+        var company = companyRes.Value!;
 
         company.RemoveServicesFromPosition(cmd.PositionId, cmd.ServiceOfferingIds);
 

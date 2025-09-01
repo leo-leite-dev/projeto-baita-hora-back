@@ -17,11 +17,11 @@ public sealed class CreatePositionUseCase
     public async Task<Result<CreatePositionResponse>> HandleAsync(
         CreatePositionCommand cmd, CancellationToken ct)
     {
-        var compRes = await _companyGuards.GetWithPositionsAndServiceOfferings(cmd.CompanyId, ct);
-        if (compRes.IsFailure)
-            return Result<CreatePositionResponse>.FromError(compRes);
+        var companyRes = await _companyGuards.GetWithPositionsAndServiceOfferings(cmd.CompanyId, ct);
+        if (companyRes.IsFailure)
+            return Result<CreatePositionResponse>.FromError(companyRes);
 
-        var company = compRes.Value!;
+        var company = companyRes.Value!;
 
         var position = company.AddPosition(
             positionName: cmd.PositionName,

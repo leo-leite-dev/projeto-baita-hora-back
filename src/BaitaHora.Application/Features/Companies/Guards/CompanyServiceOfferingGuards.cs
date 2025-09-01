@@ -1,4 +1,5 @@
 using BaitaHora.Application.Common.Results;
+using BaitaHora.Application.Features.Companies.Guards.Interfaces;
 using BaitaHora.Application.IRepositories.Companies;
 using BaitaHora.Domain.Features.Companies.Entities;
 using BaitaHora.Domain.Shared;

@@ -1,5 +1,4 @@
 using BaitaHora.Application.Features.Auth;
-
 using BaitaHora.Application.Features.Onboarding;
 using BaitaHora.Application.Features.Companies.Members.Owner;
 using BaitaHora.Application.Features.Companies.Members.Employee;
@@ -17,6 +16,9 @@ using BaitaHora.Application.Features.Companies.ServiceOffering.Disable;
 using BaitaHora.Application.Features.Companies.Positions.Disable;
 using BaitaHora.Application.Features.Companies.Positions.Activate;
 using BaitaHora.Application.Features.Companies.ServiceOfferings.Activate;
+using BaitaHora.Application.Features.Companies.Employees.Disable;
+using BaitaHora.Application.Features.Companies.Employees.Activate;
+using BaitaHora.Application.Companies.Features.Members.Promotion;
 
 namespace BaitaHora.Infrastructure.DependencyInjection;
 
@@ -35,6 +37,9 @@ public static class UseCasesRegistration
         // Companies → Members
         services.AddScoped<PatchOwnerUseCase>();
         services.AddScoped<PatchEmployeeUseCase>();
+        services.AddScoped<DisableEmployeesUseCase>();
+        services.AddScoped<ActivateEmployeesUseCase>();
+        services.AddScoped<ChangeMemberPositionUseCase>();
 
         // Companies → Positions
         services.AddScoped<CreatePositionUseCase>();

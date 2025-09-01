@@ -1,5 +1,4 @@
 using BaitaHora.Application.Common.Results;
-using BaitaHora.Application.Features.Companies.Guards;
 using BaitaHora.Application.Features.Companies.Guards.Interfaces;
 
 namespace BaitaHora.Application.Features.Companies.Positions.Activate;

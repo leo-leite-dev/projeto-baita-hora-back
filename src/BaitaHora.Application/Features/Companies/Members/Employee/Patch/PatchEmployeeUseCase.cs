@@ -1,5 +1,4 @@
 using BaitaHora.Application.Common.Results;
-using BaitaHora.Application.Features.Companies.Guards;
 using BaitaHora.Application.Features.Companies.Guards.Interfaces;
 using BaitaHora.Application.Features.Companies.Responses;
 using BaitaHora.Application.Features.Users.Common;
@@ -10,29 +9,29 @@ namespace BaitaHora.Application.Features.Companies.Members.Employee;
 public sealed class PatchEmployeeUseCase
 {
     private readonly ICompanyGuards _companyGuards;
-    private readonly ICompanyMemberGuards _companyMemberGuards;
+    private readonly ICompanyMemberGuards _memberGuards;
     private readonly IUserGuards _userGuards;
 
     public PatchEmployeeUseCase(
         ICompanyGuards companyGuards,
-        ICompanyMemberGuards companyMemberGuards,
+        ICompanyMemberGuards memberGuards,
         IUserGuards userGuards)
     {
         _companyGuards = companyGuards;
-        _companyMemberGuards = companyMemberGuards;
+        _memberGuards = memberGuards;
         _userGuards = userGuards;
     }
 
     public async Task<Result<PatchEmployeeResponse>> HandleAsync(
         PatchEmployeeCommand request, CancellationToken ct)
     {
-        var compRes = await _companyGuards.EnsureCompanyExists(request.CompanyId, ct);
-        if (compRes.IsFailure)
-            return Result<PatchEmployeeResponse>.FromError(compRes);
+        var companyRes = await _companyGuards.EnsureCompanyExists(request.CompanyId, ct);
+        if (companyRes.IsFailure)
+            return Result<PatchEmployeeResponse>.FromError(companyRes);
 
-        var company = compRes.Value!;
+        var company = companyRes.Value!;
 
-        var memberRes = _companyMemberGuards.GetMemberOrNotFound(company, request.EmployeeId);
+        var memberRes = await _memberGuards.EnsureMemberExistsAsync(company.Id, request.EmployeeId, requireActive: true, ct);
         if (memberRes.IsFailure)
             return Result<PatchEmployeeResponse>.FromError(memberRes);
 
@@ -51,7 +50,7 @@ public sealed class PatchEmployeeUseCase
                 ResultCodes.Conflict.BusinessRule
             );
 
-            return Result<PatchEmployeeResponse>.FromError(err); 
+            return Result<PatchEmployeeResponse>.FromError(err);
         }
 
         PatchUserApplier.Apply(user, request.NewEmployee);

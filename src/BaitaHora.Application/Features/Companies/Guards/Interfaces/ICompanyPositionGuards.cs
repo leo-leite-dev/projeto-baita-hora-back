@@ -1,7 +1,7 @@
 using BaitaHora.Application.Common.Results;
 using BaitaHora.Domain.Features.Companies.Entities;
 
-namespace BaitaHora.Application.Features.Companies.Guards;
+namespace BaitaHora.Application.Features.Companies.Guards.Interfaces;
 
 public interface ICompanyPositionGuards
 {

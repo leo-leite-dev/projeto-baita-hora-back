@@ -17,11 +17,11 @@ public sealed class PatchPositionUseCase
         var wantsAccessChange = cmd.NewAccessLevel.HasValue;
         var wantsServicesSet = cmd.SetServiceOfferingIds is not null;
 
-        var compRes = await _companyGuards.GetWithPositionsAndServiceOfferings(cmd.CompanyId, ct);
-        if (compRes.IsFailure)
-            return Result<PatchPositionResponse>.FromError(compRes);
+        var companyRes = await _companyGuards.GetWithPositionsAndServiceOfferings(cmd.CompanyId, ct);
+        if (companyRes.IsFailure)
+            return Result<PatchPositionResponse>.FromError(companyRes);
 
-        var company = compRes.Value!;
+        var company = companyRes.Value!;
 
         var position = company.Positions.SingleOrDefault(p => p.Id == cmd.PositionId && p.IsActive);
         if (position is null)

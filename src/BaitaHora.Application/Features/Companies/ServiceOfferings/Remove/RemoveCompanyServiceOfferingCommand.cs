@@ -7,7 +7,7 @@ using MediatR;
 namespace BaitaHora.Application.Features.Companies.ServiceOffering.Remove;
 
 public sealed record RemoveServiceOfferingCommand
-    : IRequest<Result<RemoveServiceOfferingResponse>>, ITransactionalRequest, IAuthorizableRequest
+    : IRequest<Result<RemoveServiceOfferingResponse>>, IAuthorizableRequest, ITransactionalRequest
 {
     public Guid CompanyId { get; init; }
     public Guid ServiceOfferingId { get; init; }

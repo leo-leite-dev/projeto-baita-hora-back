@@ -1,5 +1,4 @@
 using BaitaHora.Application.Common.Results;
-using BaitaHora.Application.Features.Companies.Guards;
 using BaitaHora.Application.Features.Companies.Guards.Interfaces;
 using BaitaHora.Application.Features.Companies.Responses;
 using BaitaHora.Application.Features.Users.Common;
@@ -12,40 +11,35 @@ namespace BaitaHora.Application.Features.Companies.Members.Employee.Register;
 
 public sealed class RegisterEmployeeUseCase
 {
-    private readonly IUserRepository _userRepository;
-    private readonly ICompanyMemberRepository _companyMemberRepository;
     private readonly IPasswordService _passwordService;
     private readonly ICompanyGuards _companyGuards;
-    private readonly ICompanyPositionGuards _companyPositionGuards;
+    private readonly IUserRepository _userRepository;
+    private readonly ICompanyMemberRepository _memberRepository;
 
     public RegisterEmployeeUseCase(
-        IUserRepository userRepository,
-        ICompanyMemberRepository companyMemberRepository,
         IPasswordService passwordService,
         ICompanyGuards companyGuards,
-        ICompanyPositionGuards companyPositionGuards)
+        IUserRepository userRepository,
+        ICompanyMemberRepository memberRepository)
     {
-        _userRepository = userRepository;
-        _companyMemberRepository = companyMemberRepository;
         _passwordService = passwordService;
         _companyGuards = companyGuards;
-        _companyPositionGuards = companyPositionGuards;
+        _userRepository = userRepository;
+        _memberRepository = memberRepository;
     }
 
     public async Task<Result<RegisterEmployeeResponse>> HandleAsync(
         RegisterEmployeeCommand request, CancellationToken ct)
     {
-        var companyResult = await _companyGuards.EnsureCompanyExists(request.CompanyId, ct);
-        if (!companyResult.IsSuccess)
-            return companyResult.MapError<RegisterEmployeeResponse>();
+        var companyRes = await _companyGuards.GetWithPositionsAndServiceOfferings(request.CompanyId, ct);
+        if (!companyRes.IsSuccess)
+            return companyRes.MapError<RegisterEmployeeResponse>();
 
-        var company = companyResult.Value!;
+        var company = companyRes.Value!;
 
-        var positionResult = _companyPositionGuards.GetValidPositionOrBadRequest(company, request.PositionId);
-        if (!positionResult.IsSuccess)
-            return positionResult.MapError<RegisterEmployeeResponse>();
-
-        var position = positionResult.Value!;
+        var position = company.Positions.FirstOrDefault(p => p.Id == request.PositionId);
+        if (position is null)
+            return Result<RegisterEmployeeResponse>.BadRequest("Cargo inválido para esta empresa.");
 
         var employee = UserAssembler.BuildOwnerVO(request.Employee);
 
@@ -66,9 +60,6 @@ public sealed class RegisterEmployeeUseCase
 
         var member = company.AddMemberWithPrimaryPosition(user.Id, position);
 
-        await _userRepository.AddAsync(user, ct);
-        await _companyMemberRepository.AddAsync(member, ct);
-
         var response = new RegisterEmployeeResponse(
             user.Id,
             employee.FullName,
@@ -76,6 +67,9 @@ public sealed class RegisterEmployeeUseCase
             user.UserEmail.Value,
             position.Id,
             position.Name);
+
+        await _userRepository.AddAsync(user, ct);
+        await _memberRepository.AddAsync(member, ct);
 
         return Result<RegisterEmployeeResponse>.Created(response);
     }
