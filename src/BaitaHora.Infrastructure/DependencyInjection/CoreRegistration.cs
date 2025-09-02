@@ -26,7 +26,6 @@ public static class CoreRegistration
         {
             var env = sp.GetRequiredService<IHostEnvironment>();
 
-            // Conexão
             var conn = config.GetConnectionString("DefaultConnection")
                 ?? throw new InvalidOperationException("ConnectionString 'DefaultConnection' não configurada.");
             options.UseNpgsql(conn);

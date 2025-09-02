@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
-using BaitaHora.Application.Features.Commons.Validators;
 using BaitaHora.Application.Features.Users.CreateUserProfile;
+using BaitaHora.Domain.Features.Common.ValueObjects;
 using FluentValidation;
 
 namespace BaitaHora.Application.Features.Users.CreateUser;
@@ -9,9 +9,17 @@ public sealed class CreateUserCommandValidator : AbstractValidator<CreateUserCom
 {
     public CreateUserCommandValidator()
     {
-        RuleFor(x => x.UserEmail).EmailVo();
+        RuleFor(x => x.UserEmail)
+            .Cascade(CascadeMode.Stop)
+            .NotEmpty().WithMessage("O e-mail é obrigatório.")
+            .EmailAddress(FluentValidation.Validators.EmailValidationMode.AspNetCoreCompatible)
+                .WithMessage("O e-mail informado não é válido.")
+            .Must(v => Email.TryParse(v, out _))
+                .WithMessage("O e-mail informado não é aceito pelo domínio.")
+            .MaximumLength(254);
 
         RuleFor(x => x.Username)
+            .Cascade(CascadeMode.Stop)
             .NotEmpty().WithMessage("O username é obrigatório.")
             .MinimumLength(3).WithMessage("O username deve ter pelo menos 3 caracteres.")
             .MaximumLength(50).WithMessage("O username deve ter no máximo 50 caracteres.")
@@ -22,9 +30,10 @@ public sealed class CreateUserCommandValidator : AbstractValidator<CreateUserCom
             .Must(u => !Regex.IsMatch(u ?? "", @"(\.\.|__|--)"))
                 .WithMessage("O username não pode conter repetições como '..', '__' ou '--'.")
             .Must(u => Username.TryParse(u, out _))
-                .WithMessage("Username inválido.");
+                .WithMessage("O username informado é inválido.");
 
         RuleFor(x => x.RawPassword)
+            .Cascade(CascadeMode.Stop)
             .NotEmpty().WithMessage("A senha é obrigatória.")
             .MinimumLength(8).WithMessage("A senha deve ter pelo menos 8 caracteres.");
 

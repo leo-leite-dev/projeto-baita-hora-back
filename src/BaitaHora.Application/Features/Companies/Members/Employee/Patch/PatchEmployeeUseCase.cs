@@ -55,7 +55,7 @@ public sealed class PatchEmployeeUseCase
 
         PatchUserApplier.Apply(user, request.NewEmployee);
 
-        var response = new PatchEmployeeResponse(user.Id, user.Profile.FullName);
+        var response = new PatchEmployeeResponse(user.Id, user.Profile.Name);
         return Result<PatchEmployeeResponse>.Created(response);
     }
 }

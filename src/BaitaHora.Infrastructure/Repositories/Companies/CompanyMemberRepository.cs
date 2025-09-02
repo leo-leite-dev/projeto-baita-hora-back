@@ -10,13 +10,16 @@ namespace BaitaHora.Infrastructure.Repositories.Companies
     {
         public CompanyMemberRepository(AppDbContext context) : base(context) { }
 
-        public Task<CompanyMember?> GetMemberAsync(Guid companyId, Guid userId, CancellationToken ct)
+        public Task<CompanyMember?> GetMemberAsync(
+            Guid companyId, Guid userId, CancellationToken ct)
             => _set.FirstOrDefaultAsync(m => m.CompanyId == companyId && m.UserId == userId, ct);
 
-        public async Task<IReadOnlyList<CompanyMember>> GetByUserIdAsync(Guid userId, CancellationToken ct = default)
+        public async Task<IReadOnlyList<CompanyMember>> GetByUserIdAsync(
+            Guid userId, CancellationToken ct = default)
             => await _set.Where(m => m.UserId == userId).ToListAsync(ct);
 
-        public Task<List<CompanyMember>> GetByCompanyAndUserIdsAsync(Guid companyId, IReadOnlyCollection<Guid> userIds, CancellationToken ct = default)
+        public Task<List<CompanyMember>> GetByCompanyAndUserIdsAsync(
+            Guid companyId, IReadOnlyCollection<Guid> userIds, CancellationToken ct = default)
         {
             if (userIds is null || userIds.Count == 0)
                 return Task.FromResult(new List<CompanyMember>());
@@ -31,9 +34,9 @@ namespace BaitaHora.Infrastructure.Repositories.Companies
         {
             return await _set
                 .AsNoTracking()
-                .Include(m => m.PrimaryPosition)
-                .Include(m => m.Company)
-                .SingleOrDefaultAsync(m => m.CompanyId == companyId && m.UserId == userId, ct);
+                .Include(m => m.PrimaryPosition)  
+                .SingleOrDefaultAsync(
+                    m => m.CompanyId == companyId && m.UserId == userId, ct);
         }
 
         public async Task<(bool found, CompanyRole role, bool isActive)> GetRoleAsync(

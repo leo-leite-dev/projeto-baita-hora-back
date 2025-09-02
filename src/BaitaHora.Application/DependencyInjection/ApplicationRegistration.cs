@@ -13,8 +13,8 @@ public static class ApplicationRegistration
         {
             cfg.RegisterServicesFromAssembly(typeof(ApplicationRegistration).Assembly);
 
-            cfg.AddOpenBehavior(typeof(AuthorizationBehavior<,>));
             cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
+            cfg.AddOpenBehavior(typeof(AuthorizationBehavior<,>));
             cfg.AddOpenBehavior(typeof(UnitOfWorkBehavior<,>));
             cfg.AddOpenBehavior(typeof(DomainEventsBehavior<,>));
             cfg.AddOpenBehavior(typeof(IntegrationEventsBehavior<,>));

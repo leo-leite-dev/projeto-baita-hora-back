@@ -10,7 +10,7 @@ public sealed class PostgresDbErrorTranslator : IDbErrorTranslator
         {
             // ServicesOffering
             ["ux_cso_company_name"] = "Ja existe um serviço com esse nome",
-           
+
             // Positions
             ["ux_company_positions_companyid_name"] = "Já existe um cargo com esse nome.",
 
@@ -25,7 +25,15 @@ public sealed class PostgresDbErrorTranslator : IDbErrorTranslator
 
             // UserProfiles
             ["ux_user_profiles_cpf"] = "CPF já cadastrado para outro usuário.",
-            ["ux_user_profiles_rg"] = "RG já cadastrado para outro usuário."
+            ["ux_user_profiles_rg"] = "RG já cadastrado para outro usuário.",
+            ["ux_user_profiles_phone"] = "Telefone já cadastrado para outro usuário.",
+
+            // Customers
+            ["ux_customers_cpf"] = "CPF já cadastrado para outro cliente.",
+            ["ux_customers_phone"] = "Telefone já cadastrado para outro cliente.",
+
+            // Appointment
+            ["ux_appointments_schedule_start"] = "Ja possui um cliente marcado nesse horário"
         };
 
     public string? TryTranslateUniqueViolation(string? constraintName, string? detail = null)

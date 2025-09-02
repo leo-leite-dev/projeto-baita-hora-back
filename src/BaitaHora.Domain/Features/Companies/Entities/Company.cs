@@ -37,7 +37,7 @@ public sealed class Company : Entity
 
         var company = new Company
         {
-            Name = companyName.Trim(),
+            Name = NormalizeSpaces(companyName),
             Cnpj = cnpj,
             Address = address,
             TradeName = NormalizeSpaces(tradeName),
@@ -51,11 +51,13 @@ public sealed class Company : Entity
 
     public bool Rename(string newName)
     {
-        if (Name.Equals(newName))
+        var normalized = NormalizeSpaces(newName);
+
+        if (string.Equals(Name, normalized, StringComparison.Ordinal))
             return false;
 
-        ValidateInvariants();
-        Name = newName;
+        Name = normalized;
+        Touch();
         return true;
     }
 
@@ -68,18 +70,7 @@ public sealed class Company : Entity
             return false;
 
         Address = newAddress;
-        return true;
-    }
-
-    public bool ChangeTradeName(string? newTradeName)
-    {
-        var normalized = NormalizeSpaces(newTradeName);
-
-        if (string.Equals(NormalizeSpaces(TradeName), normalized, StringComparison.Ordinal))
-            return false;
-
-        ValidateInvariants();
-        TradeName = normalized;
+        Touch();
         return true;
     }
 
@@ -89,6 +80,7 @@ public sealed class Company : Entity
             return false;
 
         CompanyPhone = newPhone;
+        Touch();
         return true;
     }
 
@@ -98,6 +90,19 @@ public sealed class Company : Entity
             return false;
 
         CompanyEmail = newEmail;
+        Touch();
+        return true;
+    }
+
+    public bool ChangeTradeName(string? newTradeName)
+    {
+        var normalized = NormalizeSpaces(newTradeName);
+
+        if (string.Equals(TradeName, normalized, StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        TradeName = normalized;
+        Touch();
         return true;
     }
 
@@ -105,10 +110,10 @@ public sealed class Company : Entity
     {
 
         if (string.IsNullOrWhiteSpace(Name))
-            throw new CompanyException("Nome completo é obrigatório.");
+            throw new CompanyException("Nome é obrigatório.");
 
         if (Name.Length < 3 || Name.Length > 120)
-            throw new UserException("Nome completo deve ter de 3 a 120 caracteres.");
+            throw new CompanyException("Nome deve ter de 3 a 120 caracteres.");
 
         if (Cnpj == default)
             throw new CompanyException("CNPJ é obrigatório.");
@@ -123,7 +128,7 @@ public sealed class Company : Entity
             throw new CompanyException("Email é obrigatório.");
     }
 
-    //Users
+    //Owner
     public CompanyMember AddOwnerFounder(Guid userId)
     {
         if (_members.Any(m => m.Role == CompanyRole.Owner && m.IsActive))
@@ -144,7 +149,6 @@ public sealed class Company : Entity
     }
 
     // ===== Member =====
-
     public CompanyMember AddMemberWithPrimaryPosition(Guid userId, CompanyPosition position)
     {
         if (position is null)
@@ -182,11 +186,11 @@ public sealed class Company : Entity
         if (alignRoleToPosition)
             member.ChangeRole(newPosition.AccessLevel);
 
+        Touch();
         return member;
     }
 
     // ===== Positions =====
-
     public CompanyPosition AddPosition(string positionName, CompanyRole accessLevel, IEnumerable<Guid> serviceOfferingIds, bool isSystem = false, CompanyPermission permissionMask = CompanyPermission.None)
     {
         var normalized = NormalizeSpaces(positionName);
@@ -253,6 +257,7 @@ public sealed class Company : Entity
                 string.Equals(NormalizeSpaces(p.Name), newName, StringComparison.OrdinalIgnoreCase)))
             throw new CompanyException("Já existe um cargo com esse nome.");
 
+        Touch();
         return position.Rename(newName);
     }
 
@@ -272,6 +277,7 @@ public sealed class Company : Entity
                 m.ChangeRole(newLevel);
         }
 
+        Touch();
         return position;
     }
 
@@ -297,7 +303,7 @@ public sealed class Company : Entity
         position.RemoveServiceOfferings(serviceOfferingIds);
     }
 
-    // ===== Service Offerings (ONE-TO-MANY) =====
+    // ===== Service Offerings =====
     public CompanyServiceOffering AddServiceOffering(string serviceName, Money price)
     {
         if (!IsActive)
@@ -330,6 +336,7 @@ public sealed class Company : Entity
         if (exists)
             throw new CompanyException($"Já existe um serviço ativo com o nome '{normalized}'.");
 
+        Touch();
         return service.Rename(normalized);
     }
 
@@ -341,7 +348,6 @@ public sealed class Company : Entity
         _serviceOfferings.Remove(service);
     }
 
-    // dentro de Company
     public void DetachServiceOfferingsFromAllPositions(IReadOnlyCollection<Guid> serviceOfferingIds)
     {
         var ids = (serviceOfferingIds ?? Array.Empty<Guid>())
@@ -376,7 +382,6 @@ public sealed class Company : Entity
     }
 
     // ===== Helpers =====
-
     private CompanyPosition EnsurePositionByName(string positionName, CompanyRole accessLevel, bool isSystem = false)
     {
         var position = _positions

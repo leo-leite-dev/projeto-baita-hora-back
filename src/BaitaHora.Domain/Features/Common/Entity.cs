@@ -4,13 +4,9 @@ using BaitaHora.Domain.Features.Common.Exceptions;
 
 namespace BaitaHora.Domain.Features.Common;
 
-public abstract class Entity
+public abstract class EntityBase
 {
-    private static readonly Regex MultiWhitespace = new(@"\s{2,}", RegexOptions.Compiled);
-
     public Guid Id { get; private set; } = Guid.NewGuid();
-
-    public string Name { get; protected set; } = string.Empty;
 
     public DateTimeOffset CreatedAtUtc { get; private set; }
     public DateTimeOffset? UpdatedAtUtc { get; private set; }
@@ -20,7 +16,7 @@ public abstract class Entity
     private readonly List<IDomainEvent> _domainEvents = new();
     public IReadOnlyCollection<IDomainEvent> DomainEvents => _domainEvents.AsReadOnly();
 
-    protected Entity()
+    protected EntityBase()
     {
         CreatedAtUtc = DateTimeOffset.UtcNow;
     }
@@ -28,10 +24,12 @@ public abstract class Entity
     public void Touch() => UpdatedAtUtc = DateTimeOffset.UtcNow;
 
     public void AddDomainEvent(IDomainEvent @event)
-        => _domainEvents.Add(@event);
+    {
+        if (@event is null) return;
+        _domainEvents.Add(@event);
+    }
 
-    protected void ClearDomainEvents()
-        => _domainEvents.Clear();
+    protected void ClearDomainEvents() => _domainEvents.Clear();
 
     public void Activate()
     {
@@ -50,6 +48,14 @@ public abstract class Entity
             Touch();
         }
     }
+}
+
+public abstract class Entity : EntityBase
+{
+    private static readonly Regex MultiWhitespace =
+        new(@"\s{2,}", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+
+    public string Name { get; protected set; } = string.Empty;
 
     protected static string NormalizeSpaces(string? s)
         => string.IsNullOrWhiteSpace(s)
@@ -59,6 +65,7 @@ public abstract class Entity
     protected static string NormalizeAndValidateName(string? s)
     {
         var n = NormalizeSpaces(s);
+        
         if (string.IsNullOrWhiteSpace(n))
             throw new EntityException("Nome é obrigatório.");
 

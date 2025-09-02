@@ -35,7 +35,7 @@ public sealed class PatchOwnerUseCase
 
         PatchUserApplier.Apply(user, request.NewOwner);
 
-        var response = new PatchOwnerResponse(user.Id, user.Profile.FullName);
+        var response = new PatchOwnerResponse(user.Id, user.Profile.Name);
         return Result<PatchOwnerResponse>.Created(response);
     }
 }

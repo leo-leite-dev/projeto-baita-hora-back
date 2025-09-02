@@ -10,7 +10,7 @@ public static class PatchUserApplier
     public static void Apply(User user, PatchUserCommand cmd)
     {
         if (!string.IsNullOrWhiteSpace(cmd.NewUserEmail))
-            user.SetEmail(Email.Parse(cmd.NewUserEmail));
+            user.ChangEmail(Email.Parse(cmd.NewUserEmail));
 
         if (!string.IsNullOrWhiteSpace(cmd.NewUsername))
             user.RenameUserName(Username.Parse(cmd.NewUsername));
@@ -23,7 +23,7 @@ public static class PatchUserApplier
             var p = cmd.NewProfile;
 
             if (!string.IsNullOrWhiteSpace(p.NewFullName))
-                user.Profile.RenameFullName(p.NewFullName);
+                user.Profile.Rename(p.NewFullName);
 
             if (p.NewBirthDate is DateOnly d)
             {

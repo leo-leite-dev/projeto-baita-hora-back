@@ -36,7 +36,7 @@ public sealed class CompanyPosition : Entity
         return new CompanyPosition
         {
             CompanyId = companyId,
-            Name = NormalizeSpaces(positionName),
+            Name = NormalizeAndValidateName(positionName),
             AccessLevel = accessLevel,
             IsSystem = isSystem,
             PermissionMask = permissionMask
@@ -71,9 +71,7 @@ public sealed class CompanyPosition : Entity
 
     internal bool Rename(string newName)
     {
-        var normalized = newName?.Trim();
-        if (string.IsNullOrWhiteSpace(normalized))
-            throw new CompanyException("Nome do cargo é obrigatório.");
+        var normalized = NormalizeAndValidateName(newName);
 
         var isFounderName = string.Equals(normalized, "Fundador", StringComparison.OrdinalIgnoreCase);
         var isFounderSystem = IsSystem && AccessLevel == CompanyRole.Owner;
@@ -81,7 +79,7 @@ public sealed class CompanyPosition : Entity
         if (isFounderName && !isFounderSystem)
             throw new CompanyException("Cargo 'Fundador' só é permitido para a posição de sistema do fundador.");
 
-        if (string.Equals(Name, normalized, StringComparison.Ordinal))
+        if (NameEquals(Name, normalized))
             return false;
 
         Name = normalized;

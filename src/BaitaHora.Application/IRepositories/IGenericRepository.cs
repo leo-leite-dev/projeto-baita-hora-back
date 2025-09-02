@@ -2,7 +2,7 @@ using BaitaHora.Domain.Features.Common;
 
 namespace BaitaHora.Application.IRepositories
 {
-    public interface IGenericRepository<T> where T : Entity
+    public interface IGenericRepository<T> where T : EntityBase
     {
         void MarkAsAdded(T entity);
         Task<T?> GetByIdAsync(Guid id, CancellationToken ct = default);

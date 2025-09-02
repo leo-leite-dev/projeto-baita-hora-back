@@ -1,20 +1,16 @@
 using BaitaHora.Domain.Features.Common;
 using BaitaHora.Domain.Features.Common.Exceptions;
 using BaitaHora.Domain.Features.Common.ValueObjects;
-using BaitaHora.Domain.Features.Companies.Enums;
 using BaitaHora.Domain.Features.Users.Events;
 using BaitaHora.Domain.Features.Users.Validators;
 
 namespace BaitaHora.Domain.Features.Users.Entities;
 
-public sealed class User : Entity
+public sealed class User : EntityBase
 {
     public Username Username { get; private set; }
     public Email UserEmail { get; private set; }
     public string PasswordHash { get; private set; } = string.Empty;
-
-    public bool IsActive { get; private set; } = true;
-    // public CompanyRole Role { get; private set; }
 
     public string? PasswordResetToken { get; private set; }
     public DateTime? PasswordResetTokenExpiresAt { get; private set; }
@@ -37,7 +33,6 @@ public sealed class User : Entity
             PasswordHash = rawPassword,
             Profile = profile,
             ProfileId = profile.Id,
-            IsActive = true,
         };
 
         user.SetPassword(rawPassword, hashFunction);
@@ -46,25 +41,13 @@ public sealed class User : Entity
         return user;
     }
 
-    // public bool SetRole(CompanyRole newRole)
-    // {
-    //     if (newRole == CompanyRole.Unknown)
-    //         throw new UserException("Role inválida.");
-
-    //     if (Role == newRole) return false;
-    //     Role = newRole;
-    //     return true;
-    // }
-
-    public bool SetEmail(Email newEmail)
+    public bool ChangEmail(Email newEmail)
     {
-        if (UserEmail.Equals(newEmail)) return false;
-        UserEmail = newEmail;
+        if (UserEmail.Equals(newEmail))
+            return false;
 
-        // (Opcional) se email estiver em claims de login, descomente:
-        // Touch();
-        // IncrementTokenVersion();
-
+        Touch();
+        IncrementTokenVersion();
         return true;
     }
 
@@ -74,6 +57,8 @@ public sealed class User : Entity
             return false;
 
         Username = newUsername;
+        Touch();
+        IncrementTokenVersion();
         return true;
     }
 
@@ -169,25 +154,6 @@ public sealed class User : Entity
         IncrementTokenVersion();
 
         // (Opcional) AddDomainEvent(new UserPasswordResetCompletedDomainEvent(Id));
-    }
-
-    public bool Activate() => SetActive(true);
-    public bool Deactivate() => SetActive(false);
-
-    private bool SetActive(bool isActive)
-    {
-        if (IsActive == isActive) return false;
-
-        IsActive = isActive;
-        Touch();
-        IncrementTokenVersion();
-
-        if (isActive)
-            AddDomainEvent(new UserActivatedDomainEvent(Id));
-        else
-            AddDomainEvent(new UserDeactivatedDomainEvent(Id));
-
-        return true;
     }
 
     public bool IncrementTokenVersion()

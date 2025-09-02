@@ -24,7 +24,10 @@ public readonly record struct Email
         var normalized = input.Trim().ToLowerInvariant();
         try
         {
-            _ = new MailAddress(normalized);
+            var addr = new MailAddress(normalized);
+            if (!addr.Host.Contains('.'))
+                return false; 
+
             email = new Email(normalized);
             return true;
         }

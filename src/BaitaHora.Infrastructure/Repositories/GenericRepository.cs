@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BaitaHora.Infrastructure.Repositories;
 
-public class GenericRepository<T> : IGenericRepository<T> where T : Entity
+public class GenericRepository<T> : IGenericRepository<T> where T : EntityBase
 {
     protected readonly AppDbContext _context;
     protected readonly DbSet<T> _set;

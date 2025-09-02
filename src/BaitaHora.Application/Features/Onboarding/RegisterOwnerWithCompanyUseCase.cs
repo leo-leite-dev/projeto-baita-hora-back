@@ -66,7 +66,7 @@ public sealed class RegisterOwnerWithCompanyUseCase
         var response = new RegisterOwnerWithCompanyResponse(
             user.Id,
             company.Id,
-            profile.FullName,
+            profile.Name,
             company.Name
         );
 

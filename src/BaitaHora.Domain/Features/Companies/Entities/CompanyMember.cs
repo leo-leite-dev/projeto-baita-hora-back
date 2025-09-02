@@ -1,18 +1,14 @@
 using BaitaHora.Domain.Features.Common;
 using BaitaHora.Domain.Features.Common.Exceptions;
 using BaitaHora.Domain.Features.Companies.Enums;
-using BaitaHora.Domain.Features.Users.Entities;
 using BaitaHora.Domain.Permissions;
 
 namespace BaitaHora.Domain.Features.Companies.Entities;
 
-public sealed class CompanyMember : Entity
+public sealed class CompanyMember : EntityBase
 {
     public Guid CompanyId { get; private set; }
-    public Company Company { get; private set; } = null!;
-
     public Guid UserId { get; private set; }
-    public User User { get; private set; } = null!;
 
     public CompanyRole Role { get; private set; }
 
@@ -58,15 +54,8 @@ public sealed class CompanyMember : Entity
         return member;
     }
 
-
     public (bool changed, bool requiresSessionRefresh) ChangeRole(CompanyRole newRole)
         => SetRole(newRole, allowOwnerLevel: false);
-
-    internal (bool changed, bool requiresSessionRefresh) SetRoleFromPosition(CompanyPosition position)
-    {
-        var allowOwnerLevel = position.IsSystem && position.AccessLevel == CompanyRole.Owner;
-        return SetRole(position.AccessLevel, allowOwnerLevel);
-    }
 
     private (bool changed, bool requiresSessionRefresh) SetRole(CompanyRole newRole, bool allowOwnerLevel)
     {
@@ -93,48 +82,5 @@ public sealed class CompanyMember : Entity
 
         PrimaryPositionId = position.Id;
         PrimaryPosition = position;
-
-        Touch();
     }
-
-    public bool ClearPrimaryPosition()
-    {
-        if (PrimaryPositionId is null) return false;
-
-        PrimaryPositionId = null;
-        PrimaryPosition = null;
-        Touch();
-        return true;
-    }
-
-    public CompanyPermission GetEffectivePermissions()
-    {
-        if (Role == CompanyRole.Owner)
-            return CompanyPermission.All;
-
-        var mask = CompanyPermission.None;
-
-        if (PrimaryPosition is not null)
-            mask |= PrimaryPosition.PermissionMask;
-
-        mask |= DirectPermissionMask;
-        return mask;
-    }
-
-    public bool SetDirectPermissions(CompanyPermission newMask)
-    {
-        if (DirectPermissionMask == newMask) return false;
-        DirectPermissionMask = newMask;
-        Touch();
-        return true;
-    }
-
-    public bool AddDirectPermissions(CompanyPermission extra)
-        => SetDirectPermissions(DirectPermissionMask | extra);
-
-    public bool RemoveDirectPermissions(CompanyPermission remove)
-        => SetDirectPermissions(DirectPermissionMask & ~remove);
-
-    public bool ClearDirectPermissions()
-        => SetDirectPermissions(CompanyPermission.None);
 }
