@@ -9,7 +9,7 @@ using MediatR;
 namespace BaitaHora.Api.Controllers.Companies;
 
 [ApiController]
-[Route(ApiRoutes.CompaniesPrefix + "/{companyId:guid}/ServiceOfferings")]
+[Route(ApiRoutes.CompaniesPrefix + "/{companyId:guid}/service-offerings")]
 [Authorize]
 public sealed class ServiceOfferingsController : ControllerBase
 {

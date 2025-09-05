@@ -17,7 +17,7 @@ public sealed class CreateCustomerUseCase
     public async Task<Result<CreateCustomerResponse>> HandleAsync(
         CreateCustomerCommand cmd, CancellationToken ct)
     {
-        var name = Username.Parse(cmd.CustomerName);
+        var name = PersonName.Parse(cmd.CustomerName);
         var phone = Phone.Parse(cmd.CustomerPhone);
         var cpf = CPF.Parse(cmd.CustomerCpf);
 

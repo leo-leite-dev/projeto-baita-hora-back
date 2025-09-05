@@ -1,6 +1,6 @@
-using BaitaHora.Domain.Features.Common.ValueObjects; 
+using BaitaHora.Domain.Features.Common.ValueObjects;
 using BaitaHora.Domain.Features.Customers;
-using BaitaHora.Domain.Features.Users.ValueObjects; 
+using BaitaHora.Domain.Features.Users.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
@@ -16,9 +16,9 @@ public sealed class CustomerConfiguration : IEntityTypeConfiguration<Customer>
         b.HasKey(x => x.Id);
         b.Property(x => x.Id).ValueGeneratedNever();
 
-        var usernameConverter = new ValueConverter<Username, string>(
+        var personNameConverter = new ValueConverter<PersonName, string>(
             v => v.Value,
-            v => Username.Parse(v)
+            v => PersonName.Parse(v)
         );
 
         var cpfConverter = new ValueConverter<CPF, string>(
@@ -33,7 +33,7 @@ public sealed class CustomerConfiguration : IEntityTypeConfiguration<Customer>
 
         b.Property(x => x.CustomerName)
             .HasColumnName("customer_name")
-            .HasConversion(usernameConverter)
+            .HasConversion(personNameConverter)
             .HasMaxLength(50)
             .IsRequired();
 

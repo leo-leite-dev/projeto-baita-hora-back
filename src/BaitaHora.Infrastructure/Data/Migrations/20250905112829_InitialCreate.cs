@@ -217,7 +217,7 @@ namespace BaitaHora.Infrastructure.Data.Migrations
                     CustomerId = table.Column<Guid>(type: "uuid", nullable: false),
                     starts_at_utc = table.Column<DateTime>(type: "timestamptz", nullable: false),
                     duration = table.Column<TimeSpan>(type: "interval", nullable: false),
-                    Status = table.Column<int>(type: "integer", nullable: false),
+                    status = table.Column<string>(type: "varchar(20)", nullable: false, defaultValue: "Pending"),
                     CreatedAtUtc = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     UpdatedAtUtc = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false)
@@ -226,6 +226,7 @@ namespace BaitaHora.Infrastructure.Data.Migrations
                 {
                     table.PrimaryKey("PK_appointments", x => x.Id);
                     table.CheckConstraint("ck_appointments_duration_positive", "duration > interval '0 seconds'");
+                    table.CheckConstraint("ck_appointments_status_valid", "status in ('Pending','Cancelled','Completed')");
                     table.ForeignKey(
                         name: "FK_appointments_schedules_ScheduleId",
                         column: x => x.ScheduleId,

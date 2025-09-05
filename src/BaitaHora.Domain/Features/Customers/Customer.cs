@@ -6,13 +6,13 @@ namespace BaitaHora.Domain.Features.Customers;
 
 public sealed class Customer : EntityBase
 {
-    public Username CustomerName { get; private set; }
+    public PersonName CustomerName { get; private set; }
     public Phone CustomerPhone { get; private set; }
     public CPF CustomerCpf { get; private set; }
 
     private Customer() { }
 
-    public static Customer Create(Username name, Phone phone, CPF cpf)
+    public static Customer Create(PersonName name, Phone phone, CPF cpf)
     {
         var customer = new Customer()
         {

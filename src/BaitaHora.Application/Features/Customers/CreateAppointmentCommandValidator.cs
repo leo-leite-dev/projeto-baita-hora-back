@@ -11,7 +11,7 @@ public sealed class CreateCustomerCommandValidator : AbstractValidator<CreateCus
     {
         RuleFor(x => x.CustomerName)
             .NotEmpty().WithMessage("Nome do cliente é obrigatório.")
-            .Must(v => Username.TryParse(v, out _))
+            .Must(v => PersonName.TryParse(v, out _))
             .WithMessage("Nome inválido. Deve ter entre 3 e 50 caracteres.");
 
         RuleFor(x => x.CustomerPhone)

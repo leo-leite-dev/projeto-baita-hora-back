@@ -364,8 +364,12 @@ namespace BaitaHora.Infrastructure.Data.Migrations
                         .HasColumnType("timestamptz")
                         .HasColumnName("starts_at_utc");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("varchar(20)")
+                        .HasDefaultValue("Pending")
+                        .HasColumnName("status");
 
                     b.Property<DateTimeOffset?>("UpdatedAtUtc")
                         .HasColumnType("timestamp with time zone");
@@ -382,6 +386,8 @@ namespace BaitaHora.Infrastructure.Data.Migrations
                     b.ToTable("appointments", null, t =>
                         {
                             t.HasCheckConstraint("ck_appointments_duration_positive", "duration > interval '0 seconds'");
+
+                            t.HasCheckConstraint("ck_appointments_status_valid", "status in ('Pending','Cancelled','Completed')");
                         });
                 });
 
