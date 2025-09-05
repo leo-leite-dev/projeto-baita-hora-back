@@ -7,7 +7,6 @@
 ![Clean Architecture](https://img.shields.io/badge/Architecture-Clean-blue)
 ![CQRS](https://img.shields.io/badge/Pattern-CQRS-green)
 ![DDD](https://img.shields.io/badge/Pattern-DDD-orange)
-
 ---
 
 ## 📖 Descrição
@@ -34,7 +33,6 @@ Prática avançada de **arquitetura backend**, aplicando:
 - 📨 **MediatR + Pipeline Behaviors** (validação, autorização, logging, UoW)
 - 📢 **Domain Events + Outbox Pattern**
 - 🚀 Boas práticas para escalar funcionalidades
-
 ---
 
 ## 🏛️ Arquitetura
@@ -72,7 +70,6 @@ Lista das principais funcionalidades já implementadas e em andamento no **Baita
 - ✔️ Permissões baseadas em **roles** (Owner, Manager, Staff, Viewer)  
 - ✔️ Máscara de permissões por empresa (**CompanyPermission bitmask**)  
 - ✔️ Interceptores de autorização no pipeline (**AuthorizationBehavior**)  
-
 ---
 
 ### 🏢 Gestão de Empresas & Usuários
@@ -83,7 +80,6 @@ Lista das principais funcionalidades já implementadas e em andamento no **Baita
 - ✔️ Perfil de usuário com dados pessoais e validações de **Value Objects** (CPF, RG, Email, Telefone, Endereço)  
 - ✔️ Edição completa de perfis (dados do usuário, endereço, telefone, etc.)  
 - ✔️ Cadastro e gerenciamento de **serviços oferecidos (ServiceOfferings)** pela empresa  
-
 ---
 
 ### 📅 Agendamentos
@@ -94,7 +90,6 @@ Lista das principais funcionalidades já implementadas e em andamento no **Baita
 - ✔️ **Confirmação de conclusão** do atendimento  
 - ✔️ **Cancelamento** de compromissos  
 - ❌ Chatbot de agendamento automático (planejado)  
-
 ---
 
 ### 🛠️ Arquitetura & Infraestrutura
@@ -104,7 +99,6 @@ Lista das principais funcionalidades já implementadas e em andamento no **Baita
 - ✔️ **Domain Events** e suporte a **Outbox Pattern** para integrações  
 - ✔️ Integração com **PostgreSQL (EF Core 9 + Migrations)**  
 - ✔️ Integração com mensageria externa (Kafka/RabbitMQ)  
-
 ---
 
 ## 📊 Futuro / Roadmap
@@ -119,15 +113,13 @@ Lista das principais funcionalidades já implementadas e em andamento no **Baita
 - ✔️ Estrutura em **Clean Architecture + CQRS + DDD**
 
 ### 🚧 Em andamento
-- ⏳ Logging e observabilidade avançada
-- ⏳ Documentação de endpoints com Swagger
-- ⏳ Deploy automatizado (Docker + GitHub Actions)
-
+- ⏳ Padronização dos endpoints **GET (listagem e detalhes)** para todas as entidades principais  
+- ⏳ Documentação de endpoints com **Swagger**
+  
 ### 🔮 Futuro
 - ❌ Integração com **WhatsApp/Chatbot** para agendamentos automáticos
 - ❌ **Dashboard web** para controle de agendas (**Angular**)
 - ❌ **Aplicativo mobile** para clientes (**Angular + Ionic**)
-
 ---
 
 ## 🧰 Tecnologias
@@ -187,12 +179,17 @@ cd Projeto-BaitaHora-Back/src
 
 ### 1) Criar Owner + Empresa
 
-**POST** `/api/auth/register-owner`
+**POST** `/api/onboarding/register-owner`
+
+```http
+POST /api/onboarding/register-owner
+Content-Type: application/json
+```
 
 ```json
 {
   "owner": {
-    "userEmail": "leonardo.silva@example.com",
+    "userEmail": "leonardo.passos@example.com",
     "username": "leonardo.passos",
     "rawPassword": "SenhaForte@123",
     "profile": {
@@ -229,8 +226,9 @@ cd Projeto-BaitaHora-Back/src
     }
   }
 }
-
 ```
+
+---
 
 ### 2) Login do Owner
 
@@ -243,6 +241,11 @@ Autentica o **Owner** criado no passo anterior e retorna o **JWT em Cookie**, qu
 - **identify** → username ou e-mail do usuário.  
 - **password** → senha definida no cadastro.  
 - **ip** e **userAgent** → opcionais, usados para auditoria.  
+
+```http
+POST /api/auth/login
+Content-Type: application/json
+```
 
 ```json
 {
@@ -279,8 +282,9 @@ Content-Type: application/json
   "amount": 50,
   "currency": "BRL"
 }
-
 ```
+
+---
 
 ### 4) Criar um Cargo (Position) e associar Serviços
 
@@ -311,6 +315,7 @@ Content-Type: application/json
     "GUID_DO_SERVICE_OFFERING"
   ]
 }
+```
 
 ---
 
@@ -324,7 +329,42 @@ Cria um **funcionário** vinculado a um **cargo (Position)** da empresa.
 
 **Campos principais:**
 - **companyId** → vai na **URL** (path parameter).  
-- **positionId** → ID do cargo a
+- **positionId** → ID do cargo ao qual o funcionário será associado.  
+- **employee.userEmail / username / rawPassword** → credenciais do novo usuário.  
+- **employee.profile** → dados pessoais e endereço (validado por Value Objects).  
+- **employee.profile.birthDate** → data no formato `YYYY-MM-DD`.  
+
+```http
+POST /api/members/{companyId}/employees
+Content-Type: application/json
+```
+
+```json
+{
+  "positionId": "GUID_DO_POSITION",
+  "employee": {
+    "userEmail": "joao.marcos@example.com",
+    "username": "joao.marcos",
+    "rawPassword": "SenhaForte!2025",
+    "profile": {
+      "fullName": "João Marcos",
+      "cpf": "59671483020",
+      "rg": "123456789",
+      "userPhone": "+55 51 99876-2233",
+      "birthDate": "1998-03-15",
+      "address": {
+        "street": "Rua das Palmeiras",
+        "number": "123",
+        "complement": "Apto 202, Bloco B",
+        "neighborhood": "Centro",
+        "city": "Porto Alegre",
+        "state": "RS",
+        "zipCode": "90035060"
+      }
+    }
+  }
+}
+```
 
 ---
 
@@ -351,6 +391,7 @@ Content-Type: application/json
   "customerPhone": "51966665555",
   "customerCpf": "52998224725"
 }
+```
 
 ---
 
@@ -374,10 +415,9 @@ Content-Type: application/json
 
 ```json
 {
-  "memberId": "GUID_DO_FUNCIONARIO",
-  "customerId": "GUID_DO_CLIENTE",
+  "userId": "GUID_DO_USER",
+  "customerId": "GUID_DO_CUSTOMER",
   "startsAtUtc": "2025-09-05T15:00:00Z",
   "durationMinutes": 30
 }
-
 ```
