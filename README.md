@@ -217,8 +217,8 @@ Content-Type: application/json
     "companyEmail": "contato@baitahora.com.br",
     "address": {
       "street": "Av. Ipiranga",
-      "number": "6681",
-      "complement": "Torre A - Sala 1203",
+      "number": "1234",
+      "complement": "Torre A - Sala 1234",
       "neighborhood": "Partenon",
       "city": "Porto Alegre",
       "state": "RS",
