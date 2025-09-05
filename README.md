@@ -57,11 +57,11 @@ Segue **Clean Architecture**: regra de negócio isolada de banco, UI e framework
 
 ```mermaid
 flowchart TB
-    UI[API (Controllers finos)] -->|Controllers| APP[Application\n(Use Cases, Validators, Ports)]
-    APP -->|MediatR + Use Cases| DOM[Domain\n(Entities, Aggregates, VOs, Domain Events)]
-    APP -->|Repos Interfaces| INF[Infrastructure\n(EF Core, Repositories, Migrations, Integrations)]
+    UI["API (Controllers finos)"] --> APP["Application (Use Cases, Validators, Ports)"]
+    APP --> DOM["Domain (Entities, Aggregates, VOs, Domain Events)"]
+    APP --> INF["Infrastructure (EF Core, Repositories, Migrations, Integrations)"]
     INF -.-> DB[(PostgreSQL)]
-    DOM -->|Domain Events| APP
+```
 
 ## ⚙️ Funcionalidades
 
@@ -107,8 +107,28 @@ Lista das principais funcionalidades já implementadas e em andamento no **Baita
 
 ---
 
-### 📊 Futuro / Roadmap
-- ❌ Integração com WhatsApp/Chatbot para agendamentos automáticos
+## 📊 Futuro / Roadmap
+
+### ✅ Concluído
+- ✔️ Autenticação e autorização com **JWT + Cookies**
+- ✔️ Máscara de permissões por empresa (**CompanyPermission bitmask**)
+- ✔️ CRUD completo de **Companies, Positions, Services e Members**
+- ✔️ Agendamento de clientes (Schedule + Appointment)
+- ✔️ Integração de **Domain Events + Outbox Pattern**
+- ✔️ Testes de unidade com **xUnit**
+- ✔️ Estrutura em **Clean Architecture + CQRS + DDD**
+
+### 🚧 Em andamento
+- ⏳ Logging e observabilidade avançada
+- ⏳ Documentação de endpoints com Swagger
+- ⏳ Deploy automatizado (Docker + GitHub Actions)
+
+### 🔮 Futuro
+- ❌ Integração com **WhatsApp/Chatbot** para agendamentos automáticos
+- ❌ **Dashboard web** para controle de agendas (**Angular**)
+- ❌ **Aplicativo mobile** para clientes (**Angular + Ionic**)
+
+---
 
 ## 🧰 Tecnologias
 
@@ -148,8 +168,28 @@ Principais tecnologias, frameworks e bibliotecas utilizadas no **BaitaHora**:
 ---
 
 ### 1) Clonar o repositório
-bash git clone https://github.com/leo-leite-dev/Projeto-BaitaHora-Back.git cd Projeto-BaitaHora-Back/src ## 🧪 Fluxo principal (exemplo ponta-a-ponta) > Objetivo: sair do zero até **criar um agendamento** válido (Owner/Empresa → Serviço → Cargo → Funcionário → Cliente → Appointment). > Observação: Os endpoints abaixo assumem que você está **autenticado** como Owner (JWT + Cookie) após o login. ### 1) Criar Owner + Empresa **POST /api/auth/register-owner**
-json
+
+```bash
+git clone https://github.com/leo-leite-dev/Projeto-BaitaHora-Back.git
+cd Projeto-BaitaHora-Back/src
+```
+
+---
+
+## 🧪 Fluxo principal (exemplo ponta-a-ponta)
+
+> **Objetivo:** sair do zero até **criar um agendamento** válido  
+> *(Owner/Empresa → Serviço → Cargo → Funcionário → Cliente → Appointment)*  
+
+> **Observação:** Os endpoints abaixo assumem que você está **autenticado** como Owner (JWT + Cookie) após o login.
+
+---
+
+### 1) Criar Owner + Empresa
+
+**POST** `/api/auth/register-owner`
+
+```json
 {
   "owner": {
     "userEmail": "leonardo.silva@example.com",
@@ -190,30 +230,65 @@ json
   }
 }
 
+```
+
 ### 2) Login do Owner
-**POST /api/auth/login**  
+
+**POST** `/api/auth/login`  
+
 Autentica o **Owner** criado no passo anterior e retorna o **JWT em Cookie**, que será usado para todas as próximas requisições.  
 
-Campos principais:
+**Campos principais:**
 - **companyId** → ID da empresa criada no passo anterior.  
 - **identify** → username ou e-mail do usuário.  
 - **password** → senha definida no cadastro.  
-- **ip** e **userAgent** → opcionais, usados para auditoria.
-json { "companyId": "GUID_DA_EMPRESA", "identify": "leonardo.passos", "password": "SenhaForte@123", "ip": "127.0.0.1", "userAgent": "PostmanRuntime/7.39.0" } ### 3) Cadastrar um Serviço (ServiceOffering) **POST /api/companies/{companyId}/service-offerings** Registra um **serviço** que a empresa oferece. Esse serviço será usado mais tarde nos agendamentos (ex.: Corte de Cabelo, Manicure, Limpeza Facial). - **companyId** → vai na **URL** (path parameter). - **serviceOfferingName** → nome do serviço oferecido. - **amount** → valor padrão do serviço (em número). - **currency** → atualmente só aceita "BRL".
-http
+- **ip** e **userAgent** → opcionais, usados para auditoria.  
+
+```json
+{
+  "companyId": "GUID_DA_EMPRESA",
+  "identify": "leonardo.passos",
+  "password": "SenhaForte@123",
+  "ip": "127.0.0.1",
+  "userAgent": "PostmanRuntime/7.39.0"
+}
+```
+
+---
+
+### 3) Cadastrar um Serviço (ServiceOffering)
+
+**POST** `/api/companies/{companyId}/service-offerings`  
+
+Registra um **serviço** que a empresa oferece. Esse serviço será usado mais tarde nos agendamentos (ex.: Corte de Cabelo, Manicure, Limpeza Facial).  
+
+**Campos principais:**
+- **companyId** → vai na **URL** (path parameter).  
+- **serviceOfferingName** → nome do serviço oferecido.  
+- **amount** → valor padrão do serviço (em número).  
+- **currency** → atualmente só aceita `"BRL"`.  
+
+```http
 POST /api/companies/{companyId}/service-offerings
 Content-Type: application/json
+```
 
+```json
 {
   "serviceOfferingName": "Corte de Cabelo",
   "amount": 50,
   "currency": "BRL"
 }
 
+```
+
 ### 4) Criar um Cargo (Position) e associar Serviços
-**POST /api/companies/{companyId}/positions**  
+
+**POST** `/api/companies/{companyId}/positions`  
+
 Define um **cargo** dentro da empresa (ex.: Barbeiro, Manicure) e associa os **serviços** que esse cargo pode executar.  
 
+**Campos principais:**
 - **companyId** → vai na **URL** (path parameter).  
 - **positionName** → nome do cargo.  
 - **accessLevel** → nível de acesso do cargo, conforme o enum **CompanyRole**:  
@@ -221,53 +296,88 @@ Define um **cargo** dentro da empresa (ex.: Barbeiro, Manicure) e associa os **s
   - `2 = Manager` → gerente, pode cadastrar/gerenciar recursos da empresa.  
   - `3 = Staff` → funcionário padrão, acessa agenda e serviços.  
   - `4 = Viewer` → apenas visualiza.  
-- **serviceOfferingIds** → lista de IDs de serviços que o cargo pode executar.
-http POST /api/companies/{companyId}/positions Content-Type: application/json { "positionName": "Barbeiro", "accessLevel": 3, "serviceOfferingIds": [ "GUID_DO_SERVICE_OFFERING" ] } ### 5) Registrar um Funcionário (Employee) **POST /api/members/{companyId}/employees** Cria um **funcionário** vinculado a um **cargo (Position)** da empresa. > Observação: ao registrar o funcionário, a **Schedule** dele é criada automaticamente. **Campos principais:** - **companyId** → vai na **URL** (path parameter). - **positionId** → ID do cargo ao qual o funcionário será associado. - **employee.userEmail / username / rawPassword** → credenciais do novo usuário. - **employee.profile** → dados pessoais e endereço (validado por Value Objects). - **employee.profile.birthDate** → data no formato YYYY-MM-DD.
-http
-POST /api/members/{companyId}/employees
-Content-Type: application/json
+- **serviceOfferingIds** → lista de IDs de serviços que o cargo pode executar.  
 
+```http
+POST /api/companies/{companyId}/positions
+Content-Type: application/json
+```
+
+```json
 {
-  "positionId": "GUID_DA_POSITION",
-  "employee": {
-    "userEmail": "joao@example.com",
-    "username": "joao",
-    "rawPassword": "SenhaForte@123",
-    "profile": {
-      "fullName": "Joao Carlos",
-      "cpf": "98765432100",
-      "rg": "123456789",
-      "userPhone": "51988887777",
-      "birthDate": "1998-01-01",
-      "address": {
-        "street": "Av. Borges de Medeiros",
-        "number": "200",
-        "complement": "Sala 402",
-        "neighborhood": "Centro",
-        "city": "Porto Alegre",
-        "state": "RS",
-        "zipCode": "90020000"
-      }
-    }
-  }
+  "positionName": "Barbeiro",
+  "accessLevel": 3,
+  "serviceOfferingIds": [
+    "GUID_DO_SERVICE_OFFERING"
+  ]
 }
 
+---
+
+### 5) Registrar um Funcionário (Employee)
+
+**POST** `/api/members/{companyId}/employees`  
+
+Cria um **funcionário** vinculado a um **cargo (Position)** da empresa.  
+
+> **Observação:** ao registrar o funcionário, a **Schedule** dele é criada automaticamente.  
+
+**Campos principais:**
+- **companyId** → vai na **URL** (path parameter).  
+- **positionId** → ID do cargo a
+
+---
+
 ### 6) Cadastrar um Cliente (Customer)
-**POST /api/customers/{companyId}/customers**  
+
+**POST** `/api/customers/{companyId}/customers`  
+
 Registra um **cliente** que poderá ser utilizado nos agendamentos.  
 
+**Campos principais:**
 - **companyId** → vai na **URL** (path parameter).  
 - **customerName** → nome completo do cliente.  
 - **customerPhone** → telefone de contato do cliente.  
-- **customerCpf** → CPF do cliente.
-http POST /api/customers/{companyId}/customers Content-Type: application/json { "customerName": "João Carlos", "customerPhone": "51966665555", "customerCpf": "52998224725" } ### 7) Criar um Agendamento (Appointment) **POST /api/companies/{companyId}/appointments** Cria um **compromisso** vinculando **funcionário (member)**, **cliente (customer)** e **horário**. - **companyId** → vai na **URL** (path parameter). - **memberId** → ID do **funcionário** que realizará o serviço (membro da empresa). - **customerId** → ID do **cliente** que será atendido. - **startsAtUtc** → data/hora de início **em UTC** (ISO 8601), ex.: 2025-09-05T15:00:00Z. - **durationMinutes** → duração do atendimento **em minutos** (ex.: 30 para 30min).
-http
+- **customerCpf** → CPF do cliente.  
+
+```http
+POST /api/customers/{companyId}/customers
+Content-Type: application/json
+```
+
+```json
+{
+  "customerName": "João Carlos",
+  "customerPhone": "51966665555",
+  "customerCpf": "52998224725"
+}
+
+---
+
+### 7) Criar um Agendamento (Appointment)
+
+**POST** `/api/companies/{companyId}/appointments`  
+
+Cria um **compromisso** vinculando **funcionário (member)**, **cliente (customer)** e **horário**.  
+
+**Campos principais:**
+- **companyId** → vai na **URL** (path parameter).  
+- **memberId** → ID do **funcionário** que realizará o serviço (membro da empresa).  
+- **customerId** → ID do **cliente** que será atendido.  
+- **startsAtUtc** → data/hora de início **em UTC** (ISO 8601), ex.: `2025-09-05T15:00:00Z`.  
+- **durationMinutes** → duração do atendimento **em minutos** (ex.: 30 para 30min).  
+
+```http
 POST /api/companies/{companyId}/appointments
 Content-Type: application/json
+```
 
+```json
 {
-  "memberId":    "GUID_DO_FUNCIONARIO",
-  "customerId":  "GUID_DO_CLIENTE",
+  "memberId": "GUID_DO_FUNCIONARIO",
+  "customerId": "GUID_DO_CLIENTE",
   "startsAtUtc": "2025-09-05T15:00:00Z",
   "durationMinutes": 30
 }
+
+```
