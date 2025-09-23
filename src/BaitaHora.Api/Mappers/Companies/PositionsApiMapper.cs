@@ -3,9 +3,7 @@ using BaitaHora.Application.Features.Companies.Positions.Create;
 using BaitaHora.Application.Features.Companies.Positions.Disable;
 using BaitaHora.Application.Features.Companies.Positions.Patch;
 using BaitaHora.Application.Features.Companies.Positions.Remove.ServicesFromPosition;
-using BaitaHora.Contracts.DTOs.Companies.Company.Create;
-using BaitaHora.Contracts.DTOs.Companies.Company.Remove;
-using BaitaHora.Contracts.DTOs.Companies.Positions.Disable;
+using BaitaHora.Contracts.DTOs.Companies.Positions;
 
 namespace BaitaHora.Api.Mappers.Companies;
 

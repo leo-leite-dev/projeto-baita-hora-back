@@ -1,5 +1,5 @@
+using BaitaHora.Application.Abstractions.Auth;
 using BaitaHora.Application.IRepositories.Auth;
-using BaitaHora.Application.IServices.Auth.Models;
 using BaitaHora.Infrastructure.Data;
 using BaitaHora.Infrastructure.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;

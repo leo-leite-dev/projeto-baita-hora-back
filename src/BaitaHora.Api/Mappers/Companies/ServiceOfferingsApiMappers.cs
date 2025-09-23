@@ -2,8 +2,7 @@ using BaitaHora.Application.Features.Companies.ServiceOffering.Patch;
 using BaitaHora.Application.Features.Companies.ServiceOffering.Remove;
 using BaitaHora.Application.Features.Companies.ServiceOfferings.Activate;
 using BaitaHora.Application.Features.Companies.ServiceOfferings.Disable;
-using BaitaHora.Contracts.DTOs.Companies.Company.Create;
-using BaitaHora.Contracts.DTOs.Companies.Company.Patch;
+using BaitaHora.Contracts.DTOs.Companies.ServiceOfferings;
 
 namespace BaitaHora.Api.Mappers.Companies;
 

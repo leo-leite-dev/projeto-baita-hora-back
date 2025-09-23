@@ -1,10 +1,10 @@
 using BaitaHora.Application.Features.Onboarding;
 using BaitaHora.Application.Features.Users.CreateUser;
-using BaitaHora.Contracts.DTOS.Auth;
 using BaitaHora.Api.Mappers.Address;
 using BaitaHora.Api.Mappers.Users;
 using BaitaHora.Contracts.DTOs.Companies.Members;
 using BaitaHora.Application.Features.Users.PatchUser;
+using BaitaHora.Contracts.DTOS.Onbording;
 
 namespace BaitaHora.Api.Mappers.Onboarding;
 

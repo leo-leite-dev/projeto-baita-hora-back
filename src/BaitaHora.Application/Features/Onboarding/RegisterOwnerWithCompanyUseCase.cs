@@ -1,11 +1,11 @@
 using BaitaHora.Application.Common.Results;
 using BaitaHora.Application.IRepositories.Users;
 using BaitaHora.Application.IRepositories.Companies;
-using BaitaHora.Application.IServices.Auth;
 using BaitaHora.Application.Features.Users.Common;
 using BaitaHora.Application.Features.Companies.Common;
 using BaitaHora.Domain.Features.Users.Entities;
 using BaitaHora.Domain.Features.Companies.Entities;
+using BaitaHora.Application.Abstractions.Auth;
 
 namespace BaitaHora.Application.Features.Onboarding;
 

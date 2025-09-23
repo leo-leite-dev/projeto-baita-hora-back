@@ -1,10 +1,9 @@
 using BaitaHora.Application.Common.Results;
-using BaitaHora.Application.IRepositories.Companies;
-using BaitaHora.Application.IRepositories.Users;
-using BaitaHora.Application.IServices.Auth;
+using BaitaHora.Application.Abstractions.Auth;
 using BaitaHora.Domain.Features.Common.ValueObjects;
 using BaitaHora.Domain.Features.Users.Entities;
-using Microsoft.Extensions.Logging;
+using BaitaHora.Application.IRepositories.Users;
+using BaitaHora.Application.IRepositories.Companies;
 
 namespace BaitaHora.Application.Features.Auth;
 
@@ -19,8 +18,7 @@ public sealed class AuthenticateUseCase
         IUserRepository userRepository,
         ICompanyMemberRepository companyMemberRepository,
         IPasswordService passwordService,
-        ITokenService tokenService,
-        ILogger<AuthenticateUseCase> logger)
+        ITokenService tokenService)
     {
         _userRepository = userRepository;
         _companyMemberRepository = companyMemberRepository;
@@ -37,25 +35,6 @@ public sealed class AuthenticateUseCase
         if (!user.IsActive)
             return Result<AuthTokenResponse>.Forbidden("Conta desativada.");
 
-        if (cmd.CompanyId is Guid cid && cid != Guid.Empty)
-        {
-            var (found, role, isActive) = await _companyMemberRepository.GetRoleAsync(cid, user.Id, ct);
-            if (!found)
-                return Result<AuthTokenResponse>.Forbidden("Sem vínculo com a empresa.");
-            if (!isActive)
-                return Result<AuthTokenResponse>.Forbidden("Membro inativo.");
-
-            var token = await _tokenService.IssueTokensAsync(
-                user.Id,
-                user.Username.Value,
-                new[] { role.ToString() },
-                new Dictionary<string, string> { { "companyId", cid.ToString() } },
-                ct
-            );
-
-            return Result<AuthTokenResponse>.Ok(token); 
-        }
-
         var memberships = await _companyMemberRepository.GetByUserIdAsync(user.Id, ct);
         var active = memberships.Where(m => m.IsActive).ToList();
 
@@ -65,13 +44,15 @@ public sealed class AuthenticateUseCase
         if (active.Count == 1)
         {
             var m = active[0];
+
             var token = await _tokenService.IssueTokensAsync(
                 user.Id,
                 user.Username.Value,
-                new[] { m.Role.ToString() },
-                new Dictionary<string, string> { { "companyId", m.CompanyId.ToString() } },
-                ct
+                [m.Role.ToString()],
+                new Dictionary<string, string> { { "companyId", m.CompanyId.ToString() } }
+
             );
+
             return Result<AuthTokenResponse>.Ok(token);
         }
 

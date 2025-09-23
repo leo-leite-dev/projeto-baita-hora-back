@@ -1,4 +1,4 @@
-using BaitaHora.Application.IServices.Auth.Models;
+using BaitaHora.Application.Abstractions.Auth;
 
 namespace BaitaHora.Application.IRepositories.Auth;
 

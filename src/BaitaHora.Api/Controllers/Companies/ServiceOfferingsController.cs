@@ -1,10 +1,9 @@
 using BaitaHora.Api.Helpers;
 using BaitaHora.Api.Mappers.Companies;
-using BaitaHora.Contracts.DTOs.Companies.Company.Create;
-using BaitaHora.Contracts.DTOs.Companies.Company.Patch;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MediatR;
+using BaitaHora.Contracts.DTOs.Companies.ServiceOfferings;
 
 namespace BaitaHora.Api.Controllers.Companies;
 

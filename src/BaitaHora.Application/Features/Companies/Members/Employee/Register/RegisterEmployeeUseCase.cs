@@ -1,10 +1,10 @@
+using BaitaHora.Application.Abstractions.Auth;
 using BaitaHora.Application.Common.Results;
 using BaitaHora.Application.Features.Companies.Guards.Interfaces;
 using BaitaHora.Application.Features.Companies.Responses;
 using BaitaHora.Application.Features.Users.Common;
 using BaitaHora.Application.IRepositories.Companies;
 using BaitaHora.Application.IRepositories.Users;
-using BaitaHora.Application.IServices.Auth;
 using BaitaHora.Domain.Features.Users.Entities;
 
 namespace BaitaHora.Application.Features.Companies.Members.Employee.Register;

@@ -1,7 +1,6 @@
-using BaitaHora.Application.IServices.Auth;
 using BaitaHora.Application.IRepositories.Auth;
-using BaitaHora.Application.IServices.Auth.Models;
 using Microsoft.Extensions.Logging;
+using BaitaHora.Application.Abstractions.Auth;
 
 namespace BaitaHora.Infrastructure.Services.Auth;
 

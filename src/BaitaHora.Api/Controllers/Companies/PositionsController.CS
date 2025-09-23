@@ -1,13 +1,11 @@
 using BaitaHora.Api.Helpers;
 using BaitaHora.Api.Mappers.Companies;
-using BaitaHora.Contracts.DTOs.Companies.Company.Create;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using BaitaHora.Application.Features.Companies.Positions.Remove;
-using BaitaHora.Contracts.DTOs.Companies.Company.Remove;
 using BaitaHora.Application.Features.Companies.Positions.Remove.ServicesFromPosition;
 using MediatR;
-using BaitaHora.Contracts.DTOs.Companies.Positions.Disable;
+using BaitaHora.Contracts.DTOs.Companies.Positions;
 
 namespace BaitaHora.Api.Controllers.Companies;
 

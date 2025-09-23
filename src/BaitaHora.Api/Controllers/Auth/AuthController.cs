@@ -4,9 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 using BaitaHora.Api.Helpers;
 using BaitaHora.Contracts.DTOS.Auth;
 using BaitaHora.Api.Mappers.Auth;
-using BaitaHora.Application.IServices.Auth;
 using BaitaHora.Api.Web.Cookies;
 using BaitaHora.Application.Abstractions.Integrations;
+using BaitaHora.Application.Abstractions.Auth;
 
 namespace BaitaHora.Api.Controllers.Auth;
 
@@ -18,7 +18,6 @@ public sealed class AuthController : ControllerBase
     private readonly IJwtCookieFactory _cookieFactory;
     private readonly IJwtCookieWriter _cookieWriter;
     private readonly IInstagramApi _ig;
-
 
     public AuthController(
         ISender mediator,
@@ -34,7 +33,7 @@ public sealed class AuthController : ControllerBase
 
     [HttpGet("me")]
     [Authorize]
-    public IActionResult Me()
+    public ActionResult<AuthenticateResponse> Me()
     {
         var user = HttpContext.User;
         if (user?.Identity?.IsAuthenticated != true)
@@ -44,28 +43,15 @@ public sealed class AuthController : ControllerBase
                      ?? user.FindFirst("sub")?.Value;
         var username = user.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value
                        ?? user.Identity?.Name;
-        var roles = user.FindAll(System.Security.Claims.ClaimTypes.Role).Select(r => r.Value).ToList();
+        var roles = user.FindAll(System.Security.Claims.ClaimTypes.Role)
+                        .Select(r => r.Value);
 
-        return Ok(new
-        {
-            IsAuthenticated = true,
-            UserId = userId,
-            Username = username,
-            Roles = roles
-        });
-    }
-
-    [HttpGet("diagnose")]
-    public async Task<IActionResult> Diagnose()
-    {
-        await _ig.DiagnoseAsync(
-            "<TEU_PAGE_TOKEN>",
-            "<TEU_APP_ID>",
-            "<TEU_APP_SECRET>",
-            "<TEU_IG_USER_ID>",
-            HttpContext.RequestAborted);
-
-        return Ok("Diagnose executado. Veja logs.");
+        return Ok(new AuthenticateResponse(
+            IsAuthenticated: true,
+            UserId: userId,
+            Username: username,
+            Roles: roles
+        ));
     }
 
     [HttpPost("login")]

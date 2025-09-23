@@ -1,3 +1,5 @@
+using BaitaHora.Application.Abstractions.Companies;
+
 namespace BaitaHora.Application.Features.Auth;
 
 public sealed record AuthTokenResponse(
@@ -6,5 +8,6 @@ public sealed record AuthTokenResponse(
     DateTime ExpiresAtUtc,
     Guid UserId,
     string Username,
-    IEnumerable<string> Roles
+    IEnumerable<string> Roles,
+    IEnumerable<CompanySummary> Companies
 );

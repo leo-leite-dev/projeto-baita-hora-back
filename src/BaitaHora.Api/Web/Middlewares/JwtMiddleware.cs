@@ -1,5 +1,5 @@
 using System.Security.Claims;
-using BaitaHora.Application.IServices.Auth;
+using BaitaHora.Application.Abstractions.Auth;
 
 namespace BaitaHora.Api.Web.Middlewares;
 

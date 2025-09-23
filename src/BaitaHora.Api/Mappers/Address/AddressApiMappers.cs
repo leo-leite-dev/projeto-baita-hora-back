@@ -1,6 +1,6 @@
 using BaitaHora.Application.Features.Addresses.Create;
 using BaitaHora.Application.Features.Addresses.PatchAddress;
-using BaitaHora.Contracts.DTOS.Adress;
+using BaitaHora.Contracts.DTOS.Adresses;
 
 
 namespace BaitaHora.Api.Mappers.Address;
