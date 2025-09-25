@@ -8,13 +8,12 @@ namespace BaitaHora.Application.Features.Companies.ServiceOffering.Patch;
 public sealed record PatchServiceOfferingCommand
     : IRequest<Result<PatchServiceOfferingResponse>>, ITransactionalRequest
 {
-    public Guid CompanyId { get; init; }
     public Guid ServiceOfferingId { get; init; }
 
     public string? ServiceOfferingName { get; init; }
     public decimal? Amount { get; init; }
     public string? Currency { get; init; }
 
-    public Guid ResourceId => CompanyId;
+    public Guid ResourceId { get; init; }
     public IEnumerable<CompanyPermission> RequiredPermissions => [CompanyPermission.ManageCompany];
 }

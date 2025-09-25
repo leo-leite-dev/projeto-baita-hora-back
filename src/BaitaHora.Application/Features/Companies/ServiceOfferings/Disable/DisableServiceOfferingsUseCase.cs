@@ -1,47 +1,48 @@
+using BaitaHora.Application.Abstractions.Auth;
 using BaitaHora.Application.Common.Results;
-using BaitaHora.Application.Features.Companies.Guards;
 using BaitaHora.Application.Features.Companies.Guards.Interfaces;
-using BaitaHora.Application.Features.Companies.ServiceOfferings.Disable;
+using BaitaHora.Application.Features.Companies.ServiceOffering.Disable;
 
-namespace BaitaHora.Application.Features.Companies.ServiceOffering.Disable
+namespace BaitaHora.Application.Features.Companies.ServiceOfferings.Disable;
+
+public sealed class DisableServiceOfferingsUseCase
 {
-    public sealed class DisableServiceOfferingsUseCase
+    private readonly ICompanyGuards _companyGuards;
+    private readonly ICompanyServiceOfferingGuards _serviceOfferingGuards;
+    private readonly ICurrentCompany _currentCompany;
+
+    public DisableServiceOfferingsUseCase(
+        ICompanyGuards companyGuards,
+        ICompanyServiceOfferingGuards serviceOfferingGuards,
+        ICurrentCompany currentCompany)
     {
-        private readonly ICompanyGuards _companyGuards;
-        private readonly ICompanyServiceOfferingGuards _serviceOfferingGuards;
+        _companyGuards = companyGuards;
+        _serviceOfferingGuards = serviceOfferingGuards;
+        _currentCompany = currentCompany;
+    }
 
-        public DisableServiceOfferingsUseCase(
-            ICompanyGuards companyGuards,
-            ICompanyServiceOfferingGuards serviceOfferingGuards)
-        {
-            _companyGuards = companyGuards;
-            _serviceOfferingGuards = serviceOfferingGuards;
-        }
+    public async Task<Result<DisableServiceOfferingsResponse>> HandleAsync(
+        DisableServiceOfferingsCommand cmd, CancellationToken ct)
+    {
+        var companyRes = await _companyGuards.GetWithPositionsAndServiceOfferings(_currentCompany.Id, ct);
+        if (companyRes.IsFailure)
+            return Result<DisableServiceOfferingsResponse>.FromError(companyRes);
 
-        public async Task<Result<DisableServiceOfferingsResponse>> HandleAsync(
-            DisableServiceOfferingsCommand cmd, CancellationToken ct)
-        {
+        var company = companyRes.Value!;
 
-            var companyRes = await _companyGuards.GetWithPositionsAndServiceOfferings(cmd.CompanyId, ct);
-            if (companyRes.IsFailure)
-                return Result<DisableServiceOfferingsResponse>.FromError(companyRes);
+        var valRes = await _serviceOfferingGuards
+            .ValidateServiceOfferingsForDesactivation(_currentCompany.Id, cmd.ServiceOfferingIds, ct);
+        if (valRes.IsFailure)
+            return Result<DisableServiceOfferingsResponse>.FromError(valRes);
 
-            var company = companyRes.Value!;
+        var services = valRes.Value!;
+        var ids = services.Select(s => s.Id).ToArray();
 
-            var valRes = await _serviceOfferingGuards
-                .ValidateServiceOfferingsForDesactivation(cmd.CompanyId, cmd.ServiceOfferingIds, ct);
-            if (valRes.IsFailure)
-                return Result<DisableServiceOfferingsResponse>.FromError(valRes);
+        company.DetachServiceOfferingsFromAllPositions(ids);
 
-            var services = valRes.Value!;
-            var ids = services.Select(s => s.Id).ToArray();
+        foreach (var s in services)
+            s.Deactivate();
 
-            company.DetachServiceOfferingsFromAllPositions(ids);
-
-            foreach (var s in services)
-                s.Deactivate();
-
-            return Result<DisableServiceOfferingsResponse>.Ok(new(ids));
-        }
+        return Result<DisableServiceOfferingsResponse>.Ok(new(ids));
     }
 }

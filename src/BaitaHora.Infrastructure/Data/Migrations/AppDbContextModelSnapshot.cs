@@ -344,11 +344,16 @@ namespace BaitaHora.Infrastructure.Data.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("company_id");
+
                     b.Property<DateTimeOffset>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("CustomerId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("customer_id");
 
                     b.Property<TimeSpan>("Duration")
                         .HasColumnType("interval")
@@ -358,7 +363,8 @@ namespace BaitaHora.Infrastructure.Data.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<Guid>("ScheduleId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("schedule_id");
 
                     b.Property<DateTime>("StartsAtUtc")
                         .HasColumnType("timestamptz")
@@ -378,6 +384,8 @@ namespace BaitaHora.Infrastructure.Data.Migrations
 
                     b.HasIndex("ScheduleId")
                         .HasDatabaseName("ix_appointments_schedule");
+
+                    b.HasIndex("CompanyId", "StartsAtUtc");
 
                     b.HasIndex("ScheduleId", "StartsAtUtc")
                         .IsUnique()

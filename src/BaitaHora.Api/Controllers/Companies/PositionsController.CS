@@ -4,103 +4,101 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using BaitaHora.Application.Features.Companies.Positions.Remove;
 using BaitaHora.Application.Features.Companies.Positions.Remove.ServicesFromPosition;
-using MediatR;
 using BaitaHora.Contracts.DTOs.Companies.Positions;
+using BaitaHora.Application.Features.Companies.ListPositions.Get.List;
+using MediatR;
 
 namespace BaitaHora.Api.Controllers.Companies;
 
 [ApiController]
-[Route(ApiRoutes.CompaniesPrefix + "/{companyId:guid}/positions")]
+[Route(ApiRoutes.CompaniesPrefix + "/positions")]
 [Authorize]
 public sealed class PositionsController : ControllerBase
 {
     private readonly ISender _mediator;
+
     public PositionsController(ISender mediator) => _mediator = mediator;
 
     [HttpPost]
     public async Task<IActionResult> CreatePosition(
-        [FromRoute] Guid companyId,
         [FromBody] CreatePositionRequest req,
         CancellationToken ct)
     {
-        var cmd = req.ToCommand(companyId);
+        var cmd = req.ToCommand();
         var result = await _mediator.Send(cmd, ct);
-        return result.ToActionResult(this, result.Value);
+        return result.ToActionResult(this);
     }
 
     [HttpPatch("{positionId:guid}")]
     public async Task<IActionResult> PatchPosition(
-        [FromRoute] Guid companyId,
         [FromRoute] Guid positionId,
         [FromBody] PatchPositionRequest req,
         CancellationToken ct)
     {
-        var cmd = req.ToCommand(companyId, positionId);
+        var cmd = req.ToCommand(positionId);
         var result = await _mediator.Send(cmd, ct);
-        return result.ToActionResult(this, result.Value);
+        return result.ToActionResult(this);
     }
 
     [HttpDelete("{positionId:guid}")]
     public async Task<IActionResult> RemovePosition(
-        [FromRoute] Guid companyId,
         [FromRoute] Guid positionId,
         CancellationToken ct)
     {
         var cmd = new RemovePositionCommand
         {
-            CompanyId = companyId,
             PositionId = positionId
         };
 
         var result = await _mediator.Send(cmd, ct);
-
         if (result.IsSuccess) return NoContent();
         return result.ToActionResult(this);
     }
 
     [HttpDelete("{positionId:guid}/services")]
     public async Task<IActionResult> RemoveServicesFromPosition(
-    [FromRoute] Guid companyId,
-    [FromRoute] Guid positionId,
-    [FromBody] RemoveServicesFromPositionRequest req,
-    CancellationToken ct)
+        [FromRoute] Guid positionId,
+        [FromBody] RemoveServicesFromPositionRequest req,
+        CancellationToken ct)
     {
         var cmd = new RemoveServicesFromPositionCommand
         {
-            CompanyId = companyId,
             PositionId = positionId,
             ServiceOfferingIds = (req?.ServiceOfferingIds ?? Enumerable.Empty<Guid>()).ToArray()
         };
 
         var result = await _mediator.Send(cmd, ct);
-
         if (result.IsSuccess) return NoContent();
         return result.ToActionResult(this);
     }
 
     [HttpPatch("disable")]
     public async Task<IActionResult> DisablePosition(
-       [FromRoute] Guid companyId,
-       [FromBody] DisablePositionsRequest req,
-       CancellationToken ct)
+        [FromBody] DisablePositionsRequest req,
+        CancellationToken ct)
     {
-        var cmd = req.ToCommand(companyId);
+        var cmd = req.ToCommand();
         var result = await _mediator.Send(cmd, ct);
-
         if (result.IsSuccess) return NoContent();
         return result.ToActionResult(this);
     }
 
     [HttpPatch("activate")]
     public async Task<IActionResult> ActivateMany(
-        [FromRoute] Guid companyId,
         [FromBody] ActivatePositionsRequest req,
         CancellationToken ct)
     {
-        var cmd = req.ToCommand(companyId);
+        var cmd = req.ToCommand();
         var result = await _mediator.Send(cmd, ct);
-
         if (result.IsSuccess) return NoContent();
+        return result.ToActionResult(this);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ListAll(CancellationToken ct)
+    {
+        var query = new ListPositionsQuery();
+        var result = await _mediator.Send(query, ct);
         return result.ToActionResult(this);
     }
 }

@@ -1,7 +1,7 @@
+using BaitaHora.Application.Abstractions.Auth;
 using BaitaHora.Application.Common.Results;
 using BaitaHora.Domain.Common.ValueObjects;
 using BaitaHora.Application.Features.Companies.Guards.Interfaces;
-using BaitaHora.Application.IRepositories.Companies;
 using BaitaHora.Domain.Features.Common.Exceptions;
 
 namespace BaitaHora.Application.Features.Companies.ServiceOffering.Patch;
@@ -9,14 +9,14 @@ namespace BaitaHora.Application.Features.Companies.ServiceOffering.Patch;
 public sealed class PatchServiceOfferingUseCase
 {
     private readonly ICompanyGuards _companyGuards;
-    private readonly ICompanyRepository _companyRepository;
+    private readonly ICurrentCompany _currentCompany;
 
     public PatchServiceOfferingUseCase(
         ICompanyGuards companyGuards,
-        ICompanyRepository companyRepository)
+        ICurrentCompany currentCompany)
     {
         _companyGuards = companyGuards;
-        _companyRepository = companyRepository;
+        _currentCompany = currentCompany;
     }
 
     public async Task<Result<PatchServiceOfferingResponse>> HandleAsync(
@@ -29,9 +29,9 @@ public sealed class PatchServiceOfferingUseCase
         if (!wantsRename && !wantsPriceChange)
             throw new ArgumentException("Nenhum campo para atualizar.", nameof(cmd));
 
-        var companyRes = await _companyGuards.GetWithServiceOfferings(cmd.CompanyId, ct);
+        var companyRes = await _companyGuards.GetWithServiceOfferings(_currentCompany.Id, ct);
         if (companyRes.IsFailure)
-            return Result<PatchServiceOfferingResponse>.FromError(companyRes); 
+            return Result<PatchServiceOfferingResponse>.FromError(companyRes);
 
         var company = companyRes.Value!;
 
@@ -67,12 +67,6 @@ public sealed class PatchServiceOfferingUseCase
                 serviceOffering.ChangePrice(newPrice);
                 changed = true;
             }
-        }
-
-        if (!changed)
-        {
-            var unchanged = new PatchServiceOfferingResponse(serviceOffering.Id, serviceOffering.Name);
-            return Result<PatchServiceOfferingResponse>.Ok(unchanged);
         }
 
         var response = new PatchServiceOfferingResponse(serviceOffering.Id, serviceOffering.Name);

@@ -8,7 +8,6 @@ public sealed class CreateServiceOfferingCommandValidator
     public CreateServiceOfferingCommandValidator()
         : base(
             required: true,
-            companyIdSelector: x => x.CompanyId,
             nameSelector: x => x.ServiceOfferingName,
             amountSelector: x => x.Amount,
             currencySelector: x => x.Currency

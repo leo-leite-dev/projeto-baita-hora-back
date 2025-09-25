@@ -1,9 +1,10 @@
 using System.Reflection;
-using MediatR;
 using BaitaHora.Application.Common.Results;
 using BaitaHora.Application.Features.Companies.Guards.Interfaces;
 using BaitaHora.Application.Ports;
 using BaitaHora.Application.Common.Authorization;
+using BaitaHora.Application.Abstractions.Auth;
+using MediatR;
 
 namespace BaitaHora.Application.Common.Behaviors;
 
@@ -12,11 +13,16 @@ public sealed class AuthorizationBehavior<TRequest, TResponse>
 {
     private readonly ICompanyGuards _companyGuards;
     private readonly IUserIdentityPort _identity;
+    private readonly ICurrentCompany _currentCompany;
 
-    public AuthorizationBehavior(ICompanyGuards companyGuards, IUserIdentityPort identity)
+    public AuthorizationBehavior(
+        ICompanyGuards companyGuards,
+        IUserIdentityPort identity,
+        ICurrentCompany currentCompany)
     {
         _companyGuards = companyGuards;
         _identity = identity;
+        _currentCompany = currentCompany;
     }
 
     public async Task<TResponse> Handle(
@@ -29,16 +35,24 @@ public sealed class AuthorizationBehavior<TRequest, TResponse>
         if (userId == Guid.Empty)
             return Make<TResponse>.Unauthorized("Usuário não autenticado.");
 
-        var companyRes = await _companyGuards.EnsureCompanyExists(req.ResourceId, ct);
+        var companyId =
+            req.ResourceId != Guid.Empty ? req.ResourceId :
+            _currentCompany.HasValue ? _currentCompany.Id :
+            Guid.Empty;
+
+        if (companyId == Guid.Empty)
+            return Make<TResponse>.Unauthorized("CompanyId não encontrado no token.");
+
+        var companyRes = await _companyGuards.EnsureCompanyExists(companyId, ct);
         if (companyRes.IsFailure)
             return Make<TResponse>.NotFound(companyRes.Error ?? "Empresa não encontrada.");
 
-        var memberRes = await _companyGuards.GetActiveMembership(req.ResourceId, userId, ct);
+        var memberRes = await _companyGuards.GetActiveMembership(companyId, userId, ct);
         if (memberRes.IsFailure)
             return Make<TResponse>.Forbidden(memberRes.Error ?? "Usuário não é membro ativo da empresa.");
 
         var permsRes = await _companyGuards.HasPermissions(
-            req.ResourceId, userId, req.RequiredPermissions, ct, requireAll: req.RequireAllPermissions);
+            companyId, userId, req.RequiredPermissions, ct, requireAll: req.RequireAllPermissions);
         if (permsRes.IsFailure)
             return Make<TResponse>.Forbidden(permsRes.Error ?? "Permissão insuficiente.");
 

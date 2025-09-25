@@ -9,10 +9,9 @@ namespace BaitaHora.Application.Features.Companies.Positions.Remove.ServicesFrom
 public sealed record RemoveServicesFromPositionCommand
     : IRequest<Result<RemoveServicesFromPositionResponse>>, IAuthorizableRequest, ITransactionalRequest
 {
-    public Guid CompanyId { get; init; }
     public Guid PositionId { get; init; }
     public IReadOnlyCollection<Guid> ServiceOfferingIds { get; init; } = [];
 
-    public Guid ResourceId => CompanyId;
+    public Guid ResourceId { get; init; }
     public IEnumerable<CompanyPermission> RequiredPermissions => [CompanyPermission.ManageCompany];
 }

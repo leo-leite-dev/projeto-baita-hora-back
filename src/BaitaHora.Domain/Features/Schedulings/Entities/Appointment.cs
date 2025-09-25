@@ -8,6 +8,7 @@ public sealed class Appointment : EntityBase
 {
     public Guid ScheduleId { get; private set; }
     public Guid CustomerId { get; private set; }
+    public Guid CompanyId { get; private set; }
 
     public DateTime StartsAtUtc { get; private set; }
     public TimeSpan Duration { get; private set; }

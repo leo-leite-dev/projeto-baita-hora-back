@@ -10,20 +10,18 @@ namespace BaitaHora.Api.Mappers.Companies;
 public static class PositionsApiMappers
 {
     public static CreatePositionCommand ToCommand(
-        this CreatePositionRequest r, Guid companyId)
+        this CreatePositionRequest r)
         => new CreatePositionCommand
         {
-            CompanyId = companyId,
             PositionName = r.PositionName,
             AccessLevel = r.AccessLevel.ToDomain(),
             ServiceOfferingIds = r.ServiceOfferingIds
         };
 
     public static PatchPositionCommand ToCommand(
-        this PatchPositionRequest r, Guid companyId, Guid positionId)
+        this PatchPositionRequest r, Guid positionId)
         => new PatchPositionCommand
         {
-            CompanyId = companyId,
             PositionId = positionId,
             NewPositionName = r.PositionName,
             NewAccessLevel = r.AccessLevel?.ToDomain(),
@@ -34,19 +32,17 @@ public static class PositionsApiMappers
         };
 
     public static RemoveServicesFromPositionCommand ToCommand(
-        this RemoveServicesFromPositionRequest r, Guid companyId, Guid positionId)
+        this RemoveServicesFromPositionRequest r, Guid positionId)
         => new RemoveServicesFromPositionCommand
         {
-            CompanyId = companyId,
             PositionId = positionId,
             ServiceOfferingIds = (r?.ServiceOfferingIds ?? Enumerable.Empty<Guid>()).ToArray()
         };
 
     public static DisablePositionsCommand ToCommand(
-        this DisablePositionsRequest r, Guid companyId)
+        this DisablePositionsRequest r)
         => new DisablePositionsCommand
         {
-            CompanyId = companyId,
             PositionIds = (r?.PositionIds ?? Enumerable.Empty<Guid>())
                 .Where(id => id != Guid.Empty)
                 .Distinct()
@@ -54,10 +50,9 @@ public static class PositionsApiMappers
         };
 
     public static ActivatePositionsCommand ToCommand(
-        this ActivatePositionsRequest r, Guid companyId)
+        this ActivatePositionsRequest r)
         => new()
         {
-            CompanyId = companyId,
             PositionIds = (r?.PositionIds ?? Enumerable.Empty<Guid>())
                 .Where(id => id != Guid.Empty)
                 .Distinct()

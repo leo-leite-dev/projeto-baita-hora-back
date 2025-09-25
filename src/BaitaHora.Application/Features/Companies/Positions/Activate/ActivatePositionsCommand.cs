@@ -9,9 +9,8 @@ namespace BaitaHora.Application.Features.Companies.Positions.Activate;
 public sealed record ActivatePositionsCommand
     : IRequest<Result<ActivatePositionsResponse>>, IAuthorizableRequest, ITransactionalRequest
 {
-    public Guid CompanyId { get; init; }
     public IReadOnlyCollection<Guid> PositionIds { get; init; } = Array.Empty<Guid>();
 
-    public Guid ResourceId => CompanyId;
+    public Guid ResourceId { get; init; }
     public IEnumerable<CompanyPermission> RequiredPermissions => [CompanyPermission.ManageCompany];
 }

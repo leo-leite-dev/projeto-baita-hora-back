@@ -19,15 +19,15 @@ public sealed class JwtCookieWriter : IJwtCookieWriter
 
         var opts = new CookieOptions
         {
-            Expires  = cookie.ExpiresAtUtc,
+            Expires = cookie.ExpiresAtUtc,
             HttpOnly = cookie.HttpOnly,
-            Secure   = cookie.Secure,
-            Path     = cookie.Path,
+            Secure = cookie.Secure,
+            Path = cookie.Path,
             SameSite = cookie.SameSite switch
             {
                 "Strict" => SameSiteMode.Strict,
-                "None"   => SameSiteMode.None,
-                _        => SameSiteMode.Lax
+                "None" => SameSiteMode.None,
+                _ => SameSiteMode.Lax
             }
         };
 

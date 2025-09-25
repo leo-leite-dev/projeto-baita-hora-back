@@ -9,39 +9,34 @@ namespace BaitaHora.Api.Mappers.Companies;
 public static class ServiceOfferingsApiMappers
 {
     public static CreateServiceOfferingCommand ToCommand(
-        this CreateServiceOfferingRequest r, Guid companyId)
+        this CreateServiceOfferingRequest r)
         => new CreateServiceOfferingCommand
         {
-            CompanyId = companyId,
             ServiceOfferingName = r.ServiceOfferingName,
             Amount = r.Amount,
             Currency = r.Currency,
         };
 
     public static PatchServiceOfferingCommand ToCommand(
-        this PatchServiceOfferingRequest r, Guid companyId, Guid serviceOfferingId)
+        this PatchServiceOfferingRequest r, Guid serviceOfferingId)
         => new PatchServiceOfferingCommand
         {
-            CompanyId = companyId,
             ServiceOfferingId = serviceOfferingId,
             ServiceOfferingName = r.ServiceOfferingName,
             Amount = r.Amount,
             Currency = r.Currency,
         };
 
-    public static RemoveServiceOfferingCommand ToCommand(
-        Guid companyId, Guid serviceOfferingId)
+    public static RemoveServiceOfferingCommand ToCommand(Guid serviceOfferingId)
         => new RemoveServiceOfferingCommand
         {
-            CompanyId = companyId,
             ServiceOfferingId = serviceOfferingId
         };
 
     public static DisableServiceOfferingsCommand ToCommand(
-        this DisableServiceOfferingsRequest r, Guid companyId)
+        this DisableServiceOfferingsRequest r)
         => new DisableServiceOfferingsCommand
         {
-            CompanyId = companyId,
             ServiceOfferingIds = (r?.ServiceOfferingIds ?? Enumerable.Empty<Guid>())
                 .Where(id => id != Guid.Empty)
                 .Distinct()
@@ -49,10 +44,9 @@ public static class ServiceOfferingsApiMappers
         };
 
     public static ActivateServiceOfferingsCommand ToCommand(
-        this ActivateServiceOfferingsRequest r, Guid companyId)
+        this ActivateServiceOfferingsRequest r)
         => new()
         {
-            CompanyId = companyId,
             ServiceOfferingIds = (r?.ServiceOfferingIds ?? Enumerable.Empty<Guid>())
                 .Where(id => id != Guid.Empty)
                 .Distinct()

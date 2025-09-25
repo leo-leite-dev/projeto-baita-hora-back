@@ -11,7 +11,6 @@ public sealed class PatchPositionCommandValidator
                nameSelector: x => x.NewPositionName,
                levelSelector: x => x.NewAccessLevel)
     {
-        RuleFor(x => x.CompanyId).NotEmpty();
         RuleFor(x => x.PositionId).NotEmpty();
 
         RuleFor(x => x)

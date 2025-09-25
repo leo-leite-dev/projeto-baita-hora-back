@@ -13,8 +13,19 @@ public sealed class AppointmentConfiguration : IEntityTypeConfiguration<Appointm
         b.HasKey(x => x.Id);
         b.Property(x => x.Id).ValueGeneratedNever();
 
-        b.Property(x => x.ScheduleId).IsRequired();
-        b.Property(x => x.CustomerId).IsRequired();
+        b.Property(x => x.ScheduleId)
+            .HasColumnName("schedule_id")
+            .IsRequired();
+
+        b.Property(x => x.CustomerId)
+            .HasColumnName("customer_id")
+            .IsRequired();
+
+        b.Property(x => x.CompanyId)
+            .HasColumnName("company_id")
+            .IsRequired();
+
+        b.HasIndex(x => new { x.CompanyId, x.StartsAtUtc });
 
         b.Property(x => x.StartsAtUtc)
             .HasColumnName("starts_at_utc")

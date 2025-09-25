@@ -1,18 +1,18 @@
 using BaitaHora.Application.Features.Schedulings.Appointments.Cancel;
 using BaitaHora.Application.Features.Schedulings.Appointments.Complete;
 using BaitaHora.Application.Features.Schedulings.Appointments.Create;
+using BaitaHora.Application.Features.Schedulings.Appointments.GetAll;
 using BaitaHora.Application.Features.Schedulings.Appointments.Reschedule;
 using BaitaHora.Contracts.DTOs.Schedulings;
+using BaitaHora.Contracts.DTOS.Schedulings;
 
 namespace BaitaHora.Api.Mappers.Schedulings;
 
 public static class AppointmentsApiMappers
 {
-    public static CreateAppointmentCommand ToCommand(
-        this CreateAppointmentRequest r, Guid companyId)
+    public static CreateAppointmentCommand ToCommand(this CreateAppointmentRequest r)
         => new CreateAppointmentCommand
         {
-            CompanyId = companyId,
             MemberId = r.MemberId,
             CustomerId = r.CustomerId,
             StartsAtUtc = r.StartsAtUtc,
@@ -21,11 +21,9 @@ public static class AppointmentsApiMappers
 
     public static RescheduleAppointmentCommand ToCommand(
         this RescheduleAppointmentRequest r,
-        Guid companyId,
         Guid appointmentId)
         => new RescheduleAppointmentCommand
         {
-            CompanyId = companyId,
             MemberId = r.MemberId,
             AppointmentId = appointmentId,
             NewStartsAtUtc = r.NewStartsAtUtc,
@@ -33,20 +31,32 @@ public static class AppointmentsApiMappers
         };
 
     public static CompleteAppointmentCommand ToCommand(
-        this CompleteAppointmentRequest r, Guid companyId, Guid appointmentId)
+        this CompleteAppointmentRequest r,
+        Guid appointmentId)
         => new CompleteAppointmentCommand
         {
-            CompanyId = companyId,
             MemberId = r.MemberId,
             AppointmentId = appointmentId
         };
 
     public static CancelAppointmentCommand ToCommand(
-        this CancelAppointmentRequest r, Guid companyId, Guid appointmentId)
+        this CancelAppointmentRequest r,
+        Guid appointmentId)
         => new CancelAppointmentCommand
         {
-            CompanyId = companyId,
             MemberId = r.MemberId,
             AppointmentId = appointmentId
         };
+
+    public static GetAppointmentsResponse ToResponse(this GetAppointmentsResult r)
+        => new GetAppointmentsResponse(
+            r.Id,
+            r.CustomerName,
+            r.StartsAtUtc,
+            r.EndsAtUtc,
+            r.Status.ToString()
+        );
+
+    public static IReadOnlyList<GetAppointmentsResponse> ToResponse(this IEnumerable<GetAppointmentsResult> items)
+        => items.Select(ToResponse).ToList();
 }

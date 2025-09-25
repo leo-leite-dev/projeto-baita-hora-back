@@ -1,6 +1,6 @@
-namespace BaitaHora.Application.Features.Companies.ServiceOffering.ReadModels;
+namespace BaitaHora.Contracts.DTOs.Companies.ServiceOfferings;
 
-public sealed record ServiceOfferingDetails(
+public sealed record ServiceOfferingResponse(
     Guid Id,
     string Name,
     decimal Price,

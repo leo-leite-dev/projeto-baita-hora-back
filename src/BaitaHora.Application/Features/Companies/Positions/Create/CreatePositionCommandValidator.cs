@@ -11,6 +11,6 @@ public sealed class CreatePositionCommandValidator
                nameSelector: x => x.PositionName,
                levelSelector: x => x.AccessLevel)
     {
-        RuleFor(x => x.CompanyId).NotEmpty();
+        RuleFor(x => x.ResourceId).NotEmpty();
     }
 }

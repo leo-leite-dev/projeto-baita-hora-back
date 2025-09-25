@@ -1,4 +1,4 @@
-using BaitaHora.Application.Features.Companies.ServiceOffering.ReadModels;
+using BaitaHora.Application.Features.Companies.ServiceOffering.Get.ReadModels;
 using BaitaHora.Application.IRepositories.Companies;
 using BaitaHora.Domain.Features.Companies.Entities;
 using BaitaHora.Infrastructure.Data;
@@ -22,7 +22,8 @@ public class CompanyServiceOfferingRepository
                 s.Price.Amount,
                 s.Price.Currency,
                 s.IsActive,
-                s.CreatedAtUtc))
+                s.CreatedAtUtc,
+                s.UpdatedAtUtc))
             .AsNoTracking()
             .SingleOrDefaultAsync(ct);
     }
@@ -46,7 +47,7 @@ public class CompanyServiceOfferingRepository
             .ToListAsync(ct);
     }
 
-    public async Task<IReadOnlyList<ServiceOfferingDetails>> ListAllByCompanyAsync(Guid companyId, CancellationToken ct)
+    public async Task<IReadOnlyList<ServiceOfferingDetails>> ListAllServicesByCompanyAsync(Guid companyId, CancellationToken ct)
     {
         return await _set
             .Where(s => s.CompanyId == companyId)
@@ -57,7 +58,8 @@ public class CompanyServiceOfferingRepository
                 s.Price.Amount,
                 s.Price.Currency,
                 s.IsActive,
-                s.CreatedAtUtc))
+                s.CreatedAtUtc,
+                s.UpdatedAtUtc))
             .AsNoTracking()
             .ToListAsync(ct);
     }

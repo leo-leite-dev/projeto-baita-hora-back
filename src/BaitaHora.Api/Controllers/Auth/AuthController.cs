@@ -64,17 +64,21 @@ public sealed class AuthController : ControllerBase
         if (!result.IsSuccess)
             return result.ToActionResult(this, result.Error);
 
-        var accessToken = result.Value.AccessToken;
+        if (result.Value is not { } auth)
+            return Problem(
+                detail: "Auth result is null on success.",
+                statusCode: StatusCodes.Status500InternalServerError);
 
         var now = DateTime.UtcNow;
-        var ttl = result.Value.ExpiresAtUtc > now
-            ? result.Value.ExpiresAtUtc - now
+
+        var ttl = auth.ExpiresAtUtc > now
+            ? auth.ExpiresAtUtc - now
             : TimeSpan.FromDays(7);
 
-        var cookie = _cookieFactory.CreateLoginCookie(accessToken, ttl);
+        var cookie = _cookieFactory.CreateLoginCookie(auth.AccessToken, ttl);
         _cookieWriter.Write(Response, cookie);
 
-        return Ok(result.Value);
+        return Ok(auth.ToResponse());
     }
 
     [HttpPost("logout")]

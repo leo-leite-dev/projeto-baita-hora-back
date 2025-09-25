@@ -10,7 +10,6 @@ namespace BaitaHora.Application.Features.Companies.Positions.Patch;
 public sealed record PatchPositionCommand
     : IRequest<Result<PatchPositionResponse>>, IAuthorizableRequest, ITransactionalRequest
 {
-    public Guid CompanyId { get; init; }
     public Guid PositionId { get; init; }
 
     public string? NewPositionName { get; init; } = default!;
@@ -18,6 +17,6 @@ public sealed record PatchPositionCommand
 
     public IEnumerable<Guid>? SetServiceOfferingIds { get; init; }
 
-    public Guid ResourceId => CompanyId;
+    public Guid ResourceId { get; init; }
     public IEnumerable<CompanyPermission> RequiredPermissions => [CompanyPermission.ManageCompany];
 }

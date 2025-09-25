@@ -1,7 +1,7 @@
 using System.Text.RegularExpressions;
 using FluentValidation;
 
-namespace BaitaHora.Application.Features.Auth;
+namespace BaitaHora.Application.Features.Auth.Login;
 
 public sealed class AuthenticateValidator : AbstractValidator<AuthenticateCommand>
 {

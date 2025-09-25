@@ -9,9 +9,8 @@ namespace BaitaHora.Application.Features.Companies.ServiceOfferings.Activate;
 public sealed record ActivateServiceOfferingsCommand
     : IRequest<Result<ActivateServiceOfferingsResponse>>, IAuthorizableRequest, ITransactionalRequest
 {
-    public Guid CompanyId { get; init; }
     public IReadOnlyCollection<Guid> ServiceOfferingIds { get; init; } = Array.Empty<Guid>();
 
-    public Guid ResourceId => CompanyId;
+    public Guid ResourceId { get; init; }
     public IEnumerable<CompanyPermission> RequiredPermissions => [CompanyPermission.ManageCompany];
 }

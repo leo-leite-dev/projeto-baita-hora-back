@@ -4,5 +4,5 @@ namespace BaitaHora.Application.IRepositories.Schedulings;
 
 public interface IAppointmentRepository : IGenericRepository<Appointment>
 {
-    Task<IReadOnlyList<Appointment>> GetByScheduleAsync(Guid scheduleId, CancellationToken ct = default);
+    Task<IReadOnlyList<Appointment>> GetByCompanyAndDateAsync(Guid companyId, DateTime date, CancellationToken ct);
 }

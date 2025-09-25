@@ -1,3 +1,4 @@
+using BaitaHora.Application.Abstractions.Auth;
 using BaitaHora.Application.Common.Results;
 using BaitaHora.Application.Features.Companies.Guards.Interfaces;
 
@@ -7,19 +8,22 @@ public sealed class ActivatePositionsUseCase
 {
     private readonly ICompanyGuards _companyGuards;
     private readonly ICompanyPositionGuards _companyPositionGuards;
+    private readonly ICurrentCompany _currentCompany;
 
     public ActivatePositionsUseCase(
         ICompanyGuards companyGuards,
-        ICompanyPositionGuards companyPositionGuards)
+        ICompanyPositionGuards companyPositionGuards,
+        ICurrentCompany currentCompany)
     {
         _companyGuards = companyGuards;
         _companyPositionGuards = companyPositionGuards;
+        _currentCompany = currentCompany;
     }
 
     public async Task<Result<ActivatePositionsResponse>> HandleAsync(
         ActivatePositionsCommand cmd, CancellationToken ct)
     {
-        var companyRes = await _companyGuards.EnsureCompanyExists(cmd.CompanyId, ct);
+        var companyRes = await _companyGuards.EnsureCompanyExists(_currentCompany.Id, ct);
         if (companyRes.IsFailure)
             return Result<ActivatePositionsResponse>.FromError(companyRes);
 

@@ -1,4 +1,4 @@
-using BaitaHora.Application.Features.Companies.ServiceOffering.ReadModels;
+using BaitaHora.Application.Features.Companies.ServiceOffering.Get.ReadModels;
 using BaitaHora.Domain.Features.Companies.Entities;
 
 namespace BaitaHora.Application.IRepositories.Companies
@@ -7,6 +7,6 @@ namespace BaitaHora.Application.IRepositories.Companies
     {
         Task<ServiceOfferingDetails?> GetByIdAsync(Guid companyId, Guid serviceOfferingId, CancellationToken ct);
         Task<IReadOnlyList<ServiceOfferingComboItem>> ListActiveForComboAsync(Guid companyId, string? search, int take, CancellationToken ct);
-        Task<IReadOnlyList<ServiceOfferingDetails>> ListAllByCompanyAsync(Guid companyId, CancellationToken ct);
+        Task<IReadOnlyList<ServiceOfferingDetails>> ListAllServicesByCompanyAsync(Guid companyId, CancellationToken ct);
     }
 }

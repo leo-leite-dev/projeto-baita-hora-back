@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json.Serialization;
 using BaitaHora.Api.Web.Adapters;
 using BaitaHora.Api.Web.Cookies;
 using BaitaHora.Api.Web.Middlewares;
@@ -23,6 +24,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddBotInfrastructure(builder.Configuration);
+builder.Services.AddSecurityInfrastructure(); 
 
 // Infra de Web/DI
 builder.Services.AddHttpContextAccessor();
@@ -73,7 +75,12 @@ builder.Services.AddHttpClient<IInstagramApi, InstagramApi>(http =>
 
 builder.Services.AddAuthorization();
 builder.Services.AddControllers()
-    .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new DateOnlyJsonConverter()));
+    .AddJsonOptions(o =>
+    {
+        o.JsonSerializerOptions.Converters.Add(new DateOnlyJsonConverter());
+        o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
+
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(c =>

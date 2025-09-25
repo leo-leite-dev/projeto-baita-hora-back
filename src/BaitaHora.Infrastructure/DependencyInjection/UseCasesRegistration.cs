@@ -11,7 +11,6 @@ using BaitaHora.Application.Features.Companies.ServiceOffering.Remove;
 using BaitaHora.Application.Features.Companies.Catalog.Create;
 using Microsoft.Extensions.DependencyInjection;
 using BaitaHora.Application.Features.Companies.Positions.Remove.ServicesFromPosition;
-using BaitaHora.Application.Features.Companies.ServiceOffering.Disable;
 using BaitaHora.Application.Features.Companies.Positions.Disable;
 using BaitaHora.Application.Features.Companies.Positions.Activate;
 using BaitaHora.Application.Features.Companies.ServiceOfferings.Activate;
@@ -21,6 +20,9 @@ using BaitaHora.Application.Companies.Features.Members.Promotion;
 using BaitaHora.Application.Features.Schedulings.Appointments.Create;
 using BaitaHora.Application.Features.Customers.Create;
 using BaitaHora.Application.Features.Schedulings.Appointments.Reschedule;
+using BaitaHora.Application.Features.Schedulings.Appointments.GetAll;
+using BaitaHora.Application.Features.Companies.ServiceOfferings.Disable;
+using BaitaHora.Application.Features.Auth.Login;
 
 namespace BaitaHora.Infrastructure.DependencyInjection;
 
@@ -64,6 +66,7 @@ public static class UseCasesRegistration
         //Schedulings
         services.AddScoped<CreateAppointmentUseCase>();
         services.AddScoped<RescheduleAppointmentUseCase>();
+        services.AddScoped<GetAppointmentsUseCase>();
 
         return services;
     }

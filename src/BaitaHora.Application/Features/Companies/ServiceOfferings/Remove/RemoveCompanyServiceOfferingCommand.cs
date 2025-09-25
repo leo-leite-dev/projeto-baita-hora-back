@@ -9,9 +9,8 @@ namespace BaitaHora.Application.Features.Companies.ServiceOffering.Remove;
 public sealed record RemoveServiceOfferingCommand
     : IRequest<Result<RemoveServiceOfferingResponse>>, IAuthorizableRequest, ITransactionalRequest
 {
-    public Guid CompanyId { get; init; }
     public Guid ServiceOfferingId { get; init; }
 
-    public Guid ResourceId => CompanyId;
+    public Guid ResourceId { get; init; }
     public IEnumerable<CompanyPermission> RequiredPermissions => [CompanyPermission.RemoveServiceOfferings];
 }

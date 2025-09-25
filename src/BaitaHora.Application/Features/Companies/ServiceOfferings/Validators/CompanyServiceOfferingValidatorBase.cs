@@ -10,7 +10,6 @@ namespace BaitaHora.Application.Features.Companies.ServiceOffering.Validators
 
         protected ServiceOfferingValidatorBase(
             bool required,
-            Func<T, Guid?> companyIdSelector,
             Func<T, string?> nameSelector,
             Func<T, decimal?> amountSelector,
             Func<T, string?> currencySelector,
@@ -20,11 +19,6 @@ namespace BaitaHora.Application.Features.Companies.ServiceOffering.Validators
         {
             ClassLevelCascadeMode = CascadeMode.Stop;
             RuleLevelCascadeMode = CascadeMode.Stop;
-
-            RuleFor(x => companyIdSelector(x))
-                .NotNull().WithMessage("CompanyId é obrigatório.")
-                .Must(id => id.HasValue && id.Value != Guid.Empty)
-                .WithMessage("CompanyId inválido.");
 
             if (serviceOfferingIdSelector is not null)
             {

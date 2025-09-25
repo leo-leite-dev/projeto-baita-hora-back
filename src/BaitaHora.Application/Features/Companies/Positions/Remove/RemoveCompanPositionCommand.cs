@@ -12,6 +12,6 @@ public sealed record RemovePositionCommand
     public Guid CompanyId { get; init; }
     public Guid PositionId { get; init; }
 
-    public Guid ResourceId => CompanyId;
+    public Guid ResourceId { get; init; }
     public IEnumerable<CompanyPermission> RequiredPermissions => [CompanyPermission.RemovePositions];
 }

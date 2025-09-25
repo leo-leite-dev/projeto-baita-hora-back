@@ -10,9 +10,9 @@ namespace BaitaHora.Application.Features.Companies.ServiceOfferings.Disable;
 public sealed record DisableServiceOfferingsCommand
     : IRequest<Result<DisableServiceOfferingsResponse>>, IAuthorizableRequest, ITransactionalRequest
 {
-    public Guid CompanyId { get; init; }
     public IReadOnlyCollection<Guid> ServiceOfferingIds { get; init; } = Array.Empty<Guid>();
 
-    public Guid ResourceId => CompanyId;
+    public Guid ResourceId { get; init; }
+
     public IEnumerable<CompanyPermission> RequiredPermissions => [CompanyPermission.DisableServiceOfferings];
 }

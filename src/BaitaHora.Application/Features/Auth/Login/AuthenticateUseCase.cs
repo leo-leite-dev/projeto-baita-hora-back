@@ -4,66 +4,72 @@ using BaitaHora.Domain.Features.Common.ValueObjects;
 using BaitaHora.Domain.Features.Users.Entities;
 using BaitaHora.Application.IRepositories.Users;
 using BaitaHora.Application.IRepositories.Companies;
+using BaitaHora.Domain.Features.Companies.Enums;
 
-namespace BaitaHora.Application.Features.Auth;
+namespace BaitaHora.Application.Features.Auth.Login;
 
 public sealed class AuthenticateUseCase
 {
     private readonly IUserRepository _userRepository;
+    private readonly ICompanyRepository _companyRepository;
     private readonly ICompanyMemberRepository _companyMemberRepository;
     private readonly IPasswordService _passwordService;
     private readonly ITokenService _tokenService;
 
     public AuthenticateUseCase(
         IUserRepository userRepository,
+        ICompanyRepository companyRepository,
         ICompanyMemberRepository companyMemberRepository,
         IPasswordService passwordService,
         ITokenService tokenService)
     {
         _userRepository = userRepository;
+        _companyRepository = companyRepository;
         _companyMemberRepository = companyMemberRepository;
         _passwordService = passwordService;
         _tokenService = tokenService;
     }
 
-    public async Task<Result<AuthTokenResponse>> HandleAsync(AuthenticateCommand cmd, CancellationToken ct)
+    public async Task<Result<AuthResult>> HandleAsync(AuthenticateCommand cmd, CancellationToken ct)
     {
         var user = await FindUserByIdentifyAsync(cmd.Identify, ct);
         if (user is null || !_passwordService.Verify(cmd.RawPassword, user.PasswordHash))
-            return Result<AuthTokenResponse>.Unauthorized("Credenciais inválidas.");
+            return Result<AuthResult>.Unauthorized("Credenciais inválidas.");
 
         if (!user.IsActive)
-            return Result<AuthTokenResponse>.Forbidden("Conta desativada.");
+            return Result<AuthResult>.Forbidden("Conta desativada.");
 
         var memberships = await _companyMemberRepository.GetByUserIdAsync(user.Id, ct);
         var active = memberships.Where(m => m.IsActive).ToList();
 
         if (active.Count == 0)
-            return Result<AuthTokenResponse>.Forbidden("Usuário não possui empresas ativas.");
+            return Result<AuthResult>.Forbidden("Usuário não possui empresas ativas.");
 
-        if (active.Count == 1)
-        {
-            var m = active[0];
+        var company = active.First();
 
-            var token = await _tokenService.IssueTokensAsync(
-                user.Id,
-                user.Username.Value,
-                [m.Role.ToString()],
-                new Dictionary<string, string> { { "companyId", m.CompanyId.ToString() } }
+        var companyEntity = await _companyRepository.GetByIdAsync(company.CompanyId, ct);
 
-            );
+        var token = await _tokenService.IssueTokensAsync(
+            user.Id,
+            user.Username,
+            [company.Role.ToString()], 
+            new Dictionary<string, string> { ["companyId"] = company.CompanyId.ToString() }
+        );
 
-            return Result<AuthTokenResponse>.Ok(token);
-        }
+        var result = new AuthResult(
+            token.AccessToken,
+            token.RefreshToken,
+            token.ExpiresAtUtc,
+            user.Id,
+            user.Username,
+            new List<CompanyRole> { company.Role },
+            new List<AuthCompanySummary>
+            {
+            new(company.CompanyId, companyEntity?.Name ?? string.Empty)
+            }
+        );
 
-        var companies = active
-            .Select(m => new { m.CompanyId, Role = m.Role.ToString() })
-            .ToList();
-
-        return Result<AuthTokenResponse>
-            .Ok(value: default!, title: "Selecione a empresa.")
-            .WithMeta("requiresCompanySelection", true)
-            .WithMeta("companies", companies);
+        return Result<AuthResult>.Ok(result);
     }
 
     private async Task<User?> FindUserByIdentifyAsync(string identify, CancellationToken ct)

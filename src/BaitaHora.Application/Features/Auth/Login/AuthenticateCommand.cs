@@ -1,9 +1,9 @@
 using BaitaHora.Application.Common.Results;
 using MediatR;
 
-namespace BaitaHora.Application.Features.Auth;
+namespace BaitaHora.Application.Features.Auth.Login;
 
-public sealed record AuthenticateCommand : IRequest<Result<AuthTokenResponse>>
+public sealed record AuthenticateCommand : IRequest<Result<AuthResult>>
 {
     public required string Identify { get; init; } 
     public required string RawPassword { get; init; }

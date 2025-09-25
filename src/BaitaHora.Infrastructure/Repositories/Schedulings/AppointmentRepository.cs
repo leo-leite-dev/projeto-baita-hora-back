@@ -9,9 +9,13 @@ public sealed class AppointmentRepository : GenericRepository<Appointment>, IApp
 {
     public AppointmentRepository(AppDbContext context) : base(context) { }
 
-    public async Task<IReadOnlyList<Appointment>> GetByScheduleAsync(Guid scheduleId, CancellationToken ct = default)
-        => await _set.AsNoTracking()
-                     .Where(a => a.ScheduleId == scheduleId)
-                     .OrderBy(a => a.StartsAtUtc)
-                     .ToListAsync(ct);
+
+    public Task<IReadOnlyList<Appointment>> GetByCompanyAndDateAsync(Guid companyId, DateTime date, CancellationToken ct = default)
+        => _set.AsNoTracking()
+               .Where(a => a.CompanyId == companyId
+                        && a.StartsAtUtc.Date == date.Date
+                        && a.IsActive)
+               .OrderBy(a => a.StartsAtUtc)
+               .ToListAsync(ct)
+               .ContinueWith<IReadOnlyList<Appointment>>(t => t.Result, ct);
 }

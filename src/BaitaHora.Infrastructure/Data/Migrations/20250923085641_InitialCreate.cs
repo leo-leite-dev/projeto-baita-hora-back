@@ -213,8 +213,9 @@ namespace BaitaHora.Infrastructure.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    ScheduleId = table.Column<Guid>(type: "uuid", nullable: false),
-                    CustomerId = table.Column<Guid>(type: "uuid", nullable: false),
+                    schedule_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    customer_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    company_id = table.Column<Guid>(type: "uuid", nullable: false),
                     starts_at_utc = table.Column<DateTime>(type: "timestamptz", nullable: false),
                     duration = table.Column<TimeSpan>(type: "interval", nullable: false),
                     status = table.Column<string>(type: "varchar(20)", nullable: false, defaultValue: "Pending"),
@@ -228,8 +229,8 @@ namespace BaitaHora.Infrastructure.Data.Migrations
                     table.CheckConstraint("ck_appointments_duration_positive", "duration > interval '0 seconds'");
                     table.CheckConstraint("ck_appointments_status_valid", "status in ('Pending','Cancelled','Completed')");
                     table.ForeignKey(
-                        name: "FK_appointments_schedules_ScheduleId",
-                        column: x => x.ScheduleId,
+                        name: "FK_appointments_schedules_schedule_id",
+                        column: x => x.schedule_id,
                         principalTable: "schedules",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -319,14 +320,19 @@ namespace BaitaHora.Infrastructure.Data.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_appointments_company_id_starts_at_utc",
+                table: "appointments",
+                columns: new[] { "company_id", "starts_at_utc" });
+
+            migrationBuilder.CreateIndex(
                 name: "ix_appointments_schedule",
                 table: "appointments",
-                column: "ScheduleId");
+                column: "schedule_id");
 
             migrationBuilder.CreateIndex(
                 name: "ux_appointments_schedule_start",
                 table: "appointments",
-                columns: new[] { "ScheduleId", "starts_at_utc" },
+                columns: new[] { "schedule_id", "starts_at_utc" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
