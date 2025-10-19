@@ -40,7 +40,8 @@ public class GenericRepository<T> : IGenericRepository<T> where T : EntityBase
 
     public Task UpdateAsync(T entity, CancellationToken ct = default)
     {
-        if (entity is null) throw new ArgumentNullException(nameof(entity));
+        if (entity is null)
+         throw new ArgumentNullException(nameof(entity));
 
         entity.Touch();
 

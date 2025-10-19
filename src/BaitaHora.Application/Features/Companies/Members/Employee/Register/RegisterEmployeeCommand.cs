@@ -8,13 +8,13 @@ using MediatR;
 
 namespace BaitaHora.Application.Features.Companies.Members.Employee.Register;
 
-public sealed record RegisterEmployeeCommand
+public sealed record RegisterMemberCommand
     : IRequest<Result<RegisterEmployeeResponse>>, IAuthorizableRequest, ITransactionalRequest
 {
-    public required Guid CompanyId { get; init; }
     public required Guid PositionId { get; init; }
     public required CreateUserCommand Employee { get; init; }
 
-    public Guid ResourceId => CompanyId;
+    public Guid ResourceId { get; init; }
+
     public IEnumerable<CompanyPermission> RequiredPermissions => [CompanyPermission.ManageMember];
 }

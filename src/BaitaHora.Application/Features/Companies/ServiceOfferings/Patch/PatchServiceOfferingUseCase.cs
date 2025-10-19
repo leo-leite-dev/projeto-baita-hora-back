@@ -19,7 +19,7 @@ public sealed class PatchServiceOfferingUseCase
         _currentCompany = currentCompany;
     }
 
-    public async Task<Result<PatchServiceOfferingResponse>> HandleAsync(
+    public async Task<Result> HandleAsync(
         PatchServiceOfferingCommand cmd, CancellationToken ct)
     {
         var wantsRename = !string.IsNullOrWhiteSpace(cmd.ServiceOfferingName);
@@ -27,32 +27,27 @@ public sealed class PatchServiceOfferingUseCase
                                || !string.IsNullOrWhiteSpace(cmd.Currency);
 
         if (!wantsRename && !wantsPriceChange)
-            throw new ArgumentException("Nenhum campo para atualizar.", nameof(cmd));
+            return Result.BadRequest("Nenhum campo para atualizar.");
 
         var companyRes = await _companyGuards.GetWithServiceOfferings(_currentCompany.Id, ct);
         if (companyRes.IsFailure)
-            return Result<PatchServiceOfferingResponse>.FromError(companyRes);
+            return Result.FromError(companyRes);
 
         var company = companyRes.Value!;
 
         var serviceOffering = company.ServiceOfferings.FirstOrDefault(s => s.Id == cmd.ServiceOfferingId);
         if (serviceOffering is null)
-            throw new KeyNotFoundException("Serviço não encontrado.");
-
-        var changed = false;
+            return Result.NotFound("Serviço não encontrado.");
 
         if (wantsRename)
-        {
             company.RenameServiceOffering(cmd.ServiceOfferingId, cmd.ServiceOfferingName!);
-            changed = true;
-        }
 
         if (wantsPriceChange)
         {
             var current = serviceOffering.Price;
 
             if (!cmd.Amount.HasValue && !string.IsNullOrWhiteSpace(cmd.Currency))
-                throw new ArgumentException("Para trocar a moeda, informe também o amount.", nameof(cmd));
+                return Result.BadRequest("Para trocar a moeda, informe também o amount.");
 
             var newAmount = cmd.Amount ?? current.Amount;
             var newCurrency = string.IsNullOrWhiteSpace(cmd.Currency) ? current.Currency : cmd.Currency!;
@@ -63,13 +58,9 @@ public sealed class PatchServiceOfferingUseCase
             var newPrice = Money.RequirePositive(newAmount, newCurrency);
 
             if (!newPrice.Equals(current))
-            {
                 serviceOffering.ChangePrice(newPrice);
-                changed = true;
-            }
         }
 
-        var response = new PatchServiceOfferingResponse(serviceOffering.Id, serviceOffering.Name);
-        return Result<PatchServiceOfferingResponse>.Ok(response);
+        return Result.NoContent();
     }
 }

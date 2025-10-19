@@ -20,21 +20,19 @@ public sealed class ActivateServiceOfferingsUseCase
         _currentCompany = currentCompany;
     }
 
-    public async Task<Result<ActivateServiceOfferingsResponse>> HandleAsync(
-        ActivateServiceOfferingsCommand cmd, CancellationToken ct)
+    public async Task<Result> HandleAsync(ActivateServiceOfferingsCommand cmd, CancellationToken ct)
     {
         var companyRes = await _companyGuards.EnsureCompanyExists(_currentCompany.Id, ct);
         if (companyRes.IsFailure)
-            return Result<ActivateServiceOfferingsResponse>.FromError(companyRes);
+            return Result.FromError(companyRes);
 
-        var posGuardRes = await _serviceOfferingGuards.ValidateServiceOfferingsForActivation(cmd.ServiceOfferingIds, ct);
-        if (posGuardRes.IsFailure)
-            return Result<ActivateServiceOfferingsResponse>.FromError(posGuardRes);
+        var valRes = await _serviceOfferingGuards.ValidateServiceOfferingsForActivation(cmd.ServiceOfferingIds, ct);
+        if (valRes.IsFailure)
+            return Result.FromError(valRes);
 
-        foreach (var position in posGuardRes.Value!)
-            position.Activate();
+        foreach (var service in valRes.Value!)
+            service.Activate();
 
-        var activatedIds = posGuardRes.Value!.Select(p => p.Id).ToArray();
-        return Result<ActivateServiceOfferingsResponse>.Ok(new(activatedIds));
+        return Result.NoContent();
     }
 }

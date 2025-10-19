@@ -67,6 +67,9 @@ namespace BaitaHora.Application.Common.Results
 
         public static Result From(Result other)
             => new(other.IsSuccess, other.Code, other.Title, other.Error, new Dictionary<string, object?>(other.Metadata));
+
+        public static Result FromError(Result src)
+         => new(src.IsSuccess, src.Code, src.Title, src.Error, new Dictionary<string, object?>(src.Metadata));
     }
 
     public sealed class Result<T> : Result

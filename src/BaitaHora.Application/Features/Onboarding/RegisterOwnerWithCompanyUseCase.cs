@@ -34,13 +34,13 @@ public sealed class RegisterOwnerWithCompanyUseCase
             owner.FullName,
             owner.Cpf,
             owner.Rg,
-            owner.UserPhone,
+            owner.Phone,
             owner.BirthDate,
             owner.Address
         );
 
         var user = User.Create(
-            owner.UserEmail,
+            owner.Email,
             owner.Username,
             owner.RawPassword,
             profile,

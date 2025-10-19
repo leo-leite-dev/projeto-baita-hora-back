@@ -7,5 +7,4 @@ namespace BaitaHora.Infrastructure.Repositories.Users;
 public sealed class UserProfileRepository : GenericRepository<User>, IUserProfileRepository
 {
     public UserProfileRepository(AppDbContext context) : base(context) { }
-
 }

@@ -17,12 +17,12 @@ public sealed class CreatePositionUseCase
         _currentCompany = currentCompany;
     }
 
-    public async Task<Result<CreatePositionResponse>> HandleAsync(
+    public async Task<Result> HandleAsync(
         CreatePositionCommand cmd, CancellationToken ct)
     {
         var companyRes = await _companyGuards.GetWithPositionsAndServiceOfferings(_currentCompany.Id, ct);
         if (companyRes.IsFailure)
-            return Result<CreatePositionResponse>.FromError(companyRes);
+            return Result.FromError(companyRes);
 
         var company = companyRes.Value!;
 
@@ -32,13 +32,6 @@ public sealed class CreatePositionUseCase
             serviceOfferingIds: cmd.ServiceOfferingIds
         );
 
-        var response = new CreatePositionResponse(
-            position.Id,
-            company.Id,
-            position.Name,
-            position.AccessLevel.ToString()
-        );
-
-        return Result<CreatePositionResponse>.Created(response);
+        return Result.Created();
     }
 }

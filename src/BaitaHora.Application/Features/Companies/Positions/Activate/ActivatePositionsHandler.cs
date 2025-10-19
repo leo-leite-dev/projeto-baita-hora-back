@@ -4,14 +4,14 @@ using MediatR;
 namespace BaitaHora.Application.Features.Companies.Positions.Activate;
 
 public sealed class ActivatePositionsHandler
-    : IRequestHandler<ActivatePositionsCommand, Result<ActivatePositionsResponse>>
+    : IRequestHandler<ActivatePositionsCommand, Result>
 {
     private readonly ActivatePositionsUseCase _useCase;
 
     public ActivatePositionsHandler(ActivatePositionsUseCase useCase)
         => _useCase = useCase;
 
-    public Task<Result<ActivatePositionsResponse>> Handle(
+    public Task<Result> Handle(
         ActivatePositionsCommand request, CancellationToken ct)
         => _useCase.HandleAsync(request, ct);
 }

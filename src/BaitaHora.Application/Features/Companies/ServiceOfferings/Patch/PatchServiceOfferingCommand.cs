@@ -5,8 +5,7 @@ using MediatR;
 
 namespace BaitaHora.Application.Features.Companies.ServiceOffering.Patch;
 
-public sealed record PatchServiceOfferingCommand
-    : IRequest<Result<PatchServiceOfferingResponse>>, ITransactionalRequest
+public sealed record PatchServiceOfferingCommand : IRequest<Result>, ITransactionalRequest
 {
     public Guid ServiceOfferingId { get; init; }
 

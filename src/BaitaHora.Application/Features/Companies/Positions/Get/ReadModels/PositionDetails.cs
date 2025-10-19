@@ -1,14 +1,15 @@
-using BaitaHora.Domain.Features.Companies.Enums;
+namespace BaitaHora.Application.Companies.Features.Positions.Models;
 
-namespace BaitaHora.Application.Features.Companies.Positions.Get.ReadModels;
+public sealed record PositionDetails : PositionDetailsBase
+{
+    public bool IsActive { get; init; }
+    public DateTimeOffset CreatedAtUtc { get; init; }
+    public DateTimeOffset? UpdatedAtUtc { get; init; }
+    public IReadOnlyList<ServiceDto> ServiceOfferings { get; init; } = Array.Empty<ServiceDto>();
+}
 
-public sealed record PositionDetails(
-    Guid Id,
-    string Name,
-    CompanyRole AccessLevel,
-    bool IsActive,
-    DateTimeOffset CreatedAtUtc,
-    DateTimeOffset? UpdateAtUtc,
-    IReadOnlyList<ServiceDto> ServiceOfferings);
-
-public sealed record ServiceDto(Guid Id, string Name);
+public sealed record ServiceDto
+{
+    public Guid Id { get; init; }
+    public string Name { get; init; } = default!;
+}

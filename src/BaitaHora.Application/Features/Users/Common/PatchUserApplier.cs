@@ -10,7 +10,7 @@ public static class PatchUserApplier
     public static void Apply(User user, PatchUserCommand cmd)
     {
         if (!string.IsNullOrWhiteSpace(cmd.NewUserEmail))
-            user.ChangEmail(Email.Parse(cmd.NewUserEmail));
+            user.ChangeEmail(Email.Parse(cmd.NewUserEmail));
 
         if (!string.IsNullOrWhiteSpace(cmd.NewUsername))
             user.RenameUserName(Username.Parse(cmd.NewUsername));

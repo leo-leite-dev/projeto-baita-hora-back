@@ -9,7 +9,7 @@ public sealed class CreateUserCommandValidator : AbstractValidator<CreateUserCom
 {
     public CreateUserCommandValidator()
     {
-        RuleFor(x => x.UserEmail)
+        RuleFor(x => x.Email)
             .Cascade(CascadeMode.Stop)
             .NotEmpty().WithMessage("O e-mail é obrigatório.")
             .EmailAddress(FluentValidation.Validators.EmailValidationMode.AspNetCoreCompatible)

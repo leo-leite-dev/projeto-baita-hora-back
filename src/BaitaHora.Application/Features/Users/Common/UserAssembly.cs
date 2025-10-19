@@ -7,23 +7,23 @@ namespace BaitaHora.Application.Features.Users.Common;
 public static class UserAssembler
 {
     public readonly record struct OwnerVO(
-        Email UserEmail,
+        Email Email,
         Username Username,
         string RawPassword,
         string FullName,
         CPF Cpf,
         RG? Rg,
-        Phone UserPhone,
+        Phone Phone,
         DateOfBirth? BirthDate,
         Address Address
     );
 
     public static OwnerVO BuildOwnerVO(CreateUserCommand u)
     {
-        var email = Email.Parse(u.UserEmail);
+        var email = Email.Parse(u.Email);
         var username = Username.Parse(u.Username);
         var cpf = CPF.Parse(u.Profile.Cpf);
-        var phone = Phone.Parse(u.Profile.UserPhone);
+        var phone = Phone.Parse(u.Profile.Phone);
         RG? rg = string.IsNullOrWhiteSpace(u.Profile.Rg) ? default : RG.Parse(u.Profile.Rg);
 
         var addr = Address.Parse(
@@ -41,13 +41,13 @@ public static class UserAssembler
             : (DateOfBirth?)null;
 
         return new OwnerVO(
-            UserEmail: email,
+            Email: email,
             Username: username,
             RawPassword: u.RawPassword,
             FullName: u.Profile.FullName,
             Cpf: cpf,
             Rg: rg,
-            UserPhone: phone,
+            Phone: phone,
             BirthDate: dob,
             Address: addr
         );

@@ -45,7 +45,7 @@ public sealed class UserProfileConfiguration : IEntityTypeConfiguration<UserProf
             .HasMaxLength(20)
             .HasColumnName("rg");
 
-        builder.Property(p => p.UserPhone)
+        builder.Property(p => p.Phone)
             .HasConversion(phoneConverter)
             .HasMaxLength(16)
             .IsRequired();
@@ -78,7 +78,7 @@ public sealed class UserProfileConfiguration : IEntityTypeConfiguration<UserProf
             .IsUnique()
             .HasFilter("\"rg\" IS NOT NULL");
 
-        builder.HasIndex(p => p.UserPhone)
+        builder.HasIndex(p => p.Phone)
             .HasDatabaseName("ux_user_profiles_phone")
             .IsUnique();
     }

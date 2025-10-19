@@ -9,7 +9,7 @@ namespace BaitaHora.Domain.Features.Users.Entities;
 public sealed class User : EntityBase
 {
     public Username Username { get; private set; }
-    public Email UserEmail { get; private set; }
+    public Email Email { get; private set; }
     public string PasswordHash { get; private set; } = string.Empty;
 
     public string? PasswordResetToken { get; private set; }
@@ -22,13 +22,13 @@ public sealed class User : EntityBase
 
     private User() { }
 
-    public static User Create(Email userEmail, Username username, string rawPassword, UserProfile profile, Func<string, string> hashFunction)
+    public static User Create(Email Email, Username username, string rawPassword, UserProfile profile, Func<string, string> hashFunction)
     {
         if (profile is null) throw new UserException("Perfil do usuário é obrigatório.");
 
         var user = new User()
         {
-            UserEmail = userEmail,
+            Email = Email,
             Username = username,
             PasswordHash = rawPassword,
             Profile = profile,
@@ -41,11 +41,12 @@ public sealed class User : EntityBase
         return user;
     }
 
-    public bool ChangEmail(Email newEmail)
+    public bool ChangeEmail(Email newEmail)
     {
-        if (UserEmail.Equals(newEmail))
+        if (Email.Equals(newEmail))
             return false;
 
+        Email = newEmail; 
         Touch();
         IncrementTokenVersion();
         return true;

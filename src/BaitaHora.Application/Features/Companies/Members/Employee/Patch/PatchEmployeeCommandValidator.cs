@@ -7,22 +7,21 @@ namespace BaitaHora.Application.Features.Companies.Members.Employee.Patch
     {
         public PatchEmployeeCommandValidator()
         {
-            RuleFor(x => x.CompanyId).NotEmpty();
-            RuleFor(x => x.EmployeeId).NotEmpty();
+            RuleFor(x => x.MemberId).NotEmpty();
 
-            When(x => x.NewEmployee is not null, () =>
+            When(x => x.NewMember is not null, () =>
             {
-                RuleFor(x => x.NewEmployee!)
+                RuleFor(x => x.NewMember!)
                     .SetValidator(new PatchUserCommandValidator());
             });
 
             RuleFor(x => x)
                 .Must(cmd =>
-                    cmd.NewEmployee is not null &&
+                    cmd.NewMember is not null &&
                     (
-                        cmd.NewEmployee.NewUserEmail is not null ||
-                        cmd.NewEmployee.NewUsername is not null ||
-                        cmd.NewEmployee.NewProfile is not null
+                        cmd.NewMember.NewUserEmail is not null ||
+                        cmd.NewMember.NewUsername is not null ||
+                        cmd.NewMember.NewProfile is not null
                     )
                 )
                 .WithMessage("Informe ao menos um campo para atualização.");

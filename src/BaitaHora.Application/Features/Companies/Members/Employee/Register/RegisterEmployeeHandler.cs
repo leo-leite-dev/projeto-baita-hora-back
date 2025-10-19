@@ -5,7 +5,7 @@ using MediatR;
 namespace BaitaHora.Application.Features.Companies.Members.Employee.Register;
 
 public sealed class RegisterEmployeeHandler
-    : IRequestHandler<RegisterEmployeeCommand, Result<RegisterEmployeeResponse>>
+    : IRequestHandler<RegisterMemberCommand, Result<RegisterEmployeeResponse>>
 {
     private readonly RegisterEmployeeUseCase _useCase;
 
@@ -13,6 +13,6 @@ public sealed class RegisterEmployeeHandler
         => _useCase = useCase;
 
     public Task<Result<RegisterEmployeeResponse>> Handle(
-        RegisterEmployeeCommand request, CancellationToken ct)
+        RegisterMemberCommand request, CancellationToken ct)
         => _useCase.HandleAsync(request, ct);
 }

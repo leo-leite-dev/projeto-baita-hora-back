@@ -28,6 +28,7 @@ public sealed class CompanyGuards : ICompanyGuards
     {
         if (companyId == Guid.Empty)
             return Result<Company>.BadRequest("CompanyId inválido.");
+            
 
         var company = await _companyRepository.GetByIdAsync(companyId, ct);
         return company is null
@@ -68,10 +69,24 @@ public sealed class CompanyGuards : ICompanyGuards
             : Result<Company>.Ok(company);
     }
 
+    public async Task<Result<Company>> GetWithPositionsMembersAndServiceOfferings(Guid companyId, CancellationToken ct)
+    {
+        if (companyId == Guid.Empty)
+            return Result<Company>.BadRequest("CompanyId inválido.");
+
+        var company = await _companyRepository
+            .GetWithPositionsMembersAndServiceOfferingsAsync(companyId, ct);
+
+        return company is null
+            ? Result<Company>.NotFound("Empresa não encontrada.")
+            : Result<Company>.Ok(company);
+    }
+
     public async Task<Result<CompanyMember>> GetActiveMembership(Guid companyId, Guid userId, CancellationToken ct)
     {
         if (companyId == Guid.Empty)
             return Result<CompanyMember>.BadRequest("CompanyId inválido.");
+            
         if (userId == Guid.Empty)
             return Result<CompanyMember>.BadRequest("UserId inválido.");
 

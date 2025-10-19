@@ -1,5 +1,5 @@
 using BaitaHora.Application.Common.Results;
-using BaitaHora.Application.Features.Companies.Positions.Get.ReadModels;
+using BaitaHora.Application.Companies.Features.Positions.Models;
 using MediatR;
 
 namespace BaitaHora.Application.Features.Companies.ListPositions.Get.List;

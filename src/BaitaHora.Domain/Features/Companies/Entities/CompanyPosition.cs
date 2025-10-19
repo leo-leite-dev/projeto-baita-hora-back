@@ -83,6 +83,8 @@ public sealed class CompanyPosition : Entity
             return false;
 
         Name = normalized;
+
+        Touch();
         return true;
     }
 
@@ -96,6 +98,7 @@ public sealed class CompanyPosition : Entity
             throw new CompanyException("Nível Owner só é permitido para a posição de sistema do fundador.");
 
         AccessLevel = newLevel;
+        Touch();
     }
 
     internal void ReplaceServiceOfferings(IEnumerable<CompanyServiceOffering> services)
@@ -105,6 +108,8 @@ public sealed class CompanyPosition : Entity
 
         _serviceOfferings.Clear();
         AddServiceOfferings(services);
+
+        Touch();
     }
 
     internal void RemoveServiceOfferings(IReadOnlyCollection<Guid> serviceOfferingIds)
@@ -126,6 +131,7 @@ public sealed class CompanyPosition : Entity
 
         var toRemoveSet = toRemove.ToHashSet();
         _serviceOfferings.RemoveAll(s => toRemoveSet.Contains(s.Id));
+        Touch();
     }
 
     public void SetPermissionMask(CompanyPermission newMask)

@@ -15,23 +15,26 @@ public sealed class RegisterEmployeeUseCase
     private readonly ICompanyGuards _companyGuards;
     private readonly IUserRepository _userRepository;
     private readonly ICompanyMemberRepository _memberRepository;
+    private readonly ICurrentCompany _currentCompany; 
 
     public RegisterEmployeeUseCase(
         IPasswordService passwordService,
         ICompanyGuards companyGuards,
         IUserRepository userRepository,
-        ICompanyMemberRepository memberRepository)
+        ICompanyMemberRepository memberRepository,
+        ICurrentCompany currentCompany)             
     {
         _passwordService = passwordService;
         _companyGuards = companyGuards;
         _userRepository = userRepository;
         _memberRepository = memberRepository;
+        _currentCompany = currentCompany;           
     }
 
     public async Task<Result<RegisterEmployeeResponse>> HandleAsync(
-        RegisterEmployeeCommand request, CancellationToken ct)
+        RegisterMemberCommand request, CancellationToken ct)
     {
-        var companyRes = await _companyGuards.GetWithPositionsAndServiceOfferings(request.CompanyId, ct);
+        var companyRes = await _companyGuards.GetWithPositionsAndServiceOfferings(_currentCompany.Id, ct);
         if (!companyRes.IsSuccess)
             return companyRes.MapError<RegisterEmployeeResponse>();
 
@@ -41,18 +44,18 @@ public sealed class RegisterEmployeeUseCase
         if (position is null)
             return Result<RegisterEmployeeResponse>.BadRequest("Cargo inválido para esta empresa.");
 
-        var employee = UserAssembler.BuildOwnerVO(request.Employee);
+        var employee = UserAssembler.BuildOwnerVO(request.Employee); 
 
         var profile = UserProfile.Create(
-             employee.FullName,
-             employee.Cpf,
-             employee.Rg,
-             employee.UserPhone,
-             employee.BirthDate,
-             employee.Address);
+            employee.FullName,
+            employee.Cpf,
+            employee.Rg,
+            employee.Phone,
+            employee.BirthDate,
+            employee.Address);
 
         var user = User.Create(
-            employee.UserEmail,
+            employee.Email,
             employee.Username,
             employee.RawPassword,
             profile,
@@ -64,7 +67,7 @@ public sealed class RegisterEmployeeUseCase
             user.Id,
             employee.FullName,
             user.Username.Value,
-            user.UserEmail.Value,
+            user.Email.Value,
             position.Id,
             position.Name);
 

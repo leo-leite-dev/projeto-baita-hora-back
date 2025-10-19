@@ -15,42 +15,33 @@ public sealed class PatchPositionUseCase
         _currentCompany = currentCompany;
     }
 
-    public async Task<Result<PatchPositionResponse>> HandleAsync(
-        PatchPositionCommand cmd, CancellationToken ct)
+    public async Task<Result> HandleAsync(PatchPositionCommand cmd, CancellationToken ct)
     {
-        var wantsRename = !string.IsNullOrWhiteSpace(cmd.NewPositionName);
-        var wantsAccessChange = cmd.NewAccessLevel.HasValue;
+        var wantsRename = !string.IsNullOrWhiteSpace(cmd.PositionName);
+        var wantsAccessChange = cmd.AccessLevel.HasValue;
         var wantsServicesSet = cmd.SetServiceOfferingIds is not null;
 
-        var companyRes = await _companyGuards.GetWithPositionsAndServiceOfferings(_currentCompany.Id, ct);
+        var companyRes = wantsAccessChange
+            ? await _companyGuards.GetWithPositionsMembersAndServiceOfferings(_currentCompany.Id, ct)
+            : await _companyGuards.GetWithPositionsAndServiceOfferings(_currentCompany.Id, ct);
+
         if (companyRes.IsFailure)
-            return Result<PatchPositionResponse>.FromError(companyRes);
+            return Result.FromError(companyRes);
 
         var company = companyRes.Value!;
         var position = company.Positions.SingleOrDefault(p => p.Id == cmd.PositionId && p.IsActive);
         if (position is null)
-            return Result<PatchPositionResponse>.NotFound("Cargo não encontrado ou inativo.");
-
-        var changed = false;
+            return Result.NotFound("Cargo não encontrado ou inativo.");
 
         if (wantsRename)
-        {
-            company.RenamePosition(cmd.PositionId, cmd.NewPositionName!);
-            changed = true;
-        }
+            company.RenamePosition(cmd.PositionId, cmd.PositionName!);
 
         if (wantsAccessChange)
-        {
-            company.ChangePositionAccessLevel(cmd.PositionId, cmd.NewAccessLevel!.Value, alignMembers: true);
-            changed = true;
-        }
+            company.ChangePositionAccessLevel(cmd.PositionId, cmd.AccessLevel!.Value, alignMembers: true);
 
         if (wantsServicesSet)
-        {
             company.AssignServicesToPosition(cmd.PositionId, cmd.SetServiceOfferingIds!);
-            changed = true;
-        }
 
-        return Result<PatchPositionResponse>.Ok(new(position.Id, position.Name));
+        return Result.NoContent();
     }
 }

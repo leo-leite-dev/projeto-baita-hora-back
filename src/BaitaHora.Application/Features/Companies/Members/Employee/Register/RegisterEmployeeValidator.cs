@@ -4,7 +4,7 @@ using FluentValidation;
 namespace BaitaHora.Application.Features.Companies.Members.Employee.Register;
 
 public sealed class RegisterEmployeeCommandValidator
-    : AbstractValidator<RegisterEmployeeCommand>
+    : AbstractValidator<RegisterMemberCommand>
 {
     public RegisterEmployeeCommandValidator()
     {

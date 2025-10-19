@@ -7,7 +7,7 @@ using MediatR;
 namespace BaitaHora.Application.Features.Companies.Positions.Disable;
 
 public sealed record DisablePositionsCommand
-    : IRequest<Result<DisablePositionsResponse>>, IAuthorizableRequest, ITransactionalRequest
+    : IRequest<Result>, IAuthorizableRequest, ITransactionalRequest
 {
     public IReadOnlyCollection<Guid> PositionIds { get; init; } = Array.Empty<Guid>();
 

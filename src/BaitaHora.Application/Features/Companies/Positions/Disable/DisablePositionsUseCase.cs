@@ -20,22 +20,21 @@ public sealed class DisablePositionsUseCase
         _companyPositionGuards = companyPositionGuards;
     }
 
-    public async Task<Result<DisablePositionsResponse>> HandleAsync(
+    public async Task<Result> HandleAsync(
         DisablePositionsCommand cmd, CancellationToken ct)
     {
         var companyRes = await _companyGuards.EnsureCompanyExists(_currentCompany.Id, ct);
 
         if (companyRes.IsFailure)
-            return Result<DisablePositionsResponse>.FromError(companyRes);
+            return Result.FromError(companyRes);
 
         var posGuardRes = await _companyPositionGuards.ValidatePositionsForDeactivation(cmd.PositionIds, ct);
         if (posGuardRes.IsFailure)
-            return Result<DisablePositionsResponse>.FromError(posGuardRes);
+            return Result.FromError(posGuardRes);
 
         foreach (var pos in posGuardRes.Value!)
             pos.Deactivate();
 
-        var disabledIds = posGuardRes.Value!.Select(p => p.Id).ToArray();
-        return Result<DisablePositionsResponse>.Ok(new(disabledIds));
+        return Result.NoContent();
     }
 }

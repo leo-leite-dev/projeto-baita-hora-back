@@ -1,6 +1,5 @@
 using BaitaHora.Application.Abstractions.Auth;
 using BaitaHora.Application.Common.Results;
-using BaitaHora.Application.Features.Companies.ServiceOffering.Get.ReadModels;
 using BaitaHora.Application.IRepositories.Companies;
 using MediatR;
 

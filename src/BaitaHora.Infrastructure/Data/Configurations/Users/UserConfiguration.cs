@@ -28,7 +28,7 @@ public sealed class UserConfiguration : IEntityTypeConfiguration<User>
             .HasColumnName("username")
             .IsRequired();
 
-        builder.Property(u => u.UserEmail)
+        builder.Property(u => u.Email)
             .HasConversion(emailConverter)
             .HasMaxLength(256)
             .HasColumnType("citext")
@@ -65,7 +65,7 @@ public sealed class UserConfiguration : IEntityTypeConfiguration<User>
             .IsUnique()
             .HasDatabaseName("ux_users_username");
 
-        builder.HasIndex(u => u.UserEmail)
+        builder.HasIndex(u => u.Email)
             .IsUnique()
             .HasDatabaseName("ux_users_email");
     }

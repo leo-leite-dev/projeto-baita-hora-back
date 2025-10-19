@@ -10,13 +10,13 @@ public static class LoginFlows
     public static async Task LoginOwnerAsync()
     {
         var owner = OwnerBuilder.Default();
-        await DoLoginAsync(owner.UserEmail, owner.RawPassword);
+        await DoLoginAsync(owner.Email, owner.RawPassword);
     }
 
     public static async Task LoginEmployeeAsync()
     {
         var emp = EmployeeBuilder.Default();
-        await DoLoginAsync(emp.UserEmail, emp.RawPassword);
+        await DoLoginAsync(emp.Email, emp.RawPassword);
     }
 
     private static async Task DoLoginAsync(string identify, string password)

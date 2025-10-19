@@ -6,12 +6,12 @@ using MediatR;
 
 namespace BaitaHora.Application.Features.Companies.Employees.Disable;
 
-public sealed record DisableEmployeesCommand
+public sealed record DisableMembersCommand
     : IRequest<Result<DisableEmployeesResponse>>, IAuthorizableRequest, ITransactionalRequest
 {
-    public Guid CompanyId { get; init; }
-    public IReadOnlyCollection<Guid> EmployeeIds { get; init; } = Array.Empty<Guid>();
+    public required IReadOnlyCollection<Guid> EmployeeIds { get; init; } = Array.Empty<Guid>();
 
-    public Guid ResourceId => CompanyId;
+    public Guid ResourceId { get; init; }
+
     public IEnumerable<CompanyPermission> RequiredPermissions => [CompanyPermission.ManageCompany];
 }

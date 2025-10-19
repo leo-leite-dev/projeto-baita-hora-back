@@ -7,7 +7,7 @@ using MediatR;
 namespace BaitaHora.Application.Features.Companies.ServiceOfferings.Activate;
 
 public sealed record ActivateServiceOfferingsCommand
-    : IRequest<Result<ActivateServiceOfferingsResponse>>, IAuthorizableRequest, ITransactionalRequest
+    : IRequest<Result>, IAuthorizableRequest, ITransactionalRequest
 {
     public IReadOnlyCollection<Guid> ServiceOfferingIds { get; init; } = Array.Empty<Guid>();
 

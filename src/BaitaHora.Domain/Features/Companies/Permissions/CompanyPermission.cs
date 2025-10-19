@@ -15,6 +15,7 @@ namespace BaitaHora.Domain.Permissions
         RemoveMember = 1 << 6,
         RemoveServiceOfferings = 1 << 7,
         RemovePositions = 1 << 8,
+        ManageSensitiveData = 1 << 9,
 
         All =
             ManageMember |
@@ -25,6 +26,7 @@ namespace BaitaHora.Domain.Permissions
             DisablePositions |
             RemoveMember |
             RemoveServiceOfferings |
-            RemovePositions
+            RemovePositions |
+            ManageSensitiveData
     }
 }

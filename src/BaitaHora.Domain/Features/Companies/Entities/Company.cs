@@ -102,6 +102,7 @@ public sealed class Company : Entity
             return false;
 
         TradeName = normalized;
+
         Touch();
         return true;
     }
@@ -186,7 +187,6 @@ public sealed class Company : Entity
         if (alignRoleToPosition)
             member.ChangeRole(newPosition.AccessLevel);
 
-        Touch();
         return member;
     }
 
@@ -257,7 +257,6 @@ public sealed class Company : Entity
                 string.Equals(NormalizeSpaces(p.Name), newName, StringComparison.OrdinalIgnoreCase)))
             throw new CompanyException("Já existe um cargo com esse nome.");
 
-        Touch();
         return position.Rename(newName);
     }
 

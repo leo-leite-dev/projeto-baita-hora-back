@@ -10,7 +10,7 @@ public static class EmployeeFlows
     {
         ConsoleHelper.Info("=== Edição de Employee ===");
         var companyId  = InputHelper.ReadGuid("CompanyId (GUID): ");
-        var employeeId = InputHelper.ReadGuid("EmployeeId (GUID): ");
+        var userId = InputHelper.ReadGuid("MemberId (GUID): ");
 
         Console.WriteLine();
         Console.WriteLine(" O que deseja editar?");
@@ -26,19 +26,19 @@ public static class EmployeeFlows
             switch (op)
             {
                 case "1":
-                    await UpdateEmployeePositionAsync(companyId, employeeId);
+                    await UpdateEmployeePositionAsync(companyId, userId);
                     break;
 
                 case "2":
-                    await UpdateEmployeeProfileAsync(companyId, employeeId);
+                    await UpdateEmployeeProfileAsync(companyId, userId);
                     break;
 
                 case "3":
-                    await ActivateAsync(companyId, employeeId);
+                    await ActivateAsync(companyId, userId);
                     break;
 
                 case "4":
-                    await DeactivateAsync(companyId, employeeId);
+                    await DeactivateAsync(companyId, userId);
                     break;
 
                 default:
@@ -54,7 +54,7 @@ public static class EmployeeFlows
         ConsoleHelper.Pause();
     }
 
-    private static async Task UpdateEmployeePositionAsync(Guid companyId, Guid employeeId)
+    private static async Task UpdateEmployeePositionAsync(Guid companyId, Guid userId)
     {
         var positionId = InputHelper.ReadGuid("Novo PositionId (GUID): ");
 
@@ -64,14 +64,14 @@ public static class EmployeeFlows
             positionId
         };
 
-        var path = $"/api/companies/{companyId:D}/employees/{employeeId:D}/Position";
+        var path = $"/api/companies/{companyId:D}/employees/{userId:D}/Position";
         ConsoleHelper.Info($"PUT {path}");
 
         var (status, body) = await SessionState.Api.PutAndReadAsync(SessionState.BaseUrl, path, payload, default);
         Console.WriteLine($"HTTP {status}\n{body}");
     }
 
-    private static async Task UpdateEmployeeProfileAsync(Guid companyId, Guid employeeId)
+    private static async Task UpdateEmployeeProfileAsync(Guid companyId, Guid userId)
     {
         Console.Write("Nome completo (ENTER p/ manter): ");
         var fullName = Console.ReadLine();
@@ -91,25 +91,25 @@ public static class EmployeeFlows
             return;
         }
 
-        var path = $"/api/companies/{companyId:D}/employees/{employeeId:D}";
+        var path = $"/api/companies/{companyId:D}/employees/{userId:D}";
         ConsoleHelper.Info($"PATCH {path}");
 
         var (status, body) = await SessionState.Api.PatchAndReadAsync(SessionState.BaseUrl, path, payload, default);
         Console.WriteLine($"HTTP {status}\n{body}");
     }
 
-    private static async Task ActivateAsync(Guid companyId, Guid employeeId)
+    private static async Task ActivateAsync(Guid companyId, Guid userId)
     {
-        var path = $"/api/companies/{companyId:D}/employees/{employeeId:D}/activate";
+        var path = $"/api/companies/{companyId:D}/employees/{userId:D}/activate";
         ConsoleHelper.Info($"POST {path}");
 
         var (status, body) = await SessionState.Api.PostAndReadAsync(SessionState.BaseUrl, path, new { }, default);
         Console.WriteLine($"HTTP {status}\n{body}");
     }
 
-    private static async Task DeactivateAsync(Guid companyId, Guid employeeId)
+    private static async Task DeactivateAsync(Guid companyId, Guid userId)
     {
-        var path = $"/api/companies/{companyId:D}/employees/{employeeId:D}/deactivate";
+        var path = $"/api/companies/{companyId:D}/employees/{userId:D}/deactivate";
         ConsoleHelper.Info($"POST {path}");
 
         var (status, body) = await SessionState.Api.PostAndReadAsync(SessionState.BaseUrl, path, new { }, default);

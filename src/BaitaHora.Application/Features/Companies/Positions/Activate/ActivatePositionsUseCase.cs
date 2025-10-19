@@ -20,21 +20,21 @@ public sealed class ActivatePositionsUseCase
         _currentCompany = currentCompany;
     }
 
-    public async Task<Result<ActivatePositionsResponse>> HandleAsync(
+    public async Task<Result> HandleAsync(
         ActivatePositionsCommand cmd, CancellationToken ct)
     {
         var companyRes = await _companyGuards.EnsureCompanyExists(_currentCompany.Id, ct);
         if (companyRes.IsFailure)
-            return Result<ActivatePositionsResponse>.FromError(companyRes);
+            return Result.FromError(companyRes);
 
         var posGuardRes = await _companyPositionGuards.ValidatePositionsForActivation(cmd.PositionIds, ct);
         if (posGuardRes.IsFailure)
-            return Result<ActivatePositionsResponse>.FromError(posGuardRes);
+            return Result.FromError(posGuardRes);
 
         foreach (var position in posGuardRes.Value!)
             position.Activate();
 
         var activatedIds = posGuardRes.Value!.Select(p => p.Id).ToArray();
-        return Result<ActivatePositionsResponse>.Ok(new(activatedIds));
+        return Result.NoContent();
     }
 }

@@ -6,13 +6,15 @@ using BaitaHora.Application.Features.Users.PatchUser;
 using BaitaHora.Domain.Permissions;
 using MediatR;
 
+namespace BaitaHora.Application.Features.Companies.Members.Employee;
+
 public sealed record PatchEmployeeCommand
     : IRequest<Result<PatchEmployeeResponse>>, IAuthorizableRequest, ITransactionalRequest
 {
-    public Guid CompanyId { get; init; }
-    public Guid EmployeeId { get; init; }
-    public required PatchUserCommand NewEmployee { get; init; }
+    public required Guid MemberId { get; init; }
+    public required PatchUserCommand NewMember { get; init; }
 
-    public Guid ResourceId => CompanyId;
+    public Guid ResourceId => Guid.Empty;
+
     public IEnumerable<CompanyPermission> RequiredPermissions => [CompanyPermission.ManageMember];
 }

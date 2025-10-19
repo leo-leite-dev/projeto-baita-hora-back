@@ -8,10 +8,10 @@ using MediatR;
 namespace BaitaHora.Application.Features.Companies.Positions.Create;
 
 public sealed record CreatePositionCommand
-    : IRequest<Result<CreatePositionResponse>>, IAuthorizableRequest, ITransactionalRequest
+    : IRequest<Result>, IAuthorizableRequest, ITransactionalRequest
 {
-    public string PositionName { get; init; } = default!;
-    public CompanyRole AccessLevel { get; init; }
+    public required string PositionName { get; init; }
+    public required CompanyRole AccessLevel { get; init; }
 
     public IEnumerable<Guid> ServiceOfferingIds { get; init; } = Array.Empty<Guid>();
 

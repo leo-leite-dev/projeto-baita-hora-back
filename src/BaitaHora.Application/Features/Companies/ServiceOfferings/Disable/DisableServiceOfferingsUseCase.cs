@@ -1,7 +1,6 @@
 using BaitaHora.Application.Abstractions.Auth;
 using BaitaHora.Application.Common.Results;
 using BaitaHora.Application.Features.Companies.Guards.Interfaces;
-using BaitaHora.Application.Features.Companies.ServiceOffering.Disable;
 
 namespace BaitaHora.Application.Features.Companies.ServiceOfferings.Disable;
 
@@ -21,19 +20,19 @@ public sealed class DisableServiceOfferingsUseCase
         _currentCompany = currentCompany;
     }
 
-    public async Task<Result<DisableServiceOfferingsResponse>> HandleAsync(
-        DisableServiceOfferingsCommand cmd, CancellationToken ct)
+    public async Task<Result> HandleAsync(DisableServiceOfferingsCommand cmd, CancellationToken ct)
     {
         var companyRes = await _companyGuards.GetWithPositionsAndServiceOfferings(_currentCompany.Id, ct);
         if (companyRes.IsFailure)
-            return Result<DisableServiceOfferingsResponse>.FromError(companyRes);
+            return Result.FromError(companyRes);
 
         var company = companyRes.Value!;
 
         var valRes = await _serviceOfferingGuards
             .ValidateServiceOfferingsForDesactivation(_currentCompany.Id, cmd.ServiceOfferingIds, ct);
+
         if (valRes.IsFailure)
-            return Result<DisableServiceOfferingsResponse>.FromError(valRes);
+            return Result.FromError(valRes);
 
         var services = valRes.Value!;
         var ids = services.Select(s => s.Id).ToArray();
@@ -43,6 +42,6 @@ public sealed class DisableServiceOfferingsUseCase
         foreach (var s in services)
             s.Deactivate();
 
-        return Result<DisableServiceOfferingsResponse>.Ok(new(ids));
+        return Result.NoContent();
     }
 }

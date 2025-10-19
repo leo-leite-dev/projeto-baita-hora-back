@@ -8,7 +8,7 @@ public static class EmployeeBuilder
     {
         var profile = new CreateUserProfileRequest(
             FullName: "Leoker",
-            UserPhone: "+55 51 98888-5555",
+            Phone: "+55 51 98888-5555",
             BirthDate: new DateTime(1990, 1, 10),
             Cpf: "18728901053",
             Rg: "123456780",
@@ -23,7 +23,7 @@ public static class EmployeeBuilder
         );
 
         return new CreateUserRequest(
-            UserEmail: "leoker@baitahora.com",
+            Email: "leoker@baitahora.com",
             Username: "Leoker",
             RawPassword: "SenhaForte@123",
             Profile: profile

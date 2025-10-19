@@ -11,13 +11,13 @@ public sealed class UserProfile : Entity
     public RG? Rg { get; private set; }
 
     public DateOfBirth? BirthDate { get; private set; }
-    public Phone UserPhone { get; private set; }
+    public Phone Phone { get; private set; }
     public Address Address { get; private set; } = default!;
     public string? ProfileImageUrl { get; private set; }
 
     private UserProfile() { }
 
-    public static UserProfile Create(string name, CPF cpf, RG? rg, Phone userPhone, DateOfBirth? birthDate, Address address)
+    public static UserProfile Create(string name, CPF cpf, RG? rg, Phone Phone, DateOfBirth? birthDate, Address address)
     {
         if (address is null)
             throw new UserException("Endereço é obrigatório.");
@@ -28,7 +28,7 @@ public sealed class UserProfile : Entity
                 Name = NormalizeAndValidateName(name),
                 Cpf = cpf,
                 Rg = rg,
-                UserPhone = userPhone,
+                Phone = Phone,
                 BirthDate = birthDate,
                 Address = address
             };
@@ -43,7 +43,7 @@ public sealed class UserProfile : Entity
         if (Cpf == default)
             throw new CompanyException("CPF é obrigatório.");
 
-        if (UserPhone == default)
+        if (Phone == default)
             throw new CompanyException("Telefone é obrigatório.");
     }
 
@@ -80,10 +80,10 @@ public sealed class UserProfile : Entity
 
     public bool ChangePhone(Phone newPhone)
     {
-        if (UserPhone.Equals(newPhone))
+        if (Phone.Equals(newPhone))
             return false;
 
-        UserPhone = newPhone;
+        Phone = newPhone;
         Touch();
         return true;
     }

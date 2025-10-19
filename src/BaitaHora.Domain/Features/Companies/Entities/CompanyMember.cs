@@ -1,6 +1,7 @@
 using BaitaHora.Domain.Features.Common;
 using BaitaHora.Domain.Features.Common.Exceptions;
 using BaitaHora.Domain.Features.Companies.Enums;
+using BaitaHora.Domain.Features.Users.Entities;
 using BaitaHora.Domain.Permissions;
 
 namespace BaitaHora.Domain.Features.Companies.Entities;
@@ -10,6 +11,7 @@ public sealed class CompanyMember : EntityBase
     public Guid CompanyId { get; private set; }
     public Guid UserId { get; private set; }
 
+    public User User { get; private set; } = null!;
     public CompanyRole Role { get; private set; }
 
     public Guid? PrimaryPositionId { get; private set; }

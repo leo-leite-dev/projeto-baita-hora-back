@@ -20,24 +20,16 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// App + Infra exatamente como em produção
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddBotInfrastructure(builder.Configuration);
 builder.Services.AddSecurityInfrastructure(); 
-
-// Infra de Web/DI
 builder.Services.AddHttpContextAccessor();
-
-// Ports/Adapters
 builder.Services.AddScoped<IUserIdentityPort, HttpContextUserIdentityAdapter>();
-
-// Auth services
 builder.Services.AddScoped<ITokenService, JwtTokenService>();
 builder.Services.AddScoped<IJwtCookieFactory, JwtCookieFactory>();
 builder.Services.AddScoped<IJwtCookieWriter, JwtCookieWriter>();
 
-// JWT obrigatório (tests injetam via ConfigureAppConfiguration)
 var jwt = builder.Configuration.GetSection("JwtOptions").Get<TokenOptions>()
           ?? throw new InvalidOperationException("JwtOptions não configurado.");
 var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.Secret));
@@ -62,13 +54,11 @@ builder.Services
         };
     });
 
-// ou via  diretas:
 builder.Services.Configure<MetaOptions>(builder.Configuration.GetSection("Meta"));
 builder.Services.Configure<InstagramOptions>(builder.Configuration.GetSection("Instagram"));
 
 builder.Services.AddHttpClient<IInstagramApi, InstagramApi>(http =>
 {
-    // Base do Graph API – ajusta versão conforme precisar
     http.BaseAddress = new Uri("https://graph.facebook.com/v23.0/");
 });
 
@@ -118,20 +108,15 @@ builder.Services.AddCors(opt =>
 
 var app = builder.Build();
 
-// Middleware global de mapeamento de exceções
 app.UseMiddleware<ExceptionHttpMappingMiddleware>();
 
-// No TestServer (env "Testing") não há HTTPS; evita redirects nos testes
 if (!app.Environment.IsEnvironment("Testing"))
-{
     app.UseHttpsRedirection();
-}
 
 app.UseRouting();
 
 app.UseCors();
 
-// ⚠️ Ordem correta: preenche Authorization a partir do cookie **ANTES** do UseAuthentication
 app.UseMiddleware<JwtCookieAuthenticationMiddleware>();
 
 app.UseAuthentication();
@@ -143,7 +128,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// Endpoint de diagnóstico exposto SOMENTE em Testing para exercitar o middleware
 if (app.Environment.IsEnvironment("Testing"))
 {
     app.MapGet("/throw-unknown", () =>
@@ -155,5 +139,4 @@ if (app.Environment.IsEnvironment("Testing"))
 app.MapControllers();
 app.Run();
 
-// Necessário para WebApplicationFactory<Program>
 public partial class Program { }

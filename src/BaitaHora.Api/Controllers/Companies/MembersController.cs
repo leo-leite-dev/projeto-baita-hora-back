@@ -1,93 +1,116 @@
 using BaitaHora.Api.Helpers;
-using BaitaHora.Api.Mappers.Auth;
 using BaitaHora.Api.Mappers.Companies;
-using BaitaHora.Api.Mappers.Onboarding;
 using BaitaHora.Contracts.DTOs.Companies.Members;
+using BaitaHora.Application.Features.Companies.ListMembers.Get.List;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using BaitaHora.Api.Mappers.Onboarding;
+using BaitaHora.Application.Features.Companies.Members.Get.ByUserId;
 using MediatR;
 
-namespace BaitaHora.Api.Controllers.Members;
+namespace BaitaHora.Api.Controllers.Companies;
 
 [ApiController]
-[Route(ApiRoutes.MembersPrefix + "/{companyId:guid}")]
+[Route(ApiRoutes.CompaniesPrefix + "/members")]
 [Authorize]
 public sealed class MembersController : ControllerBase
 {
     private readonly ISender _mediator;
+
     public MembersController(ISender mediator) => _mediator = mediator;
 
     [HttpPost("employees")]
     public async Task<IActionResult> CreateEmployee(
-        [FromRoute] Guid companyId,
         [FromBody] RegisterEmployeeRequest req,
         CancellationToken ct)
     {
-        var cmd = req.ToCommand(companyId);
+        var cmd = req.ToCommand();
         var result = await _mediator.Send(cmd, ct);
         return result.ToActionResult(this, result.Value);
     }
 
-    [HttpPatch("employees/{employeeId:guid}")]
-    public async Task<IActionResult> PatchEmployee(
-        [FromRoute] Guid companyId,
-        [FromRoute] Guid employeeId,
-        [FromBody] PatchEmployeeRequest req,
+    [HttpPatch("{memberId:guid}")]
+    public async Task<IActionResult> PatchMember(
+        [FromRoute] Guid memberId,
+        [FromBody] PatchMemberRequest req,
         CancellationToken ct)
     {
-        var cmd = req.ToCommand(companyId, employeeId);
+        var cmd = req.ToCommand(memberId);
         var result = await _mediator.Send(cmd, ct);
         return result.ToActionResult(this, result.Value);
     }
 
-    [HttpPatch("owner")]
-    public async Task<IActionResult> PatchOwner(
-        [FromRoute] Guid companyId,
-        [FromBody] PatchOwnerRequest req,
-        CancellationToken ct)
-    {
-        var cmd = req.ToCommand(companyId);
-        var result = await _mediator.Send(cmd, ct);
-        return result.ToActionResult(this, result.Value);
-    }
+    // [HttpPatch("owner")]
+    // public async Task<IActionResult> PatchOwner(
+    //     [FromBody] PatchOwnerRequest req,
+    //     CancellationToken ct)
+    // {
+    //     var cmd = req.ToCommand();
+    //     var result = await _mediator.Send(cmd, ct);
+    //     return result.ToActionResult(this, result.Value);
+    // }
 
     [HttpPatch("disable")]
     public async Task<IActionResult> DisableMany(
-       [FromRoute] Guid companyId,
-       [FromBody] DisableEmployeesRequest req,
-       CancellationToken ct)
+        [FromBody] DisableEmployeesRequest req,
+        CancellationToken ct)
     {
-        var cmd = req.ToCommand(companyId);
+        var cmd = req.ToCommand();
         var result = await _mediator.Send(cmd, ct);
 
-        if (result.IsSuccess) return NoContent();
+        if (result.IsSuccess)
+            return NoContent();
+
         return result.ToActionResult(this);
     }
 
     [HttpPatch("activate")]
     public async Task<IActionResult> ActivateMany(
-        [FromRoute] Guid companyId,
         [FromBody] ActivateEmployeesRequest req,
         CancellationToken ct)
     {
-        var cmd = req.ToCommand(companyId);
+        var cmd = req.ToCommand();
         var result = await _mediator.Send(cmd, ct);
-
         if (result.IsSuccess) return NoContent();
         return result.ToActionResult(this);
     }
 
-    [HttpPatch("{employeeId:guid}/position")]
+    [HttpPatch("{memberId:guid}/position")]
     public async Task<IActionResult> ChangePrimaryPosition(
-        [FromRoute] Guid companyId,
-        [FromRoute] Guid employeeId,
+        [FromRoute] Guid memberId,
         [FromBody] ChangeMemberPositionRequest req,
         CancellationToken ct)
     {
-        var cmd = req.ToCommand(companyId, employeeId);
+        var cmd = req.ToCommand(memberId);
         var result = await _mediator.Send(cmd, ct);
 
-        if (result.IsSuccess) return Ok(result.Value);
+        if (result.IsSuccess)
+            return Ok(result.Value);
+
+        return result.ToActionResult(this);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ListAll(CancellationToken ct)
+    {
+        var query = new ListMembersQuery();
+        var result = await _mediator.Send(query, ct);
+        return result.ToActionResult(this);
+    }
+
+    [HttpGet("{memberId:guid}/details")]
+    public async Task<IActionResult> GetMemberFullDetails(Guid memberId, CancellationToken ct)
+    {
+        var query = new GetMemberProfileDetailsByMemberIdQuery(memberId);
+        var result = await _mediator.Send(query, ct);
+        return result.ToActionResult(this);
+    }
+
+    [HttpGet("{memberId:guid}")]
+    public async Task<IActionResult> GetById(Guid memberId, CancellationToken ct)
+    {
+        var query = new GetMemberAdminEditByUserIdQuery(memberId);
+        var result = await _mediator.Send(query, ct);
         return result.ToActionResult(this);
     }
 }

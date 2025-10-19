@@ -17,20 +17,20 @@ public sealed class RemoveServiceOfferingUseCase
         _currentCompany = currentCompany;
     }
 
-    public async Task<Result<RemoveServiceOfferingResponse>> HandleAsync(
+    public async Task<Result> HandleAsync(
         RemoveServiceOfferingCommand cmd, CancellationToken ct)
     {
         var companyRes = await _companyGuards.GetWithServiceOfferings(_currentCompany.Id, ct);
         if (companyRes.IsFailure)
-            return Result<RemoveServiceOfferingResponse>.FromError(companyRes);
+            return Result.FromError(companyRes);
 
         var company = companyRes.Value!;
         var service = company.ServiceOfferings.FirstOrDefault(s => s.Id == cmd.ServiceOfferingId);
         if (service is null)
-            return Result<RemoveServiceOfferingResponse>.NotFound("Serviço não encontrado.");
+            return Result.NotFound("Serviço não encontrado.");
 
         company.RemoveServiceOffering(service.Id);
 
-        return Result<RemoveServiceOfferingResponse>.Ok(new(cmd.ServiceOfferingId));
+        return Result.NoContent();
     }
 }

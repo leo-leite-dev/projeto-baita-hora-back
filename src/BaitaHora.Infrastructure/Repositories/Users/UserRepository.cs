@@ -12,7 +12,7 @@ public sealed class UserRepository : GenericRepository<User>, IUserRepository
 
     public Task<User?> GetByEmailAsync(Email email, CancellationToken ct) =>
         _context.Set<User>()
-            .FirstOrDefaultAsync(u => u.UserEmail == email, ct);
+            .FirstOrDefaultAsync(u => u.Email == email, ct);
 
     public Task<User?> GetByUsernameAsync(Username username, CancellationToken ct) =>
         _context.Set<User>()

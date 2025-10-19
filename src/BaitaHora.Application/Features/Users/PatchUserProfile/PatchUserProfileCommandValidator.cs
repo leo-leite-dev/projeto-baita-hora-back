@@ -27,7 +27,7 @@ public sealed class PatchUserProfileCommandValidator : AbstractValidator<PatchUs
         When(p => !string.IsNullOrWhiteSpace(p.NewUserPhone), () =>
         {
             // Opção A: se tiver Phone.TryParse
-            // RuleFor(p => p.UserPhone!)
+            // RuleFor(p => p.Phone!)
             //    .Must(v => Phone.TryParse(v, out _))
             //    .WithMessage("Telefone inválido.");
 

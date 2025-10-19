@@ -2,10 +2,10 @@ using BaitaHora.Api.Helpers;
 using BaitaHora.Api.Mappers.Companies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using BaitaHora.Application.Features.Companies.Positions.Remove;
-using BaitaHora.Application.Features.Companies.Positions.Remove.ServicesFromPosition;
 using BaitaHora.Contracts.DTOs.Companies.Positions;
 using BaitaHora.Application.Features.Companies.ListPositions.Get.List;
+using BaitaHora.Application.Features.Companies.Positions.Get.ById;
+using BaitaHora.Application.Features.Companies.Positions.Get.Combo;
 using MediatR;
 
 namespace BaitaHora.Api.Controllers.Companies;
@@ -45,30 +45,8 @@ public sealed class PositionsController : ControllerBase
         [FromRoute] Guid positionId,
         CancellationToken ct)
     {
-        var cmd = new RemovePositionCommand
-        {
-            PositionId = positionId
-        };
-
+        var cmd = positionId.ToCommand();
         var result = await _mediator.Send(cmd, ct);
-        if (result.IsSuccess) return NoContent();
-        return result.ToActionResult(this);
-    }
-
-    [HttpDelete("{positionId:guid}/services")]
-    public async Task<IActionResult> RemoveServicesFromPosition(
-        [FromRoute] Guid positionId,
-        [FromBody] RemoveServicesFromPositionRequest req,
-        CancellationToken ct)
-    {
-        var cmd = new RemoveServicesFromPositionCommand
-        {
-            PositionId = positionId,
-            ServiceOfferingIds = (req?.ServiceOfferingIds ?? Enumerable.Empty<Guid>()).ToArray()
-        };
-
-        var result = await _mediator.Send(cmd, ct);
-        if (result.IsSuccess) return NoContent();
         return result.ToActionResult(this);
     }
 
@@ -98,6 +76,25 @@ public sealed class PositionsController : ControllerBase
     public async Task<IActionResult> ListAll(CancellationToken ct)
     {
         var query = new ListPositionsQuery();
+        var result = await _mediator.Send(query, ct);
+        return result.ToActionResult(this);
+    }
+
+    [HttpGet("{positionId:guid}")]
+    public async Task<IActionResult> GetById(Guid positionId, CancellationToken ct)
+    {
+        var query = new GetPositionByIdQuery(positionId);
+        var result = await _mediator.Send(query, ct);
+        return result.ToActionResult(this);
+    }
+
+    [HttpGet("options")]
+    public async Task<IActionResult> ListActiveOptions(
+        [FromQuery] string? search,
+        [FromQuery] int take = 20,
+        CancellationToken ct = default)
+    {
+        var query = new ListActivePositionsOptionsQuery(search, take);
         var result = await _mediator.Send(query, ct);
         return result.ToActionResult(this);
     }

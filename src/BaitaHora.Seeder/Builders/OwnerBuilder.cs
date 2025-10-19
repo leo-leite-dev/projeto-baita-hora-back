@@ -8,7 +8,7 @@ public static class OwnerBuilder
     {
         var profile = new CreateUserProfileRequest(
             FullName: "Dono da Firma",
-            UserPhone: "+55 51 98888-7777",
+            Phone: "+55 51 98888-7777",
             BirthDate: new DateTime(1990, 1, 10),
             Cpf: "03672513024",
             Rg: "123456789",
@@ -23,7 +23,7 @@ public static class OwnerBuilder
         );
 
         return new CreateUserRequest(
-            UserEmail: "owner@baitahora.com",
+            Email: "owner@baitahora.com",
             Username: "owner",
             RawPassword: "SenhaForte@123",
             Profile: profile

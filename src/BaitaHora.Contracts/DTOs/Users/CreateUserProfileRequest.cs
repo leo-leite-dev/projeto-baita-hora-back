@@ -6,7 +6,7 @@ public sealed record CreateUserProfileRequest(
     string FullName,
     string Cpf,
     string? Rg,
-    string UserPhone,
+    string Phone,
     DateOnly? BirthDate,
     CreateAddressRequest Address
 );

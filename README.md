@@ -189,14 +189,14 @@ Content-Type: application/json
 ```json
 {
   "owner": {
-    "userEmail": "leonardo.passos@example.com",
+    "Email": "leonardo.passos@example.com",
     "username": "leonardo.passos",
     "rawPassword": "SenhaForte@123",
     "profile": {
       "fullName": "Leonardo Passos",
       "cpf": "12345678909",
       "rg": "456789012",
-      "userPhone": "51998765432",
+      "Phone": "51998765432",
       "birthDate": "1998-07-15",
       "address": {
         "street": "Rua dos Andradas",
@@ -330,7 +330,7 @@ Cria um **funcionário** vinculado a um **cargo (Position)** da empresa.
 **Campos principais:**
 - **companyId** → vai na **URL** (path parameter).  
 - **positionId** → ID do cargo ao qual o funcionário será associado.  
-- **employee.userEmail / username / rawPassword** → credenciais do novo usuário.  
+- **employee.Email / username / rawPassword** → credenciais do novo usuário.  
 - **employee.profile** → dados pessoais e endereço (validado por Value Objects).  
 - **employee.profile.birthDate** → data no formato `YYYY-MM-DD`.  
 
@@ -343,14 +343,14 @@ Content-Type: application/json
 {
   "positionId": "GUID_DO_POSITION",
   "employee": {
-    "userEmail": "joao.marcos@example.com",
+    "Email": "joao.marcos@example.com",
     "username": "joao.marcos",
     "rawPassword": "SenhaForte!2025",
     "profile": {
       "fullName": "João Marcos",
       "cpf": "59671483020",
       "rg": "123456789",
-      "userPhone": "+55 51 99876-2233",
+      "Phone": "+55 51 99876-2233",
       "birthDate": "1998-03-15",
       "address": {
         "street": "Rua das Palmeiras",

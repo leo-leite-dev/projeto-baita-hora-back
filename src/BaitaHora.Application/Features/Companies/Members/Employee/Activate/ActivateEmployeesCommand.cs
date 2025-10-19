@@ -6,12 +6,12 @@ using MediatR;
 
 namespace BaitaHora.Application.Features.Companies.Employees.Activate;
 
-public sealed record ActivateEmployeesCommand
+public sealed record ActivateMembersCommand
     : IRequest<Result<ActivateEmployeesResponse>>, IAuthorizableRequest, ITransactionalRequest
 {
-    public Guid CompanyId { get; init; }
-    public IReadOnlyCollection<Guid> EmployeeIds { get; init; } = Array.Empty<Guid>();
+    public required IReadOnlyCollection<Guid> EmployeeIds { get; init; } = Array.Empty<Guid>();
 
-    public Guid ResourceId => CompanyId;
+    public Guid ResourceId { get; init; }
+
     public IEnumerable<CompanyPermission> RequiredPermissions => [CompanyPermission.ManageCompany];
 }

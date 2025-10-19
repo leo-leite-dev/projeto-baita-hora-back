@@ -22,12 +22,13 @@ public static class RegisterOwnerApiMappers
                 CompanyPhone = r.Company.CompanyPhone,
                 Address = r.Company.Address.ToAddressCommand()
             },
-            Owner = new CreateUserCommand(
-                r.Owner.UserEmail,
-                r.Owner.Username,
-                r.Owner.RawPassword,
-                r.Owner.Profile.ToUserProfileCommand()
-            )
+            Owner = new CreateUserCommand
+            {
+                Email = r.Owner.Email,
+                Username = r.Owner.Username,
+                RawPassword = r.Owner.RawPassword,
+                Profile = r.Owner.Profile.ToUserProfileCommand()
+            }
         };
 
     public static PatchOwnerCommand ToCommand(this PatchOwnerRequest r, Guid companyId)

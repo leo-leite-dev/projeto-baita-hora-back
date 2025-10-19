@@ -18,7 +18,7 @@ public sealed class AppDbContext : DbContext, IAppDbContext
     public DbSet<UserProfile> UserProfiles => Set<UserProfile>();
     public DbSet<Company> Companies => Set<Company>();
     public DbSet<CompanyImage> CompanyImages => Set<CompanyImage>();
-    public DbSet<CompanyMember> CompanyMembers => Set<CompanyMember>();
+    public DbSet<CompanyMember> Members => Set<CompanyMember>();
     public DbSet<CompanyPosition> Positions => Set<CompanyPosition>();
     public DbSet<Schedule> Schedules => Set<Schedule>();
     public DbSet<Appointment> Appointments => Set<Appointment>();

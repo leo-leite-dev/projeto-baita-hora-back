@@ -1,3 +1,4 @@
+using BaitaHora.Application.Abstractions.Auth;
 using BaitaHora.Application.Common.Results;
 using BaitaHora.Application.Features.Companies.Guards.Interfaces;
 
@@ -7,30 +8,35 @@ public sealed class ActivateEmployeesUseCase
 {
     private readonly ICompanyGuards _companyGuards;
     private readonly ICompanyMemberGuards _memberGuards;
+    private readonly ICurrentCompany _currentCompany; 
 
     public ActivateEmployeesUseCase(
         ICompanyGuards companyGuards,
-        ICompanyMemberGuards memberGuards)
+        ICompanyMemberGuards memberGuards,
+        ICurrentCompany currentCompany)             
     {
         _companyGuards = companyGuards;
         _memberGuards = memberGuards;
+        _currentCompany = currentCompany;           
     }
 
     public async Task<Result<ActivateEmployeesResponse>> HandleAsync(
-        ActivateEmployeesCommand cmd, CancellationToken ct)
+        ActivateMembersCommand cmd, CancellationToken ct)
     {
-        var companyRes = await _companyGuards.EnsureCompanyExists(cmd.CompanyId, ct);
+        var companyId = _currentCompany.Id;
+
+        var companyRes = await _companyGuards.EnsureCompanyExists(companyId, ct);
         if (companyRes.IsFailure)
             return Result<ActivateEmployeesResponse>.FromError(companyRes);
 
-        var memberGuardRes = await _memberGuards.ValidateMembersForActivation(cmd.CompanyId, cmd.EmployeeIds, ct);
+        var memberGuardRes = await _memberGuards.ValidateMembersForActivation(companyId, cmd.EmployeeIds, ct);
         if (memberGuardRes.IsFailure)
             return Result<ActivateEmployeesResponse>.FromError(memberGuardRes);
 
-        foreach (var pos in memberGuardRes.Value!)
-            pos.Activate();
+        foreach (var member in memberGuardRes.Value!)
+            member.Activate();
 
-        var activatedIds = memberGuardRes.Value!.Select(p => p.Id).ToArray();
+        var activatedIds = memberGuardRes.Value!.Select(m => m.Id).ToArray();
         return Result<ActivateEmployeesResponse>.Ok(new(activatedIds));
     }
 }

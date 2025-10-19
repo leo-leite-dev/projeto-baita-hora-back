@@ -27,7 +27,7 @@ public sealed class SelectCompanyUseCase
         SelectCompanyCommand cmd,
         CancellationToken ct)
     {
-        var membership = await _companyMemberRepository.GetMemberAsync(userId, cmd.CompanyId, ct);
+        var membership = await _companyMemberRepository.GetMemberByIdAsync(userId, cmd.CompanyId, ct);
         if (membership is null || !membership.IsActive)
             return Result<AuthResult>.Forbidden("Usuário não pertence a esta empresa.");
 

@@ -14,10 +14,10 @@ public sealed class CompanyMemberGuards : ICompanyMemberGuards
     public CompanyMemberGuards(ICompanyMemberRepository memberRepository)
         => _memberRepository = memberRepository;
 
-    public async Task<Result<CompanyMember>> EnsureMemberExistsAsync(
-        Guid companyId, Guid employeeId, bool requireActive, CancellationToken ct)
+    public async Task<Result<CompanyMember>> EnsureMemberExistsByMemberIdAsync(
+        Guid companyId, Guid memberId, bool requireActive, CancellationToken ct)
     {
-        var member = await _memberRepository.GetMemberAsync(companyId, employeeId, ct);
+        var member = await _memberRepository.GetMemberByIdAsync(companyId, memberId, ct);
         if (member is null)
             return Result<CompanyMember>.NotFound("Funcionário não encontrado nesta empresa.");
 

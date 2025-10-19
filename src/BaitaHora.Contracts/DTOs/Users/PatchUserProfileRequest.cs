@@ -5,7 +5,7 @@ namespace BaitaHora.Contracts.DTOs.Users;
 public sealed record PatchUserProfileRequest(
     string? FullName,
     DateOnly? BirthDate,
-    string? UserPhone,
+    string? Phone,
     string? Cpf,
     string? Rg,
     PatchAddressRequest? Address

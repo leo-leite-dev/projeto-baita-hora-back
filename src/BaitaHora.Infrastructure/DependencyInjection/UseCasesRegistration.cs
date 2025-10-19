@@ -1,4 +1,3 @@
-using BaitaHora.Application.Features.Auth;
 using BaitaHora.Application.Features.Onboarding;
 using BaitaHora.Application.Features.Companies.Members.Owner;
 using BaitaHora.Application.Features.Companies.Members.Employee;
@@ -10,7 +9,6 @@ using BaitaHora.Application.Features.Companies.ServiceOffering.Patch;
 using BaitaHora.Application.Features.Companies.ServiceOffering.Remove;
 using BaitaHora.Application.Features.Companies.Catalog.Create;
 using Microsoft.Extensions.DependencyInjection;
-using BaitaHora.Application.Features.Companies.Positions.Remove.ServicesFromPosition;
 using BaitaHora.Application.Features.Companies.Positions.Disable;
 using BaitaHora.Application.Features.Companies.Positions.Activate;
 using BaitaHora.Application.Features.Companies.ServiceOfferings.Activate;
@@ -52,7 +50,6 @@ public static class UseCasesRegistration
         services.AddScoped<CreatePositionUseCase>();
         services.AddScoped<PatchPositionUseCase>();
         services.AddScoped<RemovePositionUseCase>();
-        services.AddScoped<RemoveServicesFromPositionUseCase>();
         services.AddScoped<ActivatePositionsUseCase>();
         services.AddScoped<DisablePositionsUseCase>();
 

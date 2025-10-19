@@ -11,24 +11,23 @@ public class CompanyServiceOfferingRepository
 {
     public CompanyServiceOfferingRepository(AppDbContext context) : base(context) { }
 
-    public async Task<ServiceOfferingDetails?> GetByIdAsync(
+    public async Task<ServiceOfferingEditView?> GetByIdAsync(
         Guid companyId, Guid serviceOfferingId, CancellationToken ct)
     {
         return await _set
             .Where(s => s.CompanyId == companyId && s.Id == serviceOfferingId)
-            .Select(s => new ServiceOfferingDetails(
-                s.Id,
-                s.Name,
-                s.Price.Amount,
-                s.Price.Currency,
-                s.IsActive,
-                s.CreatedAtUtc,
-                s.UpdatedAtUtc))
+            .Select(s => new ServiceOfferingEditView
+            {
+                Id = s.Id,
+                Name = s.Name,
+                Price = s.Price.Amount,
+                Currency = s.Price.Currency
+            })
             .AsNoTracking()
             .SingleOrDefaultAsync(ct);
     }
 
-    public async Task<IReadOnlyList<ServiceOfferingComboItem>> ListActiveForComboAsync(
+    public async Task<IReadOnlyList<ServiceOfferingOptions>> ListServiceOfferingActiveForOptionsAsync(
         Guid companyId, string? search, int take, CancellationToken ct)
     {
         var q = _set.Where(s => s.CompanyId == companyId && s.IsActive);
@@ -41,7 +40,11 @@ public class CompanyServiceOfferingRepository
 
         return await q
             .OrderBy(s => s.Name)
-            .Select(s => new ServiceOfferingComboItem(s.Id, s.Name))
+            .Select(s => new ServiceOfferingOptions
+            {
+                Id = s.Id,
+                Name = s.Name
+            })
             .Take(take)
             .AsNoTracking()
             .ToListAsync(ct);
@@ -52,14 +55,16 @@ public class CompanyServiceOfferingRepository
         return await _set
             .Where(s => s.CompanyId == companyId)
             .OrderBy(s => s.Name)
-            .Select(s => new ServiceOfferingDetails(
-                s.Id,
-                s.Name,
-                s.Price.Amount,
-                s.Price.Currency,
-                s.IsActive,
-                s.CreatedAtUtc,
-                s.UpdatedAtUtc))
+            .Select(s => new ServiceOfferingDetails
+            {
+                Id = s.Id,
+                Name = s.Name,
+                Price = s.Price.Amount,
+                Currency = s.Price.Currency,
+                IsActive = s.IsActive,
+                CreatedAtUtc = s.CreatedAtUtc,
+                UpdatedAtUtc = s.UpdatedAtUtc
+            })
             .AsNoTracking()
             .ToListAsync(ct);
     }

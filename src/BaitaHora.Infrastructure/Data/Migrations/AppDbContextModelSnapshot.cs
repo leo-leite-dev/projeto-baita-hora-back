@@ -466,7 +466,7 @@ namespace BaitaHora.Infrastructure.Data.Migrations
                     b.Property<DateTimeOffset?>("UpdatedAtUtc")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("UserEmail")
+                    b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(256)
                         .HasColumnType("citext")
@@ -483,7 +483,7 @@ namespace BaitaHora.Infrastructure.Data.Migrations
                     b.HasIndex("ProfileId")
                         .IsUnique();
 
-                    b.HasIndex("UserEmail")
+                    b.HasIndex("Email")
                         .IsUnique()
                         .HasDatabaseName("ux_users_email");
 
@@ -520,6 +520,11 @@ namespace BaitaHora.Infrastructure.Data.Migrations
                         .HasColumnType("character varying(120)")
                         .HasColumnName("profile_name");
 
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
                     b.Property<string>("ProfileImageUrl")
                         .HasMaxLength(512)
                         .HasColumnType("character varying(512)");
@@ -532,25 +537,20 @@ namespace BaitaHora.Infrastructure.Data.Migrations
                     b.Property<DateTimeOffset?>("UpdatedAtUtc")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("UserPhone")
-                        .IsRequired()
-                        .HasMaxLength(16)
-                        .HasColumnType("character varying(16)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("Cpf")
                         .IsUnique()
                         .HasDatabaseName("ux_user_profiles_cpf");
 
+                    b.HasIndex("Phone")
+                        .IsUnique()
+                        .HasDatabaseName("ux_user_profiles_phone");
+
                     b.HasIndex("Rg")
                         .IsUnique()
                         .HasDatabaseName("ux_user_profiles_rg")
                         .HasFilter("\"rg\" IS NOT NULL");
-
-                    b.HasIndex("UserPhone")
-                        .IsUnique()
-                        .HasDatabaseName("ux_user_profiles_phone");
 
                     b.ToTable("user_profiles", (string)null);
                 });
@@ -756,7 +756,15 @@ namespace BaitaHora.Infrastructure.Data.Migrations
                         .HasForeignKey("PrimaryPositionId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.HasOne("BaitaHora.Domain.Features.Users.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("PrimaryPosition");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("BaitaHora.Domain.Features.Companies.Entities.CompanyPosition", b =>

@@ -1,13 +1,12 @@
 using BaitaHora.Application.Abstractions.Auth;
 using BaitaHora.Application.Common.Results;
-using BaitaHora.Application.Features.Companies.ServiceOffering.Get.ReadModels;
 using BaitaHora.Application.IRepositories.Companies;
 using MediatR;
 
 namespace BaitaHora.Application.Features.Companies.ServiceOffering.Get.ById;
 
 public sealed class GetServiceOfferingByIdHandler
-    : IRequestHandler<GetServiceOfferingByIdQuery, Result<ServiceOfferingDetails>>
+    : IRequestHandler<GetServiceOfferingByIdQuery, Result<ServiceOfferingEditView>>
 {
     private readonly ICompanyServiceOfferingRepository _serviceOfferingRepository;
     private readonly ICurrentCompany _currentCompany;
@@ -20,12 +19,12 @@ public sealed class GetServiceOfferingByIdHandler
         _currentCompany = currentCompany;
     }
 
-    public async Task<Result<ServiceOfferingDetails>> Handle(GetServiceOfferingByIdQuery request, CancellationToken ct)
+    public async Task<Result<ServiceOfferingEditView>> Handle(GetServiceOfferingByIdQuery request, CancellationToken ct)
     {
         var dto = await _serviceOfferingRepository.GetByIdAsync(_currentCompany.Id, request.ServiceOfferingId, ct);
 
         return dto is null
-            ? Result<ServiceOfferingDetails>.NotFound("Serviço não encontrado.")
-            : Result<ServiceOfferingDetails>.Ok(dto);
+            ? Result<ServiceOfferingEditView>.NotFound("Serviço não encontrado.")
+            : Result<ServiceOfferingEditView>.Ok(dto);
     }
 }

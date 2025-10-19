@@ -53,10 +53,8 @@ public sealed class ServiceOfferingsController : ControllerBase
         [FromRoute] Guid serviceOfferingId,
         CancellationToken ct)
     {
-        var cmd = ServiceOfferingsApiMappers.ToCommand(serviceOfferingId);
+        var cmd = serviceOfferingId.ToCommand(); 
         var result = await _mediator.Send(cmd, ct);
-
-        if (result.IsSuccess) return NoContent();
         return result.ToActionResult(this);
     }
 
@@ -68,7 +66,9 @@ public sealed class ServiceOfferingsController : ControllerBase
         var cmd = req.ToCommand();
         var result = await _mediator.Send(cmd, ct);
 
-        if (result.IsSuccess) return NoContent();
+        if (result.IsSuccess)
+            return NoContent();
+
         return result.ToActionResult(this);
     }
 
@@ -80,7 +80,9 @@ public sealed class ServiceOfferingsController : ControllerBase
         var cmd = req.ToCommand();
         var result = await _mediator.Send(cmd, ct);
 
-        if (result.IsSuccess) return NoContent();
+        if (result.IsSuccess)
+            return NoContent();
+
         return result.ToActionResult(this);
     }
 
@@ -100,13 +102,13 @@ public sealed class ServiceOfferingsController : ControllerBase
         return result.ToActionResult(this);
     }
 
-    [HttpGet("combo")]
+    [HttpGet("options")]
     public async Task<IActionResult> ListActiveCombo(
         [FromQuery] string? search,
         [FromQuery] int take = 20,
         CancellationToken ct = default)
     {
-        var query = new ListActiveServiceOfferingsComboQuery(search, take);
+        var query = new ListActiveServiceOfferingsOptionsQuery(search, take);
         var result = await _mediator.Send(query, ct);
         return result.ToActionResult(this);
     }

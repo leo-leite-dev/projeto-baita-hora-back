@@ -12,7 +12,7 @@ public static class ServiceOfferingsApiMappers
         this CreateServiceOfferingRequest r)
         => new CreateServiceOfferingCommand
         {
-            ServiceOfferingName = r.ServiceOfferingName,
+            ServiceOfferingName = r.Name,
             Amount = r.Amount,
             Currency = r.Currency,
         };
@@ -22,7 +22,7 @@ public static class ServiceOfferingsApiMappers
         => new PatchServiceOfferingCommand
         {
             ServiceOfferingId = serviceOfferingId,
-            ServiceOfferingName = r.ServiceOfferingName,
+            ServiceOfferingName = r.Name,
             Amount = r.Amount,
             Currency = r.Currency,
         };

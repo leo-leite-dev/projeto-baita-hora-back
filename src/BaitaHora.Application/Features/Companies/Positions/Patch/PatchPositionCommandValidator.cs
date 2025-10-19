@@ -8,13 +8,16 @@ public sealed class PatchPositionCommandValidator
 {
     public PatchPositionCommandValidator()
         : base(required: false,
-               nameSelector: x => x.NewPositionName,
-               levelSelector: x => x.NewAccessLevel)
+               nameSelector: x => x.PositionName,
+               levelSelector: x => x.AccessLevel)
     {
         RuleFor(x => x.PositionId).NotEmpty();
 
         RuleFor(x => x)
-            .Must(x => x.NewPositionName is not null || x.NewAccessLevel.HasValue)
+            .Must(x =>
+                !string.IsNullOrWhiteSpace(x.PositionName)
+                || x.AccessLevel.HasValue
+                || x.SetServiceOfferingIds is not null)
             .WithMessage("Informe ao menos um campo para atualização.");
     }
 }
