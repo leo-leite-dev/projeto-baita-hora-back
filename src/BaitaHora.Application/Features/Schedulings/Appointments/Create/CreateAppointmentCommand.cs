@@ -6,17 +6,18 @@ using MediatR;
 
 namespace BaitaHora.Application.Features.Schedulings.Appointments.Create;
 
-public sealed record CreateAppointmentCommand
-    : IRequest<Result<CreateAppointmentResponse>>, IAuthorizableRequest, ITransactionalRequest
+public sealed class CreateAppointmentCommand
+    : IRequest<Result<Guid>>, IAuthorizableRequest, ITransactionalRequest
 {
-    public Guid CompanyId { get; init; }
     public Guid MemberId { get; init; }
     public Guid CustomerId { get; init; }
+    public IReadOnlyCollection<Guid> ServiceOfferingIds { get; init; } = Array.Empty<Guid>();
 
     public DateTime StartsAtUtc { get; init; }
+    public int DurationMinutes { get; init; }
 
-    public int DurationMinutes { get; init; } = 30;
-
+    public Guid CompanyId { get; init; }
     public Guid ResourceId => CompanyId;
+
     public IEnumerable<CompanyPermission> RequiredPermissions => [CompanyPermission.ManageCompany];
 }

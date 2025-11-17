@@ -2,6 +2,7 @@ using BaitaHora.Application.Abstractions.Auth;
 using BaitaHora.Application.Common.Results;
 using BaitaHora.Application.Features.Auth.Login;
 using BaitaHora.Application.IRepositories.Companies;
+using BaitaHora.Domain.Features.Common.ValueObjects;
 
 namespace BaitaHora.Application.Features.Auth.SelectCompany;
 
@@ -27,11 +28,14 @@ public sealed class SelectCompanyUseCase
         SelectCompanyCommand cmd,
         CancellationToken ct)
     {
-        var membership = await _companyMemberRepository.GetMemberByIdAsync(userId, cmd.CompanyId, ct);
+        var membership = await _companyMemberRepository
+            .GetByCompanyAndUserWithPositionAsync(cmd.CompanyId, userId, ct);
+
         if (membership is null || !membership.IsActive)
             return Result<AuthResult>.Forbidden("Usuário não pertence a esta empresa.");
 
         var company = await _companyRepository.GetByIdAsync(cmd.CompanyId, ct);
+
         var companies = new List<AuthCompanySummary>
         {
             new(cmd.CompanyId, company?.Name ?? string.Empty)
@@ -41,7 +45,11 @@ public sealed class SelectCompanyUseCase
             userId,
             username,
             new[] { membership.Role.ToString() },
-            new Dictionary<string, string> { ["companyId"] = cmd.CompanyId.ToString() },
+            new Dictionary<string, string>
+            {
+                ["companyId"] = cmd.CompanyId.ToString(),
+                ["memberId"] = membership.Id.ToString()
+            },
             companies,
             ct
         );

@@ -6,6 +6,7 @@ using BaitaHora.Application.Features.Companies.Common;
 using BaitaHora.Domain.Features.Users.Entities;
 using BaitaHora.Domain.Features.Companies.Entities;
 using BaitaHora.Application.Abstractions.Auth;
+using BaitaHora.Domain.Features.Companies.Events;
 
 namespace BaitaHora.Application.Features.Onboarding;
 
@@ -51,14 +52,15 @@ public sealed class RegisterOwnerWithCompanyUseCase
 
         var company = Company.Create(
             companyName: compVO.CompanyName,
-            cnpj: compVO.Cnpj,        
-            address: compVO.Address,      
-            tradeName: compVO.TradeName,     
-            companyPhone: compVO.CompanyPhone,  
-            companyEmail: compVO.CompanyEmail  
+            cnpj: compVO.Cnpj,
+            address: compVO.Address,
+            tradeName: compVO.TradeName,
+            companyPhone: compVO.CompanyPhone,
+            companyEmail: compVO.CompanyEmail
         );
 
-        company.AddOwnerFounder(user.Id);
+        var member = company.AddOwnerFounder(user.Id);
+        member.AddDomainEvent(new CompanyMemberCreatedDomainEvent(member.Id));
 
         await _userRepository.AddAsync(user, ct);
         await _companyRepository.AddAsync(company, ct);

@@ -11,30 +11,28 @@ public sealed class HttpContextUserIdentityAdapter : IUserIdentityPort
     public HttpContextUserIdentityAdapter(IHttpContextAccessor httpContextAccessor)
         => _http = httpContextAccessor;
 
-    public Guid GetUserId()
+    public Guid GetMemberId()
     {
         var user = _http.HttpContext?.User
             ?? throw new UnauthorizedAccessException("Usuário não autenticado.");
 
-        var idClaim = user.FindFirst(ClaimTypes.NameIdentifier)
-                   ?? user.FindFirst(JwtRegisteredClaimNames.Sub)
-                   ?? throw new UnauthorizedAccessException("Claim de usuário não encontrada.");
+        var memberClaim = user.FindFirst("memberId") 
+            ?? throw new UnauthorizedAccessException("Claim 'memberId' não encontrada no token.");
 
-        if (!Guid.TryParse(idClaim.Value, out var userId))
-            throw new UnauthorizedAccessException("Claim de usuário inválida.");
+        if (!Guid.TryParse(memberClaim.Value, out var memberId))
+            throw new UnauthorizedAccessException("Claim 'memberId' inválida.");
 
-        return userId;
+        return memberId;
     }
 
     public Task<(string Username, IEnumerable<string> Roles, bool IsActive)>
-        GetIdentityAsync(Guid userId, CancellationToken ct)
+        GetIdentityAsync(Guid memberId, CancellationToken ct)
     {
         var user = _http.HttpContext?.User
             ?? throw new UnauthorizedAccessException("Usuário não autenticado.");
 
-        var sub = user.FindFirst(ClaimTypes.NameIdentifier)
-                   ?? user.FindFirst(JwtRegisteredClaimNames.Sub);
-        if (sub is null || !Guid.TryParse(sub.Value, out var tokenUserId) || tokenUserId != userId)
+        var memberClaim = user.FindFirst("member_id");
+        if (memberClaim is null || !Guid.TryParse(memberClaim.Value, out var tokenMemberId) || tokenMemberId != memberId)
             throw new UnauthorizedAccessException("Identidade solicitada não corresponde ao token atual.");
 
         var username = user.FindFirst(ClaimTypes.Name)?.Value

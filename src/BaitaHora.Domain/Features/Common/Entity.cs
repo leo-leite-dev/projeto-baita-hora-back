@@ -40,7 +40,7 @@ public abstract class EntityBase
         }
     }
 
-    public void Deactivate()
+    public void Desactivate()
     {
         if (IsActive)
         {

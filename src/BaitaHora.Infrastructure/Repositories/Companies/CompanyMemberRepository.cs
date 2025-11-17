@@ -57,7 +57,7 @@ namespace BaitaHora.Infrastructure.Repositories.Companies
                                     m.User.Profile.BirthDate.Value.Value.Year,
                                     m.User.Profile.BirthDate.Value.Value.Month,
                                     m.User.Profile.BirthDate.Value.Value.Day)
-                                : null, 
+                                : null,
                             m.User.Profile.Phone.Value,
                             new AddressDto(
                                 m.User.Profile.Address.Street,
@@ -123,6 +123,14 @@ namespace BaitaHora.Infrastructure.Repositories.Companies
                     m.JoinedAt
                 ))
                 .ToListAsync(ct);
+        }
+
+        public async Task<CompanyMember?> GetByIdWithPositionAsync(Guid companyId, Guid memberId, CancellationToken ct = default)
+        {
+            return await _set
+                .AsNoTracking()
+                .Include(m => m.PrimaryPosition)
+                .SingleOrDefaultAsync(m => m.CompanyId == companyId && m.Id == memberId, ct);
         }
     }
 }

@@ -45,37 +45,98 @@ public sealed class AuthenticateUseCase
         if (active.Count == 0)
             return Result<AuthResult>.Forbidden("Usuário não possui empresas ativas.");
 
-        var company = active.First();
+        if (active.Count == 1)
+        {
+            var company = active.First();
+            var companyEntity = await _companyRepository.GetByIdAsync(company.CompanyId, ct);
 
-        var companyEntity = await _companyRepository.GetByIdAsync(company.CompanyId, ct);
+            var token = await _tokenService.IssueTokensAsync(
+                user.Id,
+                user.Username,
+                new[] { company.Role.ToString() },
+                new Dictionary<string, string>
+                {
+                    ["companyId"] = company.CompanyId.ToString(),
+                    ["memberId"] = company.Id.ToString()
+                }
+            );
 
-        var token = await _tokenService.IssueTokensAsync(
-            user.Id,
-            user.Username,
-            [company.Role.ToString()], 
-            new Dictionary<string, string> { ["companyId"] = company.CompanyId.ToString() }
+            var result = new AuthResult(
+                token.AccessToken,
+                token.RefreshToken,
+                token.ExpiresAtUtc,
+                user.Id,
+                user.Username,
+                new List<CompanyRole> { company.Role },
+                new List<AuthCompanySummary> {
+                    new(company.CompanyId, companyEntity?.Name ?? string.Empty)
+                },
+                MemberId: company.Id  
+            );
+
+            return Result<AuthResult>.Ok(result);
+        }
+
+        if (cmd.CompanyId is Guid chosen && chosen != Guid.Empty)
+        {
+            var membership = active.FirstOrDefault(m => m.CompanyId == chosen);
+            if (membership is null || !membership.IsActive)
+                return Result<AuthResult>.Forbidden("Usuário não pertence a esta empresa.");
+
+            var companyEntity = await _companyRepository.GetByIdAsync(chosen, ct);
+
+            var token = await _tokenService.IssueTokensAsync(
+                user.Id,
+                user.Username,
+                new[] { membership.Role.ToString() },
+                new Dictionary<string, string>
+                {
+                    ["companyId"] = membership.CompanyId.ToString(),
+                    ["memberId"] = membership.Id.ToString()
+                }
+            );
+
+            var ok = new AuthResult(
+                token.AccessToken,
+                token.RefreshToken,
+                token.ExpiresAtUtc,
+                user.Id,
+                user.Username,
+                new List<CompanyRole> { membership.Role },
+                new List<AuthCompanySummary>
+                {
+                    new(chosen, companyEntity?.Name ?? string.Empty)
+                }
+            );
+
+            return Result<AuthResult>.Ok(ok);
+        }
+
+        var companySummaries = new List<AuthCompanySummary>();
+        foreach (var member in active)
+        {
+            var companyEntity = await _companyRepository.GetByIdAsync(member.CompanyId, ct);
+            companySummaries.Add(new AuthCompanySummary(member.CompanyId, companyEntity?.Name ?? string.Empty));
+        }
+
+        var multiResult = new AuthResult(
+            AccessToken: string.Empty,
+            RefreshToken: string.Empty,
+            ExpiresAtUtc: DateTime.UtcNow,
+            UserId: user.Id,
+            Username: user.Username,
+            Roles: Array.Empty<CompanyRole>(),
+            Companies: companySummaries
         );
 
-        var result = new AuthResult(
-            token.AccessToken,
-            token.RefreshToken,
-            token.ExpiresAtUtc,
-            user.Id,
-            user.Username,
-            new List<CompanyRole> { company.Role },
-            new List<AuthCompanySummary>
-            {
-            new(company.CompanyId, companyEntity?.Name ?? string.Empty)
-            }
-        );
-
-        return Result<AuthResult>.Ok(result);
+        return Result<AuthResult>.Ok(multiResult);
     }
 
     private async Task<User?> FindUserByIdentifyAsync(string identify, CancellationToken ct)
     {
         var id = identify?.Trim();
-        if (string.IsNullOrWhiteSpace(id)) return null;
+        if (string.IsNullOrWhiteSpace(id))
+            return null;
 
         if (Email.TryParse(id, out var email))
             return await _userRepository.GetByEmailAsync(email, ct);

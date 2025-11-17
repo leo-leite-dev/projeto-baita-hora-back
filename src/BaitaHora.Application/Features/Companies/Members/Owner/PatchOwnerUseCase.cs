@@ -25,7 +25,7 @@ public sealed class PatchOwnerUseCase
 
     public async Task<Result<PatchOwnerResponse>> HandleAsync(PatchOwnerCommand request, CancellationToken ct)
     {
-        var userId = _identity.GetUserId()!;
+        var userId = _identity.GetMemberId()!;
 
         var userRes = await _userGuards.EnsureUserExistsWithProfileAsync(userId, ct);
         if (userRes.IsFailure)

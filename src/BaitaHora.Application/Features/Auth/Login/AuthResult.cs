@@ -1,3 +1,4 @@
+using BaitaHora.Domain.Features.Common.ValueObjects;
 using BaitaHora.Domain.Features.Companies.Enums;
 
 namespace BaitaHora.Application.Features.Auth.Login;
@@ -9,7 +10,8 @@ public sealed record AuthResult(
     Guid UserId,
     Username Username,
     IReadOnlyList<CompanyRole> Roles,
-    IReadOnlyList<AuthCompanySummary> Companies
+    IReadOnlyList<AuthCompanySummary> Companies,
+    Guid? MemberId = null
 );
 
 public sealed record AuthCompanySummary(

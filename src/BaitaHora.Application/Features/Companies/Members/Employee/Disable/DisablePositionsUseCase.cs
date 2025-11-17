@@ -35,7 +35,7 @@ public sealed class DisableEmployeesUseCase
             return Result<DisableEmployeesResponse>.FromError(memberGuardRes);
 
         foreach (var member in memberGuardRes.Value!)
-            member.Deactivate();
+            member.Desactivate();
 
         var disabledIds = memberGuardRes.Value!.Select(m => m.Id).ToArray();
         return Result<DisableEmployeesResponse>.Ok(new(disabledIds));

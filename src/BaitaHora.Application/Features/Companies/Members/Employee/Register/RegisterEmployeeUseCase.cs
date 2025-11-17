@@ -5,6 +5,7 @@ using BaitaHora.Application.Features.Companies.Responses;
 using BaitaHora.Application.Features.Users.Common;
 using BaitaHora.Application.IRepositories.Companies;
 using BaitaHora.Application.IRepositories.Users;
+using BaitaHora.Domain.Features.Companies.Events;
 using BaitaHora.Domain.Features.Users.Entities;
 
 namespace BaitaHora.Application.Features.Companies.Members.Employee.Register;
@@ -15,20 +16,20 @@ public sealed class RegisterEmployeeUseCase
     private readonly ICompanyGuards _companyGuards;
     private readonly IUserRepository _userRepository;
     private readonly ICompanyMemberRepository _memberRepository;
-    private readonly ICurrentCompany _currentCompany; 
+    private readonly ICurrentCompany _currentCompany;
 
     public RegisterEmployeeUseCase(
         IPasswordService passwordService,
         ICompanyGuards companyGuards,
         IUserRepository userRepository,
         ICompanyMemberRepository memberRepository,
-        ICurrentCompany currentCompany)             
+        ICurrentCompany currentCompany)
     {
         _passwordService = passwordService;
         _companyGuards = companyGuards;
         _userRepository = userRepository;
         _memberRepository = memberRepository;
-        _currentCompany = currentCompany;           
+        _currentCompany = currentCompany;
     }
 
     public async Task<Result<RegisterEmployeeResponse>> HandleAsync(
@@ -44,7 +45,7 @@ public sealed class RegisterEmployeeUseCase
         if (position is null)
             return Result<RegisterEmployeeResponse>.BadRequest("Cargo inválido para esta empresa.");
 
-        var employee = UserAssembler.BuildOwnerVO(request.Employee); 
+        var employee = UserAssembler.BuildOwnerVO(request.Employee);
 
         var profile = UserProfile.Create(
             employee.FullName,
@@ -62,6 +63,7 @@ public sealed class RegisterEmployeeUseCase
             _passwordService.Hash);
 
         var member = company.AddMemberWithPrimaryPosition(user.Id, position);
+        member.AddDomainEvent(new CompanyMemberCreatedDomainEvent(member.Id));
 
         var response = new RegisterEmployeeResponse(
             user.Id,

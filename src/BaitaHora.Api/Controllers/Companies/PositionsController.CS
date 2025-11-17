@@ -6,6 +6,7 @@ using BaitaHora.Contracts.DTOs.Companies.Positions;
 using BaitaHora.Application.Features.Companies.ListPositions.Get.List;
 using BaitaHora.Application.Features.Companies.Positions.Get.ById;
 using BaitaHora.Application.Features.Companies.Positions.Get.Combo;
+using BaitaHora.Application.Abstractions.Auth;
 using MediatR;
 
 namespace BaitaHora.Api.Controllers.Companies;
@@ -16,15 +17,20 @@ namespace BaitaHora.Api.Controllers.Companies;
 public sealed class PositionsController : ControllerBase
 {
     private readonly ISender _mediator;
+    private readonly ICurrentCompany _currentCompany;
 
-    public PositionsController(ISender mediator) => _mediator = mediator;
+    public PositionsController(IMediator mediator, ICurrentCompany currentCompany)
+    {
+        _mediator = mediator;
+        _currentCompany = currentCompany;
+    }
 
     [HttpPost]
     public async Task<IActionResult> CreatePosition(
         [FromBody] CreatePositionRequest req,
         CancellationToken ct)
     {
-        var cmd = req.ToCommand();
+        var cmd = req.ToCommand(_currentCompany.Id);
         var result = await _mediator.Send(cmd, ct);
         return result.ToActionResult(this);
     }
@@ -35,7 +41,7 @@ public sealed class PositionsController : ControllerBase
         [FromBody] PatchPositionRequest req,
         CancellationToken ct)
     {
-        var cmd = req.ToCommand(positionId);
+        var cmd = req.ToCommand(positionId, _currentCompany.Id);
         var result = await _mediator.Send(cmd, ct);
         return result.ToActionResult(this);
     }
@@ -45,7 +51,7 @@ public sealed class PositionsController : ControllerBase
         [FromRoute] Guid positionId,
         CancellationToken ct)
     {
-        var cmd = positionId.ToCommand();
+        var cmd = positionId.ToCommand(_currentCompany.Id);
         var result = await _mediator.Send(cmd, ct);
         return result.ToActionResult(this);
     }
@@ -55,7 +61,7 @@ public sealed class PositionsController : ControllerBase
         [FromBody] DisablePositionsRequest req,
         CancellationToken ct)
     {
-        var cmd = req.ToCommand();
+        var cmd = req.ToCommand(_currentCompany.Id);
         var result = await _mediator.Send(cmd, ct);
         if (result.IsSuccess) return NoContent();
         return result.ToActionResult(this);
@@ -66,7 +72,7 @@ public sealed class PositionsController : ControllerBase
         [FromBody] ActivatePositionsRequest req,
         CancellationToken ct)
     {
-        var cmd = req.ToCommand();
+        var cmd = req.ToCommand(_currentCompany.Id);
         var result = await _mediator.Send(cmd, ct);
         if (result.IsSuccess) return NoContent();
         return result.ToActionResult(this);

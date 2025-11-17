@@ -14,7 +14,7 @@ public abstract class ActivatableEntity : Entity
     //     }
     // }
 
-    // public void Deactivate()
+    // public void Desactivate()
     // {
     //     if (IsActive)
     //     {

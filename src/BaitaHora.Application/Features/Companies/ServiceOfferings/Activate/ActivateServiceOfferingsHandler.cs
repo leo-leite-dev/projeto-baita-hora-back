@@ -4,11 +4,13 @@ using MediatR;
 namespace BaitaHora.Application.Features.Companies.ServiceOfferings.Activate;
 
 public sealed class ActivateServiceOfferingsHandler
-    : IRequestHandler<ActivateServiceOfferingsCommand, Result>
+    : IRequestHandler<ActivateServiceOfferingsCommand, Result<Unit>>
 {
     private readonly ActivateServiceOfferingsUseCase _useCase;
-    public ActivateServiceOfferingsHandler(ActivateServiceOfferingsUseCase useCase) => _useCase = useCase;
 
-    public Task<Result> Handle(ActivateServiceOfferingsCommand request, CancellationToken ct)
+    public ActivateServiceOfferingsHandler(ActivateServiceOfferingsUseCase useCase)
+        => _useCase = useCase;
+
+    public Task<Result<Unit>> Handle(ActivateServiceOfferingsCommand request, CancellationToken ct)
         => _useCase.HandleAsync(request, ct);
 }

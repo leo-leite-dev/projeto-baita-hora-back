@@ -5,6 +5,7 @@ public sealed record AuthResponse(
     string RefreshToken,
     DateTime ExpiresAtUtc,
     Guid UserId,
+    Guid? MemberId, 
     string Username,
     IReadOnlyList<string> Roles,
     IReadOnlyList<AuthCompanyResponse> Companies

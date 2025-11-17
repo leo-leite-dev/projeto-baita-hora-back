@@ -18,6 +18,7 @@ public static class AuthApiMappers
             result.RefreshToken,
             result.ExpiresAtUtc,
             result.UserId,
+            result.MemberId,
             result.Username.Value,
             result.Roles.Select(r => r.ToString()).ToList(),
             result.Companies.Select(c => new AuthCompanyResponse(

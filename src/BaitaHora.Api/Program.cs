@@ -1,11 +1,14 @@
 using System.Text;
 using System.Text.Json.Serialization;
+using BaitaHora.Api.PostProcessors;
 using BaitaHora.Api.Web.Adapters;
 using BaitaHora.Api.Web.Cookies;
 using BaitaHora.Api.Web.Middlewares;
 using BaitaHora.Application.Abstractions.Auth;
 using BaitaHora.Application.Abstractions.Integrations;
+using BaitaHora.Application.Common.Results;
 using BaitaHora.Application.DependencyInjection;
+using BaitaHora.Application.Features.Auth.Login;
 using BaitaHora.Application.Ports;
 using BaitaHora.Infrastructure;
 using BaitaHora.Infrastructure.Configuration;
@@ -14,21 +17,38 @@ using BaitaHora.Infrastructure.Serialization;
 using BaitaHora.Infrastructure.Services.Auth.Cookies;
 using BaitaHora.Infrastructure.Services.Auth.Jwt;
 using BaitaHora.Integrations.Social;
+using MediatR.Pipeline;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Hangfire.PostgreSql;
+using BaitaHora.Application.Features.Schedulings.Appointments.Jobs;
+using Hangfire;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddBotInfrastructure(builder.Configuration);
-builder.Services.AddSecurityInfrastructure(); 
+builder.Services.AddSecurityInfrastructure();
+
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IUserIdentityPort, HttpContextUserIdentityAdapter>();
 builder.Services.AddScoped<ITokenService, JwtTokenService>();
 builder.Services.AddScoped<IJwtCookieFactory, JwtCookieFactory>();
 builder.Services.AddScoped<IJwtCookieWriter, JwtCookieWriter>();
+
+builder.Services.AddScoped<IAutoCompleteAppointmentsJob, AutoCompleteAppointmentsJob>();
+
+builder.Services.AddHangfire(cfg =>
+{
+    cfg.SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+       .UseSimpleAssemblyNameTypeSerializer()
+       .UseRecommendedSerializerSettings()
+       .UsePostgreSqlStorage(builder.Configuration.GetConnectionString("DefaultConnection"));
+});
+
+builder.Services.AddHangfireServer();
 
 var jwt = builder.Configuration.GetSection("JwtOptions").Get<TokenOptions>()
           ?? throw new InvalidOperationException("JwtOptions não configurado.");
@@ -62,8 +82,8 @@ builder.Services.AddHttpClient<IInstagramApi, InstagramApi>(http =>
     http.BaseAddress = new Uri("https://graph.facebook.com/v23.0/");
 });
 
-
 builder.Services.AddAuthorization();
+
 builder.Services.AddControllers()
     .AddJsonOptions(o =>
     {
@@ -97,6 +117,10 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+builder.Services.AddTransient<
+    IRequestPostProcessor<AuthenticateCommand, Result<AuthResult>>,
+    LoginCookiePostProcessor>();
+
 builder.Services.AddCors(opt =>
 {
     opt.AddDefaultPolicy(p =>
@@ -122,6 +146,8 @@ app.UseMiddleware<JwtCookieAuthenticationMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.UseHangfireDashboard("/hangfire");
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -137,6 +163,13 @@ if (app.Environment.IsEnvironment("Testing"))
 }
 
 app.MapControllers();
+
+RecurringJob.AddOrUpdate<IAutoCompleteAppointmentsJob>(
+    recurringJobId: "auto-complete-appointments",
+    methodCall: job => job.RunAsync(CancellationToken.None),
+    cronExpression: "*/5 * * * *" 
+);
+
 app.Run();
 
 public partial class Program { }

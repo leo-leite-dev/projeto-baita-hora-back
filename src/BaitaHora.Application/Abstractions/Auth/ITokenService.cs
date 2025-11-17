@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using BaitaHora.Application.Features.Auth.Login;
+using BaitaHora.Domain.Features.Common.ValueObjects;
 
 namespace BaitaHora.Application.Abstractions.Auth;
 

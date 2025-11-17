@@ -15,12 +15,13 @@ using BaitaHora.Application.Features.Companies.ServiceOfferings.Activate;
 using BaitaHora.Application.Features.Companies.Employees.Disable;
 using BaitaHora.Application.Features.Companies.Employees.Activate;
 using BaitaHora.Application.Companies.Features.Members.Promotion;
-using BaitaHora.Application.Features.Schedulings.Appointments.Create;
 using BaitaHora.Application.Features.Customers.Create;
 using BaitaHora.Application.Features.Schedulings.Appointments.Reschedule;
-using BaitaHora.Application.Features.Schedulings.Appointments.GetAll;
 using BaitaHora.Application.Features.Companies.ServiceOfferings.Disable;
 using BaitaHora.Application.Features.Auth.Login;
+using BaitaHora.Application.Features.Auth.SelectCompany;
+using BaitaHora.Application.Features.Schedulings.Appointments.Cancel;
+using BaitaHora.Application.Features.Schedulings.Appointments.NoShow;
 
 namespace BaitaHora.Infrastructure.DependencyInjection;
 
@@ -30,6 +31,7 @@ public static class UseCasesRegistration
     {
         // Auth
         services.AddScoped<AuthenticateUseCase>();
+        services.AddScoped<SelectCompanyUseCase>();
         // services.AddScoped<ToggleUserActiveUseCase>();
 
         // Customer
@@ -63,7 +65,8 @@ public static class UseCasesRegistration
         //Schedulings
         services.AddScoped<CreateAppointmentUseCase>();
         services.AddScoped<RescheduleAppointmentUseCase>();
-        services.AddScoped<GetAppointmentsUseCase>();
+        services.AddScoped<CancelAppointmentUseCase>();
+        services.AddScoped<NoShowAppointmentUseCase>();
 
         return services;
     }

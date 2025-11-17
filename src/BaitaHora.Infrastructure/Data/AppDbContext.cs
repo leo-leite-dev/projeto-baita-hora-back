@@ -4,8 +4,8 @@ using BaitaHora.Domain.Features.Companies.Entities;
 using BaitaHora.Infrastructure.Persistence.Entities;
 using BaitaHora.Infrastructure.Data.Outbox;
 using BaitaHora.Application.Abstractions.Data;
-using BaitaHora.Domain.Features.Schedules.Entities;
 using BaitaHora.Domain.Features.Customers;
+using BaitaHora.Domain.Features.Schedules.Entities;
 
 namespace BaitaHora.Infrastructure.Data;
 

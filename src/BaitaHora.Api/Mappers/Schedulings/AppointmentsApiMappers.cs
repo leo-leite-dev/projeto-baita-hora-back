@@ -1,22 +1,23 @@
 using BaitaHora.Application.Features.Schedulings.Appointments.Cancel;
-using BaitaHora.Application.Features.Schedulings.Appointments.Complete;
 using BaitaHora.Application.Features.Schedulings.Appointments.Create;
-using BaitaHora.Application.Features.Schedulings.Appointments.GetAll;
+using BaitaHora.Application.Features.Schedulings.Appointments.NoShow;
 using BaitaHora.Application.Features.Schedulings.Appointments.Reschedule;
 using BaitaHora.Contracts.DTOs.Schedulings;
-using BaitaHora.Contracts.DTOS.Schedulings;
+using BaitaHora.Contracts.DTOs.Schedulings.Appointments;
 
 namespace BaitaHora.Api.Mappers.Schedulings;
 
 public static class AppointmentsApiMappers
 {
-    public static CreateAppointmentCommand ToCommand(this CreateAppointmentRequest r)
+    public static CreateAppointmentCommand ToCommand(this CreateAppointmentRequest r, Guid companyId)
         => new CreateAppointmentCommand
         {
             MemberId = r.MemberId,
             CustomerId = r.CustomerId,
+            ServiceOfferingIds = r.ServiceOfferingIds ?? Array.Empty<Guid>(),
             StartsAtUtc = r.StartsAtUtc,
-            DurationMinutes = r.DurationMinutes
+            DurationMinutes = r.DurationMinutes,
+            CompanyId = companyId
         };
 
     public static RescheduleAppointmentCommand ToCommand(
@@ -30,13 +31,17 @@ public static class AppointmentsApiMappers
             NewDurationMinutes = r.NewDurationMinutes
         };
 
-    public static CompleteAppointmentCommand ToCommand(
-        this CompleteAppointmentRequest r,
-        Guid appointmentId)
-        => new CompleteAppointmentCommand
+    public static RescheduleAppointmentCommand ToCommand(
+        this RescheduleAppointmentRequest r,
+        Guid appointmentId,
+        Guid companyId)
+        => new RescheduleAppointmentCommand
         {
             MemberId = r.MemberId,
-            AppointmentId = appointmentId
+            AppointmentId = appointmentId,
+            NewStartsAtUtc = r.NewStartsAtUtc,
+            NewDurationMinutes = r.NewDurationMinutes,
+            CompanyId = companyId
         };
 
     public static CancelAppointmentCommand ToCommand(
@@ -48,15 +53,14 @@ public static class AppointmentsApiMappers
             AppointmentId = appointmentId
         };
 
-    public static GetAppointmentsResponse ToResponse(this GetAppointmentsResult r)
-        => new GetAppointmentsResponse(
-            r.Id,
-            r.CustomerName,
-            r.StartsAtUtc,
-            r.EndsAtUtc,
-            r.Status.ToString()
-        );
-
-    public static IReadOnlyList<GetAppointmentsResponse> ToResponse(this IEnumerable<GetAppointmentsResult> items)
-        => items.Select(ToResponse).ToList();
+    public static NoShowAppointmentCommand ToCommand(
+        this NoShowAppointmentRequest r,
+        Guid appointmentId,
+        Guid companyId)
+        => new NoShowAppointmentCommand
+        {
+            MemberId = r.MemberId,
+            AppointmentId = appointmentId,
+            CompanyId = companyId
+        };
 }

@@ -6,10 +6,9 @@ namespace BaitaHora.Api.Mappers.Customers;
 public static class CustomersApiMappers
 {
     public static CreateCustomerCommand ToCommand(
-        this CreateCustomerRequest r, Guid companyId)
+        this CreateCustomerRequest r)
         => new CreateCustomerCommand
         {
-            CompanyId = companyId,
             CustomerName = r.CustomerName,
             CustomerPhone = r.CustomerPhone,
             CustomerCpf = r.CustomerCpf

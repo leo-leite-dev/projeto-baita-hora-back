@@ -7,6 +7,8 @@ using BaitaHora.Application.Features.Companies.ServiceOffering.Get.List;
 using BaitaHora.Application.Features.Companies.ServiceOffering.Get.ById;
 using BaitaHora.Application.Features.Companies.ServiceOffering.Get.Combo;
 using MediatR;
+using BaitaHora.Application.Features.Companies.ServiceOffering.Get.Options;
+using BaitaHora.Application.Abstractions.Auth;
 
 namespace BaitaHora.Api.Controllers.Companies;
 
@@ -16,12 +18,12 @@ namespace BaitaHora.Api.Controllers.Companies;
 public sealed class ServiceOfferingsController : ControllerBase
 {
     private readonly ISender _mediator;
-    private readonly ILogger<ServiceOfferingsController> _logger;
+    private readonly ICurrentCompany _currentCompany;
 
-    public ServiceOfferingsController(ISender mediator, ILogger<ServiceOfferingsController> logger)
+    public ServiceOfferingsController(IMediator mediator, ICurrentCompany currentCompany)
     {
         _mediator = mediator;
-        _logger = logger;
+        _currentCompany = currentCompany;
     }
 
     [HttpPost]
@@ -29,10 +31,7 @@ public sealed class ServiceOfferingsController : ControllerBase
         [FromBody] CreateServiceOfferingRequest req,
         CancellationToken ct)
     {
-        var cid = HttpContext.User.FindFirst("companyId")?.Value;
-        _logger.LogInformation("CreateServiceOffering: cid={cid}", cid ?? "(null)");
-
-        var cmd = req.ToCommand();
+        var cmd = req.ToCommand(_currentCompany.Id); 
         var result = await _mediator.Send(cmd, ct);
         return result.ToActionResult(this);
     }
@@ -43,7 +42,7 @@ public sealed class ServiceOfferingsController : ControllerBase
         [FromBody] PatchServiceOfferingRequest req,
         CancellationToken ct)
     {
-        var cmd = req.ToCommand(serviceOfferingId);
+        var cmd = req.ToCommand(serviceOfferingId, _currentCompany.Id);  
         var result = await _mediator.Send(cmd, ct);
         return result.ToActionResult(this);
     }
@@ -53,7 +52,7 @@ public sealed class ServiceOfferingsController : ControllerBase
         [FromRoute] Guid serviceOfferingId,
         CancellationToken ct)
     {
-        var cmd = serviceOfferingId.ToCommand(); 
+        var cmd = serviceOfferingId.ToCommand(_currentCompany.Id); 
         var result = await _mediator.Send(cmd, ct);
         return result.ToActionResult(this);
     }
@@ -63,12 +62,9 @@ public sealed class ServiceOfferingsController : ControllerBase
         [FromBody] DisableServiceOfferingsRequest req,
         CancellationToken ct)
     {
-        var cmd = req.ToCommand();
+        var cmd = req.ToCommand(_currentCompany.Id);  
         var result = await _mediator.Send(cmd, ct);
-
-        if (result.IsSuccess)
-            return NoContent();
-
+        if (result.IsSuccess) return NoContent();
         return result.ToActionResult(this);
     }
 
@@ -77,12 +73,9 @@ public sealed class ServiceOfferingsController : ControllerBase
         [FromBody] ActivateServiceOfferingsRequest req,
         CancellationToken ct)
     {
-        var cmd = req.ToCommand();
+        var cmd = req.ToCommand(_currentCompany.Id);  
         var result = await _mediator.Send(cmd, ct);
-
-        if (result.IsSuccess)
-            return NoContent();
-
+        if (result.IsSuccess) return NoContent();
         return result.ToActionResult(this);
     }
 
@@ -109,6 +102,17 @@ public sealed class ServiceOfferingsController : ControllerBase
         CancellationToken ct = default)
     {
         var query = new ListActiveServiceOfferingsOptionsQuery(search, take);
+        var result = await _mediator.Send(query, ct);
+        return result.ToActionResult(this);
+    }
+
+    [HttpGet("options/my")]
+    public async Task<IActionResult> ListActiveOptionsForCurrentMember(
+        [FromQuery] string? search,
+        [FromQuery] int take = 20,
+        CancellationToken ct = default)
+    {
+        var query = new ListActiveServiceOfferingsForMemberOptionsQuery(search, take);
         var result = await _mediator.Send(query, ct);
         return result.ToActionResult(this);
     }

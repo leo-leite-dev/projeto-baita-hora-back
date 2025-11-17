@@ -68,4 +68,37 @@ public class CompanyServiceOfferingRepository
             .AsNoTracking()
             .ToListAsync(ct);
     }
+
+    public async Task<IReadOnlyList<ServiceOfferingOptions>> ListServiceOfferingActiveForMemberOptionsAsync(
+        Guid companyId, Guid memberId, string? search, int take, CancellationToken ct)
+    {
+        IQueryable<CompanyServiceOffering> q = _set
+            .Where(s => s.CompanyId == companyId && s.IsActive);
+
+        var positions = _context.Set<CompanyPosition>();
+        var members = _context.Set<CompanyMember>();
+
+        q = q.Where(s =>
+            positions
+                .Where(p => p.CompanyId == companyId
+                    && p.Members.Any(m => m.Id == memberId && m.CompanyId == companyId && m.IsActive))
+                .Any(p => p.ServiceOfferings.Any(so => so.Id == s.Id)));
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var term = search.Trim();
+            q = q.Where(s => EF.Functions.ILike(s.Name, $"%{term}%"));
+        }
+
+        return await q
+            .OrderBy(s => s.Name)
+            .Select(s => new ServiceOfferingOptions
+            {
+                Id = s.Id,
+                Name = s.Name
+            })
+            .Take(take)
+            .AsNoTracking()
+            .ToListAsync(ct);
+    }
 }

@@ -1,3 +1,4 @@
+using BaitaHora.Application.Common.Authorization;
 using BaitaHora.Application.Common.Behaviors;
 using BaitaHora.Application.Common.Results;
 using BaitaHora.Domain.Permissions;
@@ -5,7 +6,8 @@ using MediatR;
 
 namespace BaitaHora.Application.Features.Companies.ServiceOffering.Patch;
 
-public sealed record PatchServiceOfferingCommand : IRequest<Result>, ITransactionalRequest
+public sealed record PatchServiceOfferingCommand
+    : IRequest<Result<Unit>>, IAuthorizableRequest, ITransactionalRequest
 {
     public Guid ServiceOfferingId { get; init; }
 
@@ -13,6 +15,8 @@ public sealed record PatchServiceOfferingCommand : IRequest<Result>, ITransactio
     public decimal? Amount { get; init; }
     public string? Currency { get; init; }
 
-    public Guid ResourceId { get; init; }
+    public Guid CompanyId { get; init; }
+    public Guid ResourceId => CompanyId;
+
     public IEnumerable<CompanyPermission> RequiredPermissions => [CompanyPermission.ManageCompany];
 }

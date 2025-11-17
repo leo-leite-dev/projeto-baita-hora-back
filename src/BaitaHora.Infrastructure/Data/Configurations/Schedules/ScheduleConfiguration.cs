@@ -10,19 +10,19 @@ public sealed class ScheduleConfiguration : IEntityTypeConfiguration<Schedule>
     {
         b.ToTable("schedules");
 
-        b.HasKey(x => x.Id);
-        b.Property(x => x.Id).ValueGeneratedNever();
+        b.HasKey(s => s.Id);
+        b.Property(s => s.Id).ValueGeneratedNever();
 
-        b.Property(x => x.MemberId)
-         .IsRequired();
+        b.Property(s => s.MemberId)
+            .HasColumnName("member_id")
+            .IsRequired();
 
-        b.HasIndex(x => x.MemberId)
-         .IsUnique()
-         .HasDatabaseName("ux_schedules_user");
+        b.HasMany(s => s.Appointments)
+            .WithOne()
+            .HasForeignKey(a => a.ScheduleId)
+            .OnDelete(DeleteBehavior.Cascade);
 
-        b.HasMany(x => x.Appointments)
-         .WithOne()
-         .HasForeignKey(a => a.ScheduleId)
-         .OnDelete(DeleteBehavior.Cascade);
+        b.HasIndex(s => s.MemberId)
+            .HasDatabaseName("ix_schedules_member");
     }
 }

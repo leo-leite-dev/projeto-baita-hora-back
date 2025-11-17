@@ -1,6 +1,5 @@
 using BaitaHora.Application.Common.Results;
 using BaitaHora.Domain.Features.Companies.Entities;
-using BaitaHora.Domain.Features.Companies.Enums;
 using BaitaHora.Domain.Permissions;
 
 namespace BaitaHora.Application.Features.Companies.Guards.Interfaces
@@ -14,6 +13,5 @@ namespace BaitaHora.Application.Features.Companies.Guards.Interfaces
         Task<Result<Company>> GetWithPositionsMembersAndServiceOfferings(Guid companyId, CancellationToken ct);
         Task<Result<CompanyMember>> GetActiveMembership(Guid companyId, Guid userId, CancellationToken ct);
         Task<Result<bool>> HasPermissions(Guid companyId, Guid userId, IEnumerable<CompanyPermission> required, CancellationToken ct, bool requireAll = true);
-        Task<Result<CompanyRole>> GetUserRole(Guid companyId, Guid userId, CancellationToken ct);
     }
 }

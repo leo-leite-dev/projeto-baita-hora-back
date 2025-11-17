@@ -1,7 +1,7 @@
 using BaitaHora.Domain.Features.Common;
 using BaitaHora.Domain.Features.Common.Exceptions;
 using BaitaHora.Domain.Features.Common.ValueObjects;
-using BaitaHora.Domain.Features.Users.Events;
+using BaitaHora.Domain.Features.Companies.Events;
 using BaitaHora.Domain.Features.Users.Validators;
 
 namespace BaitaHora.Domain.Features.Users.Entities;
@@ -22,22 +22,20 @@ public sealed class User : EntityBase
 
     private User() { }
 
-    public static User Create(Email Email, Username username, string rawPassword, UserProfile profile, Func<string, string> hashFunction)
+    public static User Create(Email email, Username username, string rawPassword, UserProfile profile, Func<string, string> hash)
     {
-        if (profile is null) throw new UserException("Perfil do usuário é obrigatório.");
+        if (profile is null)
+            throw new UserException("Perfil do usuário é obrigatório.");
 
-        var user = new User()
+        var user = new User
         {
-            Email = Email,
+            Email = email,
             Username = username,
-            PasswordHash = rawPassword,
             Profile = profile,
-            ProfileId = profile.Id,
+            ProfileId = profile.Id
         };
 
-        user.SetPassword(rawPassword, hashFunction);
-
-        user.AddDomainEvent(new UserRegisteredDomainEvent(user.Id));
+        user.SetPassword(rawPassword, hash);
         return user;
     }
 
@@ -46,7 +44,7 @@ public sealed class User : EntityBase
         if (Email.Equals(newEmail))
             return false;
 
-        Email = newEmail; 
+        Email = newEmail;
         Touch();
         IncrementTokenVersion();
         return true;
@@ -65,7 +63,9 @@ public sealed class User : EntityBase
 
     public void SetPassword(string rawPassword, Func<string, string> hashFunction)
     {
-        if (hashFunction is null) throw new ArgumentNullException(nameof(hashFunction));
+        if (hashFunction is null)
+            throw new ArgumentNullException(nameof(hashFunction));
+
         if (string.IsNullOrWhiteSpace(rawPassword))
             throw new UserException("Senha é obrigatória.");
 

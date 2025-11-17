@@ -8,7 +8,7 @@ using MediatR;
 namespace BaitaHora.Application.Features.Companies.Positions.Patch;
 
 public sealed record PatchPositionCommand
-    : IRequest<Result>, IAuthorizableRequest, ITransactionalRequest
+    : IRequest<Result<Unit>>, IAuthorizableRequest, ITransactionalRequest
 {
     public Guid PositionId { get; init; }
 
@@ -17,6 +17,8 @@ public sealed record PatchPositionCommand
 
     public IEnumerable<Guid>? SetServiceOfferingIds { get; init; }
 
-    public Guid ResourceId { get; init; }
+    public Guid CompanyId { get; init; }
+    public Guid ResourceId => CompanyId;
+
     public IEnumerable<CompanyPermission> RequiredPermissions => [CompanyPermission.ManageCompany];
 }

@@ -11,5 +11,6 @@ namespace BaitaHora.Application.IRepositories.Companies
         Task<List<CompanyMember>> GetByCompanyAndUserIdsAsync(Guid companyId, IReadOnlyCollection<Guid> userIds, CancellationToken ct = default);
         Task<CompanyMember?> GetByCompanyAndUserWithPositionAsync(Guid companyId, Guid userId, CancellationToken ct = default);
         Task<IReadOnlyList<MemberDetails>> ListAllMembersByCompanyAsync(Guid companyId, CancellationToken ct);
+        Task<CompanyMember?> GetByIdWithPositionAsync(Guid companyId, Guid memberId, CancellationToken ct = default);
     }
 }

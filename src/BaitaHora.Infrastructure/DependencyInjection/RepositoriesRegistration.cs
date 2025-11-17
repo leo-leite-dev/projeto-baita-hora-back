@@ -9,6 +9,7 @@ using BaitaHora.Infrastructure.Repositories.Companies;
 using BaitaHora.Infrastructure.Repositories.Customers;
 using BaitaHora.Infrastructure.Data.Repositories.Schedulings;
 using Microsoft.Extensions.DependencyInjection;
+using BaitaHora.Infrastructure.Repositories.Schedules;
 
 namespace BaitaHora.Infrastructure.DependencyInjection;
 

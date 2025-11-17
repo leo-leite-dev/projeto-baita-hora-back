@@ -1,12 +1,13 @@
+using System.Security.Claims;
+using BaitaHora.Api.Helpers;
+using BaitaHora.Api.Mappers.Auth;
+using BaitaHora.Api.Web.Cookies;
+using BaitaHora.Application.Abstractions.Auth;
+using BaitaHora.Application.Abstractions.Integrations;
+using BaitaHora.Contracts.DTOS.Auth;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using BaitaHora.Api.Helpers;
-using BaitaHora.Contracts.DTOS.Auth;
-using BaitaHora.Api.Mappers.Auth;
-using BaitaHora.Api.Web.Cookies;
-using BaitaHora.Application.Abstractions.Integrations;
-using BaitaHora.Application.Abstractions.Auth;
 
 namespace BaitaHora.Api.Controllers.Auth;
 
@@ -33,24 +34,22 @@ public sealed class AuthController : ControllerBase
 
     [HttpGet("me")]
     [Authorize]
-    public ActionResult<AuthenticateResponse> Me()
+    public ActionResult<AuthenticateResponse> Me([FromServices] ICurrentUser current)
     {
-        var user = HttpContext.User;
-        if (user?.Identity?.IsAuthenticated != true)
-            return Unauthorized(new { message = "Usuário não autenticado" });
+        if (!current.IsAuthenticated)
+            return Unauthorized(new { message = "Usuário não autenticado." });
 
-        var userId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
-                     ?? user.FindFirst("sub")?.Value;
-        var username = user.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value
-                       ?? user.Identity?.Name;
-        var roles = user.FindAll(System.Security.Claims.ClaimTypes.Role)
-                        .Select(r => r.Value);
+        var roles = User.FindAll(ClaimTypes.Role).Select(r => r.Value);
+        var companyId = User.FindFirst("companyId")?.Value;
+        var memberId = User.FindFirst("memberId")?.Value;
 
         return Ok(new AuthenticateResponse(
             IsAuthenticated: true,
-            UserId: userId,
-            Username: username,
-            Roles: roles
+            UserId: current.UserId.ToString(),
+            Username: current.Username.Value,
+            Roles: roles,
+            CompanyId: companyId,
+            MemberId: memberId
         ));
     }
 
@@ -60,25 +59,7 @@ public sealed class AuthController : ControllerBase
     {
         var cmd = req.ToCommand();
         var result = await _mediator.Send(cmd, ct);
-
-        if (!result.IsSuccess)
-            return result.ToActionResult(this, result.Error);
-
-        if (result.Value is not { } auth)
-            return Problem(
-                detail: "Auth result is null on success.",
-                statusCode: StatusCodes.Status500InternalServerError);
-
-        var now = DateTime.UtcNow;
-
-        var ttl = auth.ExpiresAtUtc > now
-            ? auth.ExpiresAtUtc - now
-            : TimeSpan.FromDays(7);
-
-        var cookie = _cookieFactory.CreateLoginCookie(auth.AccessToken, ttl);
-        _cookieWriter.Write(Response, cookie);
-
-        return Ok(auth.ToResponse());
+        return result.ToActionResult(this);
     }
 
     [HttpPost("logout")]

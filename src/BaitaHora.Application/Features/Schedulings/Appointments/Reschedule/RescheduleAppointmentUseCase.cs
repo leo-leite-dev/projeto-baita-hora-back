@@ -23,6 +23,10 @@ public sealed class RescheduleAppointmentUseCase
         if (appt is null)
             return Result<RescheduleAppointmentResponse>.NotFound("Agendamento não encontrado.");
 
+        if (appt.Status == AppointmentStatus.NoShow)
+            return Result<RescheduleAppointmentResponse>.BadRequest(
+                "Agendamentos marcados como no-show não podem ser remarcados.");
+                
         var schedule = await _scheduleRepository.GetByIdAsync(appt.ScheduleId, ct);
         if (schedule is null)
             return Result<RescheduleAppointmentResponse>.NotFound("Agenda não encontrada.");

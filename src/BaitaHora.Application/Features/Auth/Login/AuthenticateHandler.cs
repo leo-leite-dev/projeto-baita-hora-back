@@ -7,6 +7,7 @@ public sealed class AuthenticateHandler : IRequestHandler<AuthenticateCommand, R
 {
     private readonly AuthenticateUseCase _uc;
     public AuthenticateHandler(AuthenticateUseCase uc) => _uc = uc;
+
     public Task<Result<AuthResult>> Handle(AuthenticateCommand cmd, CancellationToken ct)
         => _uc.HandleAsync(cmd, ct);
 }

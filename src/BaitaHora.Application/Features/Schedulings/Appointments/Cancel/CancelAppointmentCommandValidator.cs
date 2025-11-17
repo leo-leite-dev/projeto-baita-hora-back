@@ -1,4 +1,3 @@
-using BaitaHora.Application.Features.Schedulings.Appointments.Cancel;
 using FluentValidation;
 
 namespace BaitaHora.Application.Features.Schedulings.Appointments.Cancel;

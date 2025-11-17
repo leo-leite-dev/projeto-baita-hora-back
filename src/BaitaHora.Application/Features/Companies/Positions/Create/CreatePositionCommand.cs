@@ -15,6 +15,8 @@ public sealed record CreatePositionCommand
 
     public IEnumerable<Guid> ServiceOfferingIds { get; init; } = Array.Empty<Guid>();
 
-    public Guid ResourceId { get; init; }
+    public Guid CompanyId { get; init; }
+    public Guid ResourceId => CompanyId;
+
     public IEnumerable<CompanyPermission> RequiredPermissions => [CompanyPermission.ManageCompany];
 }

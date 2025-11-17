@@ -20,12 +20,8 @@ public sealed class CompanyPosition : Entity
 
     private CompanyPosition() { }
 
-    internal static CompanyPosition Create(
-        Guid companyId,
-        string positionName,
-        CompanyRole accessLevel,
-        bool isSystem = false,
-        CompanyPermission permissionMask = CompanyPermission.None)
+    public static CompanyPosition Create(Guid companyId, string positionName, CompanyRole accessLevel, bool isSystem = false,
+    CompanyPermission permissionMask = CompanyPermission.None)
     {
         if (companyId == Guid.Empty)
             throw new CompanyException("CompanyId inválido.");
@@ -33,7 +29,7 @@ public sealed class CompanyPosition : Entity
         if (accessLevel == CompanyRole.Owner && !isSystem)
             throw new CompanyException("Cargo 'Owner' não existe; Owner apenas para o fundador (sistema).");
 
-        return new CompanyPosition
+        var position = new CompanyPosition
         {
             CompanyId = companyId,
             Name = NormalizeAndValidateName(positionName),
@@ -41,6 +37,8 @@ public sealed class CompanyPosition : Entity
             IsSystem = isSystem,
             PermissionMask = permissionMask
         };
+
+        return position;
     }
 
     internal void AddServiceOffering(CompanyServiceOffering service)
@@ -123,6 +121,7 @@ public sealed class CompanyPosition : Entity
 
         var linked = _serviceOfferings.Select(s => s.Id).ToHashSet();
         var toRemove = ids.Where(linked.Contains).ToArray();
+        
         if (toRemove.Length == 0)
             throw new CompanyException("Nenhum dos serviços informados está associado ao cargo.");
 

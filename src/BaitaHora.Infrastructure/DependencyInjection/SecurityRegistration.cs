@@ -11,8 +11,8 @@ public static class SecurityRegistration
     public static IServiceCollection AddSecurityInfrastructure(this IServiceCollection services)
     {
         services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-
         services.AddScoped<ICurrentCompany, HttpContextCurrentCompany>();
+        services.AddScoped<ICurrentUser, CurrentUser>();
 
         return services;
     }

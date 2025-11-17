@@ -16,10 +16,7 @@ public sealed class CustomerConfiguration : IEntityTypeConfiguration<Customer>
         b.HasKey(x => x.Id);
         b.Property(x => x.Id).ValueGeneratedNever();
 
-        var personNameConverter = new ValueConverter<PersonName, string>(
-            v => v.Value,
-            v => PersonName.Parse(v)
-        );
+        b.Ignore(x => x.DomainEvents);
 
         var cpfConverter = new ValueConverter<CPF, string>(
             v => v.Value,
@@ -31,33 +28,43 @@ public sealed class CustomerConfiguration : IEntityTypeConfiguration<Customer>
             v => Phone.Parse(v)
         );
 
-        b.Property(x => x.CustomerName)
+        b.Property(x => x.Name)
             .HasColumnName("customer_name")
-            .HasConversion(personNameConverter)
-            .HasMaxLength(50)
+            .HasMaxLength(120) 
             .IsRequired();
 
-        b.Property(x => x.CustomerPhone)
+        b.Property(x => x.Phone)
             .HasColumnName("customer_phone")
             .HasConversion(phoneConverter)
             .HasMaxLength(16)
             .IsRequired();
 
-        b.Property(x => x.CustomerCpf)
+        b.Property(x => x.Cpf)
             .HasColumnName("customer_cpf")
             .HasConversion(cpfConverter)
             .HasMaxLength(11)
             .IsRequired();
 
-        b.HasIndex(x => x.CustomerCpf)
+        b.Property(x => x.CreatedAtUtc)
+            .HasColumnName("created_at_utc")
+            .IsRequired();
+
+        b.Property(x => x.UpdatedAtUtc)
+            .HasColumnName("updated_at_utc");
+
+        b.Property(x => x.IsActive)
+            .HasColumnName("is_active")
+            .HasDefaultValue(true);
+
+        b.HasIndex(x => x.Cpf)
             .IsUnique()
             .HasDatabaseName("ux_customers_cpf");
 
-        b.HasIndex(x => x.CustomerPhone)
+        b.HasIndex(x => x.Phone)
             .IsUnique()
             .HasDatabaseName("ux_customers_phone");
 
-        b.HasIndex(x => x.CustomerName)
+        b.HasIndex(x => x.Name)
             .HasDatabaseName("ix_customers_name");
     }
 }

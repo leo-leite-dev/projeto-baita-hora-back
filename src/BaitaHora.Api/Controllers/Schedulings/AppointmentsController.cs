@@ -1,53 +1,48 @@
 using MediatR;
 using BaitaHora.Api.Helpers;
 using BaitaHora.Api.Mappers.Schedulings;
-using BaitaHora.Application.Features.Schedulings.Appointments.GetAll;
 using BaitaHora.Contracts.DTOs.Schedulings;
-using BaitaHora.Contracts.DTOS.Schedulings;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using BaitaHora.Contracts.DTOs.Schedulings.Appointments;
+using BaitaHora.Application.Features.Schedulings.Appointments.List;
+using BaitaHora.Application.Abstractions.Auth;
 
 namespace BaitaHora.Api.Controllers.Schedulings;
 
 [ApiController]
-[Route("api/appointments")]
+[Route(ApiRoutes.SchedulingsPrefix + "/appointments")]
 [Authorize]
 public sealed class AppointmentsController : ControllerBase
 {
     private readonly ISender _mediator;
+    private readonly ICurrentCompany _currentCompany;
 
-    public AppointmentsController(ISender mediator) => _mediator = mediator;
+    public AppointmentsController(IMediator mediator, ICurrentCompany currentCompany)
+    {
+        _mediator = mediator;
+        _currentCompany = currentCompany;
+    }
 
     [HttpPost]
     public async Task<IActionResult> CreateAppointment(
         [FromBody] CreateAppointmentRequest req,
         CancellationToken ct)
     {
-        var cmd = req.ToCommand();
+        var cmd = req.ToCommand(_currentCompany.Id);
         var result = await _mediator.Send(cmd, ct);
-        return result.ToActionResult(this, result.Value);
+        return result.ToActionResult(this);
     }
-
+    
     [HttpPut("{appointmentId:guid}/reschedule")]
     public async Task<IActionResult> RescheduleAppointment(
-        [FromRoute] Guid appointmentId,
-        [FromBody] RescheduleAppointmentRequest req,
-        CancellationToken ct)
+    [FromRoute] Guid appointmentId,
+    [FromBody] RescheduleAppointmentRequest req,
+    CancellationToken ct)
     {
-        var cmd = req.ToCommand(appointmentId);
+        var cmd = req.ToCommand(appointmentId, _currentCompany.Id);
         var result = await _mediator.Send(cmd, ct);
-        return result.ToActionResult(this, result.Value);
-    }
-
-    [HttpPut("{appointmentId:guid}/complete")]
-    public async Task<IActionResult> CompleteAppointment(
-        [FromRoute] Guid appointmentId,
-        [FromBody] CompleteAppointmentRequest req,
-        CancellationToken ct)
-    {
-        var cmd = req.ToCommand(appointmentId);
-        var result = await _mediator.Send(cmd, ct);
-        return result.ToActionResult(this, result.Value);
+        return result.ToActionResult(this);
     }
 
     [HttpPut("{appointmentId:guid}/cancel")]
@@ -61,22 +56,23 @@ public sealed class AppointmentsController : ControllerBase
         return result.ToActionResult(this, result.Value);
     }
 
-    [HttpGet]
-    public async Task<ActionResult<IReadOnlyList<GetAppointmentsResponse>>> GetAll(
-        [FromQuery] DateTime? date,
-        CancellationToken ct)
+    [HttpPut("{appointmentId:guid}/no-show")]
+    public async Task<IActionResult> NoShowAppointment(
+    [FromRoute] Guid appointmentId,
+    [FromBody] NoShowAppointmentRequest req,
+    CancellationToken ct)
     {
-        var query = new GetAppointmentsQuery(date);
-        var result = await _mediator.Send(query, ct);
+        var cmd = req.ToCommand(appointmentId, _currentCompany.Id);
+        var result = await _mediator.Send(cmd, ct);
+        return result.ToActionResult(this);
+    }
 
-        if (!result.IsSuccess)
-            return BadRequest(new { error = result.Error });
-
-        if (result.Value is not { } items)
-            return Problem(
-                detail: "No appointments found even though result was success.",
-                statusCode: StatusCodes.Status500InternalServerError);
-
-        return Ok(items.ToResponse());
+    [HttpGet("me")]
+    public async Task<IActionResult> GetMyAppointments(
+        [FromQuery] DateTime? dateUtc,
+         CancellationToken ct)
+    {
+        var result = await _mediator.Send(new ListAppointmentsQuery(dateUtc), ct);
+        return result.ToActionResult(this, result.Value);
     }
 }

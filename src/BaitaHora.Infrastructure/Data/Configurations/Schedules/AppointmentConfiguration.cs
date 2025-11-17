@@ -1,3 +1,4 @@
+using BaitaHora.Domain.Features.Companies.Entities;
 using BaitaHora.Domain.Features.Schedules.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -10,61 +11,46 @@ public sealed class AppointmentConfiguration : IEntityTypeConfiguration<Appointm
     {
         b.ToTable("appointments");
 
-        b.HasKey(x => x.Id);
-        b.Property(x => x.Id).ValueGeneratedNever();
+        b.HasKey(a => a.Id);
+        b.Property(a => a.Id).ValueGeneratedNever();
 
-        b.Property(x => x.ScheduleId)
-            .HasColumnName("schedule_id")
-            .IsRequired();
+        b.Property(a => a.ScheduleId).HasColumnName("schedule_id");
+        b.Property(a => a.CustomerId).HasColumnName("customer_id");
 
-        b.Property(x => x.CustomerId)
-            .HasColumnName("customer_id")
-            .IsRequired();
+        b.Property(a => a.StartsAtUtc)
+         .HasColumnName("starts_at_utc")
+         .HasColumnType("timestamptz")
+         .IsRequired();
 
-        b.Property(x => x.CompanyId)
-            .HasColumnName("company_id")
-            .IsRequired();
+        b.Property(a => a.Duration)
+         .HasColumnName("duration")
+         .HasColumnType("interval")
+         .IsRequired();
 
-        b.HasIndex(x => new { x.CompanyId, x.StartsAtUtc });
+        b.Property(a => a.Status)
+         .HasColumnName("status")
+         .HasConversion<string>()
+         .HasColumnType("varchar(20)")
+         .IsRequired();
 
-        b.Property(x => x.StartsAtUtc)
-            .HasColumnName("starts_at_utc")
-            .HasColumnType("timestamptz")
-            .IsRequired();
-
-        b.Property(x => x.Duration)
-            .HasColumnName("duration")
-            .HasColumnType("interval")
-            .IsRequired();
-
-        b.Property(x => x.Status)
-            .HasColumnName("status")
-            .HasColumnType("varchar(20)")
-            .HasConversion<string>()
-            .HasDefaultValue(AppointmentStatus.Pending)
-            .IsRequired();
-
-        b.ToTable(tb =>
-        {
-            tb.HasCheckConstraint(
-                "ck_appointments_duration_positive",
-                "duration > interval '0 seconds'");
-
-            tb.HasCheckConstraint(
-                "ck_appointments_status_valid",
-                "status in ('Pending','Cancelled','Completed')");
-        });
-
-        b.HasIndex(x => x.ScheduleId)
-            .HasDatabaseName("ix_appointments_schedule");
-
-        b.HasIndex(x => new { x.ScheduleId, x.StartsAtUtc })
-            .IsUnique()
-            .HasDatabaseName("ux_appointments_schedule_start");
-
-        b.HasOne<Schedule>()
-            .WithMany(s => s.Appointments)
-            .HasForeignKey(x => x.ScheduleId)
-            .OnDelete(DeleteBehavior.Cascade);
+        b.HasMany(a => a.ServiceOfferings)
+         .WithMany()
+         .UsingEntity<Dictionary<string, object>>(
+            "appointment_service_offerings",
+            j => j
+                .HasOne<CompanyServiceOffering>()
+                .WithMany()
+                .HasForeignKey("service_offering_id")
+                .OnDelete(DeleteBehavior.Cascade),
+            j => j
+                .HasOne<Appointment>()
+                .WithMany()
+                .HasForeignKey("appointment_id")
+                .OnDelete(DeleteBehavior.Cascade),
+            j =>
+            {
+                j.ToTable("appointment_service_offerings");
+                j.HasKey("appointment_id", "service_offering_id");
+            });
     }
 }

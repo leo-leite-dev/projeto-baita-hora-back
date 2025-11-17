@@ -1,6 +1,7 @@
 using BaitaHora.Application.Abstractions.Auth;
 using BaitaHora.Application.Common.Results;
 using BaitaHora.Application.Features.Companies.Guards.Interfaces;
+using MediatR;
 
 namespace BaitaHora.Application.Features.Companies.Positions.Patch;
 
@@ -15,7 +16,7 @@ public sealed class PatchPositionUseCase
         _currentCompany = currentCompany;
     }
 
-    public async Task<Result> HandleAsync(PatchPositionCommand cmd, CancellationToken ct)
+    public async Task<Result<Unit>> HandleAsync(PatchPositionCommand cmd, CancellationToken ct)
     {
         var wantsRename = !string.IsNullOrWhiteSpace(cmd.PositionName);
         var wantsAccessChange = cmd.AccessLevel.HasValue;
@@ -26,12 +27,12 @@ public sealed class PatchPositionUseCase
             : await _companyGuards.GetWithPositionsAndServiceOfferings(_currentCompany.Id, ct);
 
         if (companyRes.IsFailure)
-            return Result.FromError(companyRes);
+            return Result<Unit>.FromError(companyRes);
 
         var company = companyRes.Value!;
         var position = company.Positions.SingleOrDefault(p => p.Id == cmd.PositionId && p.IsActive);
         if (position is null)
-            return Result.NotFound("Cargo não encontrado ou inativo.");
+            return Result<Unit>.NotFound("Cargo não encontrado ou inativo.");
 
         if (wantsRename)
             company.RenamePosition(cmd.PositionId, cmd.PositionName!);
@@ -42,6 +43,6 @@ public sealed class PatchPositionUseCase
         if (wantsServicesSet)
             company.AssignServicesToPosition(cmd.PositionId, cmd.SetServiceOfferingIds!);
 
-        return Result.NoContent();
+        return Result<Unit>.NoContent();
     }
 }

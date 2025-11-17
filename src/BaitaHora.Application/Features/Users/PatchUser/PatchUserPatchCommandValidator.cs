@@ -2,6 +2,7 @@ using System.Text.RegularExpressions;
 using FluentValidation;
 using BaitaHora.Application.Features.Commons.Validators;
 using BaitaHora.Application.Features.Users.PatchUserProfile;
+using BaitaHora.Domain.Features.Common.ValueObjects;
 
 namespace BaitaHora.Application.Features.Users.PatchUser;
 

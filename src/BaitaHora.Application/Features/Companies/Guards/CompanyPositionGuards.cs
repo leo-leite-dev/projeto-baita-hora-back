@@ -37,7 +37,7 @@ public sealed class CompanyPositionGuards : ICompanyPositionGuards
         return Result<IReadOnlyCollection<CompanyPosition>>.Ok(inactive);
     }
 
-    public async Task<Result<IReadOnlyCollection<CompanyPosition>>> ValidatePositionsForDeactivation(IEnumerable<Guid>? positionIds, CancellationToken ct)
+    public async Task<Result<IReadOnlyCollection<CompanyPosition>>> ValidatePositionsForDesactivation(IEnumerable<Guid>? positionIds, CancellationToken ct)
     {
         var ids = IdSet.Normalize(positionIds);
 
