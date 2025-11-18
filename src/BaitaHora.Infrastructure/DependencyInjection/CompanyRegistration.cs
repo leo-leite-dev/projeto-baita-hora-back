@@ -1,6 +1,8 @@
 using BaitaHora.Application.Common.Caching;
 using BaitaHora.Application.Features.Companies.Guards;
 using BaitaHora.Application.Features.Companies.Guards.Interfaces;
+using BaitaHora.Application.Features.Schedules.Guards;
+using BaitaHora.Application.Features.Schedules.Guards.Interfaces;
 using BaitaHora.Application.IServices.Companies;
 using BaitaHora.Infrastructure.Services.Companies;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,6 +20,7 @@ public static class CompanyRegistration
         services.AddScoped<ICompanyPositionGuards, CompanyPositionGuards>();
         services.AddScoped<ICompanyMemberGuards, CompanyMemberGuards>();
         services.AddScoped<ICompanyServiceOfferingGuards, CompanyServiceOfferingGuards>();
+        services.AddScoped<IScheduleGuards, ScheduleGuards>();
 
         return services;
     }

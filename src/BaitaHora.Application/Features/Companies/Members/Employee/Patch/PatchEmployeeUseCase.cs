@@ -1,54 +1,52 @@
 using BaitaHora.Application.Abstractions.Auth;
 using BaitaHora.Application.Common.Results;
 using BaitaHora.Application.Features.Companies.Guards.Interfaces;
-using BaitaHora.Application.Features.Companies.Responses;
 using BaitaHora.Application.Features.Users.Common;
-using BaitaHora.Application.IRepositories.Users;
 using BaitaHora.Domain.Features.Companies.Enums;
+using MediatR;
 
 namespace BaitaHora.Application.Features.Companies.Members.Employee;
 
 public sealed class PatchEmployeeUseCase
 {
-    private readonly IUserRepository _userRepository;
     private readonly ICompanyGuards _companyGuards;
     private readonly ICompanyMemberGuards _memberGuards;
     private readonly IUserGuards _userGuards;
     private readonly ICurrentCompany _currentCompany;
 
     public PatchEmployeeUseCase(
-        IUserRepository  userRepository,
         ICompanyGuards companyGuards,
         ICompanyMemberGuards memberGuards,
         IUserGuards userGuards,
         ICurrentCompany currentCompany)
     {
-        _userRepository = userRepository;
         _companyGuards = companyGuards;
         _memberGuards = memberGuards;
         _userGuards = userGuards;
         _currentCompany = currentCompany;
     }
 
-    public async Task<Result<PatchEmployeeResponse>> HandleAsync(
-        PatchEmployeeCommand request, CancellationToken ct)
+    public async Task<Result<Unit>> HandleAsync(
+        PatchEmployeeCommand request,
+        CancellationToken ct)
     {
         var companyId = _currentCompany.Id;
 
-        var companyRes = await _companyGuards.EnsureCompanyExists(companyId, ct);
+        var companyRes = await _companyGuards.GetWithPositionsAndMembers(companyId, ct);
         if (companyRes.IsFailure)
-            return Result<PatchEmployeeResponse>.FromError(companyRes);
+            return Result<Unit>.FromError(companyRes);
 
-        var memberRes = await _memberGuards
-            .EnsureMemberExistsByMemberIdAsync(companyId, request.MemberId, requireActive: true, ct);
+        var company = companyRes.Value!;
+
+        var memberRes = _memberGuards.ValidateMember(company, request.MemberId, requireActive: true);
         if (memberRes.IsFailure)
-            return Result<PatchEmployeeResponse>.FromError(memberRes);
+            return Result<Unit>.FromError(memberRes);
 
         var member = memberRes.Value!;
 
         var userRes = await _userGuards.EnsureUserExistsWithProfileAsync(member.UserId, ct);
         if (userRes.IsFailure)
-            return Result<PatchEmployeeResponse>.FromError(userRes);
+            return Result<Unit>.FromError(userRes);
 
         var user = userRes.Value!;
 
@@ -58,12 +56,12 @@ public sealed class PatchEmployeeUseCase
                 "Não é permitido editar o fundador (Owner) pelo endpoint de funcionários.",
                 ResultCodes.Conflict.BusinessRule
             );
-            return Result<PatchEmployeeResponse>.FromError(err);
+
+            return Result<Unit>.FromError(err);
         }
 
         PatchUserApplier.Apply(user, request.NewMember);
 
-        var response = new PatchEmployeeResponse(user.Id, user.Profile.Name);
-        return Result<PatchEmployeeResponse>.Ok(response);
+        return Result<Unit>.NoContent();
     }
 }

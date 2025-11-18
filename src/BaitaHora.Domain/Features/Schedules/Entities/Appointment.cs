@@ -2,6 +2,7 @@ using BaitaHora.Domain.Features.Common;
 using BaitaHora.Domain.Features.Common.Exceptions;
 using BaitaHora.Domain.Features.Companies.Entities;
 using BaitaHora.Domain.Features.Customers;
+using BaitaHora.Domain.Features.Schedules.Enums;
 
 namespace BaitaHora.Domain.Features.Schedules.Entities;
 
@@ -15,11 +16,18 @@ public sealed class Appointment : EntityBase
 
     public DateTime StartsAtUtc { get; private set; }
     public TimeSpan Duration { get; private set; }
+
     public AppointmentStatus Status { get; private set; } = AppointmentStatus.Pending;
+    public AttendanceStatus AttendanceStatus { get; private set; } = AttendanceStatus.Unknown;
 
     private Appointment() { }
 
-    public static Appointment Create(Schedule schedule, Customer customer, IEnumerable<CompanyServiceOffering> serviceOfferings, DateTime startsAtUtc, TimeSpan duration)
+    public static Appointment Create(
+        Schedule schedule,
+        Customer customer,
+        IEnumerable<CompanyServiceOffering> serviceOfferings,
+        DateTime startsAtUtc,
+        TimeSpan duration)
     {
         if (schedule is null)
             throw new ScheduleException("Agenda inválida.");
@@ -30,12 +38,7 @@ public sealed class Appointment : EntityBase
         if (serviceOfferings is null)
             throw new ScheduleException("Serviços inválidos.");
 
-        var services = serviceOfferings
-            .Where(s => s is not null)
-            .DistinctBy(s => s.Id)
-            .ToArray();
-
-        if (services.Length == 0)
+        if (!serviceOfferings.Any())
             throw new ScheduleException("Agendamento deve ter ao menos um serviço.");
 
         if (startsAtUtc == default)
@@ -50,10 +53,11 @@ public sealed class Appointment : EntityBase
             CustomerId = customer.Id,
             StartsAtUtc = startsAtUtc,
             Duration = duration,
-            Status = AppointmentStatus.Pending
+            Status = AppointmentStatus.Pending,
+            AttendanceStatus = AttendanceStatus.Unknown
         };
 
-        appointment._serviceOfferings.AddRange(services);
+        appointment.AddServiceOfferings(serviceOfferings);
 
         return appointment;
     }
@@ -83,10 +87,18 @@ public sealed class Appointment : EntityBase
 
     public bool Reschedule(DateTime newStart, TimeSpan newDuration)
     {
+        if (AttendanceStatus == AttendanceStatus.NoShow)
+            throw new ScheduleException("Agendamentos marcados como falta (no-show) não podem ser remarcados.");
+
+        if (Status != AppointmentStatus.Pending)
+            throw new ScheduleException("Só é possível reagendar agendamentos pendentes.");
+
         if (newStart == default)
             throw new ScheduleException("Nova data inválida.");
+
         if (newDuration <= TimeSpan.Zero)
             throw new ScheduleException("Duração inválida.");
+
         if (newStart == StartsAtUtc && newDuration == Duration)
             return false;
 
@@ -96,24 +108,47 @@ public sealed class Appointment : EntityBase
         return true;
     }
 
-    public bool MarkCompleted()
+    public bool Finish()
     {
-        if (Status == AppointmentStatus.Completed)
-            return false;
         if (Status == AppointmentStatus.Cancelled)
-            throw new ScheduleException("Não é possível concluir um agendamento cancelado.");
+            throw new ScheduleException("Não é possível finalizar um agendamento cancelado.");
 
-        Status = AppointmentStatus.Completed;
+        if (Status == AppointmentStatus.Finished)
+            return false;
+
+        Status = AppointmentStatus.Finished;
+        Touch();
+        return true;
+    }
+
+    public bool MarkAttended()
+    {
+        if (Status == AppointmentStatus.Cancelled)
+            throw new ScheduleException("Não é possível registrar presença em um agendamento cancelado.");
+
+        if (AttendanceStatus == AttendanceStatus.Attended)
+            return false;
+
+        if (Status == AppointmentStatus.Pending)
+            Status = AppointmentStatus.Finished;
+
+        AttendanceStatus = AttendanceStatus.Attended;
         Touch();
         return true;
     }
 
     public bool MarkNoShow()
     {
-        if (Status == AppointmentStatus.NoShow)
+        if (Status == AppointmentStatus.Cancelled)
+            throw new ScheduleException("Não é possível marcar falta em um agendamento cancelado.");
+
+        if (AttendanceStatus == AttendanceStatus.NoShow)
             return false;
 
-        Status = AppointmentStatus.NoShow;
+        if (Status == AppointmentStatus.Pending)
+            Status = AppointmentStatus.Finished;
+
+        AttendanceStatus = AttendanceStatus.NoShow;
         Touch();
         return true;
     }
@@ -122,10 +157,12 @@ public sealed class Appointment : EntityBase
     {
         if (Status == AppointmentStatus.Cancelled)
             return false;
-        if (Status == AppointmentStatus.Completed)
-            throw new ScheduleException("Não é possível cancelar um agendamento concluído.");
+
+        if (Status == AppointmentStatus.Finished)
+            throw new ScheduleException("Não é possível cancelar um agendamento finalizado.");
 
         Status = AppointmentStatus.Cancelled;
+        AttendanceStatus = AttendanceStatus.Unknown;
         Touch();
         return true;
     }

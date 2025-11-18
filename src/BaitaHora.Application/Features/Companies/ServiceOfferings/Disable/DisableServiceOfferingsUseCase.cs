@@ -21,16 +21,20 @@ public sealed class DisableServiceOfferingsUseCase
         _currentCompany = currentCompany;
     }
 
-    public async Task<Result<Unit>> HandleAsync(DisableServiceOfferingsCommand cmd, CancellationToken ct)
+    public async Task<Result<Unit>> HandleAsync(
+        DisableServiceOfferingsCommand cmd,
+        CancellationToken ct)
     {
-        var companyRes = await _companyGuards.GetWithPositionsAndServiceOfferings(_currentCompany.Id, ct);
+        var companyId = _currentCompany.Id;
+
+        var companyRes = await _companyGuards.GetWithPositionsAndServiceOfferings(companyId, ct);
         if (companyRes.IsFailure)
             return Result<Unit>.FromError(companyRes);
 
         var company = companyRes.Value!;
 
         var valRes = await _serviceOfferingGuards
-            .ValidateServiceOfferingsForDesactivation(_currentCompany.Id, cmd.ServiceOfferingIds, ct);
+            .ValidateServiceOfferingsForDesactivation(companyId, cmd.ServiceOfferingIds, ct);
 
         if (valRes.IsFailure)
             return Result<Unit>.FromError(valRes);
@@ -40,8 +44,8 @@ public sealed class DisableServiceOfferingsUseCase
 
         company.DetachServiceOfferingsFromAllPositions(ids);
 
-        foreach (var s in services)
-            s.Desactivate();
+        foreach (var service in services)
+            service.Desactivate();
 
         return Result<Unit>.NoContent();
     }

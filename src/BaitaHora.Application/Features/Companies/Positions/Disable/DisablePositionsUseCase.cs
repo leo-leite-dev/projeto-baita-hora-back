@@ -13,21 +13,25 @@ public sealed class DisablePositionsUseCase
 
     public DisablePositionsUseCase(
         ICompanyGuards companyGuards,
-        ICurrentCompany currentCompany,
-        ICompanyPositionGuards companyPositionGuards)
+        ICompanyPositionGuards companyPositionGuards,
+        ICurrentCompany currentCompany)
     {
         _companyGuards = companyGuards;
-        _currentCompany = currentCompany;
         _companyPositionGuards = companyPositionGuards;
+        _currentCompany = currentCompany;
     }
 
     public async Task<Result<Unit>> HandleAsync(DisablePositionsCommand cmd, CancellationToken ct)
     {
-        var companyRes = await _companyGuards.EnsureCompanyExists(_currentCompany.Id, ct);
+        var companyId = _currentCompany.Id;
+
+        var companyRes = await _companyGuards.EnsureCompanyExists(companyId, ct);
         if (companyRes.IsFailure)
             return Result<Unit>.FromError(companyRes);
 
-        var posGuardRes = await _companyPositionGuards.ValidatePositionsForDesactivation(cmd.PositionIds, ct);
+        var posGuardRes = await _companyPositionGuards
+            .ValidatePositionsForDesactivation(companyId, cmd.PositionIds, ct);
+
         if (posGuardRes.IsFailure)
             return Result<Unit>.FromError(posGuardRes);
 

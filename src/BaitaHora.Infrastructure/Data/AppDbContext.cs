@@ -20,6 +20,7 @@ public sealed class AppDbContext : DbContext, IAppDbContext
     public DbSet<CompanyImage> CompanyImages => Set<CompanyImage>();
     public DbSet<CompanyMember> Members => Set<CompanyMember>();
     public DbSet<CompanyPosition> Positions => Set<CompanyPosition>();
+    public DbSet<CompanyServiceOffering> ServiceOfferings => Set<CompanyServiceOffering>();
     public DbSet<Schedule> Schedules => Set<Schedule>();
     public DbSet<Appointment> Appointments => Set<Appointment>();
     public DbSet<LoginSession> LoginSessions => Set<LoginSession>();

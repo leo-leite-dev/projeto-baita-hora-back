@@ -11,7 +11,7 @@ public class CompanyPositionRepository : GenericRepository<CompanyPosition>, ICo
 {
     public CompanyPositionRepository(AppDbContext context) : base(context) { }
 
-    public async Task<PositionEditView?> GetByIdAsync(
+    public async Task<PositionEditView?> GetByPositionIdAsync(
         Guid companyId, Guid positionId, CancellationToken ct)
     {
         return await _context.Positions
@@ -28,7 +28,7 @@ public class CompanyPositionRepository : GenericRepository<CompanyPosition>, ICo
             })
             .SingleOrDefaultAsync(ct);
     }
-    
+
     public async Task<IReadOnlyList<PositionOptions>> ListActivePositionForOptionsAsync(
     Guid companyId, string? search, int take, CancellationToken ct)
     {

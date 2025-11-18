@@ -30,7 +30,7 @@ public sealed class DisableEmployeesUseCase
             return Result<DisableEmployeesResponse>.FromError(companyRes);
 
         var memberGuardRes =
-            await _memberGuards.ValidateMembersForDeactivation(companyId, cmd.EmployeeIds, ct);
+            await _memberGuards.ValidateMembersForDesactivation(companyId, cmd.EmployeeIds, ct);
         if (memberGuardRes.IsFailure)
             return Result<DisableEmployeesResponse>.FromError(memberGuardRes);
 

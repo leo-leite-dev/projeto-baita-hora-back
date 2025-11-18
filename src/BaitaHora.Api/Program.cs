@@ -167,7 +167,7 @@ app.MapControllers();
 RecurringJob.AddOrUpdate<IAutoCompleteAppointmentsJob>(
     recurringJobId: "auto-complete-appointments",
     methodCall: job => job.RunAsync(CancellationToken.None),
-    cronExpression: "*/5 * * * *" 
+    cronExpression: "*/30 * * * * *" 
 );
 
 app.Run();

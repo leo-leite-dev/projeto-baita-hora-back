@@ -15,13 +15,13 @@ using BaitaHora.Application.Features.Companies.ServiceOfferings.Activate;
 using BaitaHora.Application.Features.Companies.Employees.Disable;
 using BaitaHora.Application.Features.Companies.Employees.Activate;
 using BaitaHora.Application.Companies.Features.Members.Promotion;
-using BaitaHora.Application.Features.Customers.Create;
 using BaitaHora.Application.Features.Schedulings.Appointments.Reschedule;
 using BaitaHora.Application.Features.Companies.ServiceOfferings.Disable;
 using BaitaHora.Application.Features.Auth.Login;
 using BaitaHora.Application.Features.Auth.SelectCompany;
-using BaitaHora.Application.Features.Schedulings.Appointments.Cancel;
 using BaitaHora.Application.Features.Schedulings.Appointments.NoShow;
+using BaitaHora.Application.Feature.Schedules.Customers.Create;
+using BaitaHora.Application.Features.Schedulings.Appointments.Cancel;
 
 namespace BaitaHora.Infrastructure.DependencyInjection;
 

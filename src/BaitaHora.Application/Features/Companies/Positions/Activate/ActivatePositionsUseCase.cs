@@ -23,11 +23,15 @@ public sealed class ActivatePositionsUseCase
 
     public async Task<Result<Unit>> HandleAsync(ActivatePositionsCommand cmd, CancellationToken ct)
     {
-        var companyRes = await _companyGuards.EnsureCompanyExists(_currentCompany.Id, ct);
+        var companyId = _currentCompany.Id;
+
+        var companyRes = await _companyGuards.EnsureCompanyExists(companyId, ct);
         if (companyRes.IsFailure)
             return Result<Unit>.FromError(companyRes);
 
-        var posGuardRes = await _companyPositionGuards.ValidatePositionsForActivation(cmd.PositionIds, ct);
+        var posGuardRes = await _companyPositionGuards
+            .ValidatePositionsForActivation(companyId, cmd.PositionIds, ct);
+
         if (posGuardRes.IsFailure)
             return Result<Unit>.FromError(posGuardRes);
 

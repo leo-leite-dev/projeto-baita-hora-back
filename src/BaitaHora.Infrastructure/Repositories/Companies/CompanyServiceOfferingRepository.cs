@@ -11,7 +11,7 @@ public class CompanyServiceOfferingRepository
 {
     public CompanyServiceOfferingRepository(AppDbContext context) : base(context) { }
 
-    public async Task<ServiceOfferingEditView?> GetByIdAsync(
+    public async Task<ServiceOfferingEditView?> GetByServiceOfferingIdAsync(
         Guid companyId, Guid serviceOfferingId, CancellationToken ct)
     {
         return await _set
@@ -50,7 +50,8 @@ public class CompanyServiceOfferingRepository
             .ToListAsync(ct);
     }
 
-    public async Task<IReadOnlyList<ServiceOfferingDetails>> ListAllServicesByCompanyAsync(Guid companyId, CancellationToken ct)
+    public async Task<IReadOnlyList<ServiceOfferingDetails>> ListAllServicesByCompanyAsync(
+        Guid companyId, CancellationToken ct)
     {
         return await _set
             .Where(s => s.CompanyId == companyId)

@@ -349,6 +349,11 @@ namespace BaitaHora.Infrastructure.Data.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("AttendanceStatus")
+                        .IsRequired()
+                        .HasColumnType("varchar(20)")
+                        .HasColumnName("attendance_status");
+
                     b.Property<DateTimeOffset>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone");
 

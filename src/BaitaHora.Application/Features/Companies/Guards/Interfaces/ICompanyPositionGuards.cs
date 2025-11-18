@@ -5,7 +5,7 @@ namespace BaitaHora.Application.Features.Companies.Guards.Interfaces;
 
 public interface ICompanyPositionGuards
 {
-    Task<Result<IReadOnlyCollection<CompanyPosition>>> ValidatePositionsForActivation(IEnumerable<Guid>? positionIds, CancellationToken ct);
-    Task<Result<IReadOnlyCollection<CompanyPosition>>> ValidatePositionsForDesactivation(IEnumerable<Guid>? positionIds, CancellationToken ct);
-    Result<CompanyPosition> GetValidPositionOrBadRequest(Company company, Guid positionId);
+    Result<CompanyPosition> ValidatePosition(Company company, Guid positionId, bool requireActive);
+    Task<Result<IReadOnlyCollection<CompanyPosition>>> ValidatePositionsForActivation(Guid companyId, IEnumerable<Guid>? positionIds, CancellationToken ct);
+    Task<Result<IReadOnlyCollection<CompanyPosition>>> ValidatePositionsForDesactivation(Guid companyId, IEnumerable<Guid>? positionIds, CancellationToken ct);
 }

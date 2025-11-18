@@ -3,6 +3,7 @@ using BaitaHora.Application.IRepositories.Schedulings;
 using BaitaHora.Domain.Features.Companies.Entities;
 using BaitaHora.Domain.Features.Customers;
 using BaitaHora.Domain.Features.Schedules.Entities;
+using BaitaHora.Domain.Features.Schedules.Enums;
 using BaitaHora.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 

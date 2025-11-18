@@ -8,11 +8,16 @@ namespace BaitaHora.Application.Features.Companies.Positions.Patch;
 public sealed class PatchPositionUseCase
 {
     private readonly ICompanyGuards _companyGuards;
+    private readonly ICompanyPositionGuards _positionGuards;
     private readonly ICurrentCompany _currentCompany;
 
-    public PatchPositionUseCase(ICompanyGuards companyGuards, ICurrentCompany currentCompany)
+    public PatchPositionUseCase(
+        ICompanyGuards companyGuards,
+        ICompanyPositionGuards positionGuards,
+        ICurrentCompany currentCompany)
     {
         _companyGuards = companyGuards;
+        _positionGuards = positionGuards;
         _currentCompany = currentCompany;
     }
 
@@ -30,18 +35,22 @@ public sealed class PatchPositionUseCase
             return Result<Unit>.FromError(companyRes);
 
         var company = companyRes.Value!;
-        var position = company.Positions.SingleOrDefault(p => p.Id == cmd.PositionId && p.IsActive);
-        if (position is null)
-            return Result<Unit>.NotFound("Cargo não encontrado ou inativo.");
+
+        var positionRes = _positionGuards.ValidatePosition(company, cmd.PositionId, requireActive: true);
+
+        if (positionRes.IsFailure)
+            return Result<Unit>.FromError(positionRes);
+
+        var position = positionRes.Value!;
 
         if (wantsRename)
-            company.RenamePosition(cmd.PositionId, cmd.PositionName!);
+            company.RenamePosition(position.Id, cmd.PositionName!);
 
         if (wantsAccessChange)
-            company.ChangePositionAccessLevel(cmd.PositionId, cmd.AccessLevel!.Value, alignMembers: true);
+            company.ChangePositionAccessLevel(position.Id, cmd.AccessLevel!.Value, alignMembers: true);
 
         if (wantsServicesSet)
-            company.AssignServicesToPosition(cmd.PositionId, cmd.SetServiceOfferingIds!);
+            company.AssignServicesToPosition(position.Id, cmd.SetServiceOfferingIds!);
 
         return Result<Unit>.NoContent();
     }

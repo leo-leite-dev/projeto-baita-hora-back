@@ -9,15 +9,15 @@ namespace BaitaHora.Application.Features.Companies.Guards;
 
 public sealed class CompanyMemberGuards : ICompanyMemberGuards
 {
-    private readonly ICompanyMemberRepository _memberRepository;
+    private readonly ICompanyRepository _companyRepository;
 
-    public CompanyMemberGuards(ICompanyMemberRepository memberRepository)
-        => _memberRepository = memberRepository;
+    public CompanyMemberGuards(ICompanyRepository companyRepository)
+        => _companyRepository = companyRepository;
 
-    public async Task<Result<CompanyMember>> EnsureMemberExistsByMemberIdAsync(
-        Guid companyId, Guid memberId, bool requireActive, CancellationToken ct)
+    public Result<CompanyMember> ValidateMember( Company company, Guid memberId, bool requireActive)
     {
-        var member = await _memberRepository.GetMemberByIdAsync(companyId, memberId, ct);
+        var member = company.Members.SingleOrDefault(m => m.Id == memberId);
+
         if (member is null)
             return Result<CompanyMember>.NotFound("Funcionário não encontrado nesta empresa.");
 
@@ -34,7 +34,7 @@ public sealed class CompanyMemberGuards : ICompanyMemberGuards
         if (ids.Count == 0)
             return Result<IReadOnlyCollection<CompanyMember>>.BadRequest("Nenhum funcionário informado.");
 
-        var members = await _memberRepository.GetByCompanyAndUserIdsAsync(companyId, ids, ct);
+        var members = await _companyRepository.GetMembersByUserIdsAsync(companyId, ids, ct);
 
         var notFound = ids.Except(members.Select(m => m.UserId)).ToList();
         if (notFound.Count > 0)
@@ -50,14 +50,14 @@ public sealed class CompanyMemberGuards : ICompanyMemberGuards
         return Result<IReadOnlyCollection<CompanyMember>>.Ok(inactive);
     }
 
-    public async Task<Result<IReadOnlyCollection<CompanyMember>>> ValidateMembersForDeactivation(
+    public async Task<Result<IReadOnlyCollection<CompanyMember>>> ValidateMembersForDesactivation(
         Guid companyId, IEnumerable<Guid>? employeeIds, CancellationToken ct)
     {
         var ids = IdSet.Normalize(employeeIds);
         if (ids.Count == 0)
             return Result<IReadOnlyCollection<CompanyMember>>.BadRequest("Nenhum funcionário informado.");
 
-        var members = await _memberRepository.GetByCompanyAndUserIdsAsync(companyId, ids, ct);
+        var members = await _companyRepository.GetMembersByUserIdsAsync(companyId, ids, ct);
         var found = members.Select(m => m.UserId).ToHashSet();
 
         var notFound = ids.Where(id => !found.Contains(id)).ToArray();

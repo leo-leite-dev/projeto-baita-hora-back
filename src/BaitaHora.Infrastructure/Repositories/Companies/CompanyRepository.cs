@@ -61,4 +61,37 @@ public class CompanyRepository : GenericRepository<Company>, ICompanyRepository
     {
         await _context.Set<CompanyImage>().AddAsync(image, ct);
     }
+
+    public async Task<List<CompanyMember>> GetMembersByUserIdsAsync(
+        Guid companyId, IReadOnlyCollection<Guid> userIds, CancellationToken ct = default)
+    {
+        if (userIds is null || userIds.Count == 0)
+            return new List<CompanyMember>();
+
+        return await _context.Members
+            .Where(m => m.CompanyId == companyId && userIds.Contains(m.UserId))
+            .ToListAsync(ct);
+    }
+
+    public async Task<List<CompanyPosition>> GetPositionsByIdsAsync(
+        Guid companyId, IReadOnlyCollection<Guid> positionIds, CancellationToken ct = default)
+    {
+        if (positionIds is null || positionIds.Count == 0)
+            return new List<CompanyPosition>();
+
+        return await _context.Positions
+            .Where(p => p.CompanyId == companyId && positionIds.Contains(p.Id))
+            .ToListAsync(ct);
+    }
+
+    public async Task<List<CompanyServiceOffering>> GetServiceOfferingsByIdsAsync(
+        Guid companyId, IReadOnlyCollection<Guid> ids, CancellationToken ct = default)
+    {
+        if (ids is null || ids.Count == 0)
+            return new List<CompanyServiceOffering>();
+
+        return await _context.ServiceOfferings
+            .Where(s => s.CompanyId == companyId && ids.Contains(s.Id))
+            .ToListAsync(ct);
+    }
 }

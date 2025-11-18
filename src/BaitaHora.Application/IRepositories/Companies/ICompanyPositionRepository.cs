@@ -6,7 +6,7 @@ namespace BaitaHora.Application.IRepositories.Companies;
 
 public interface ICompanyPositionRepository : IGenericRepository<CompanyPosition>
 {
-    Task<PositionEditView?> GetByIdAsync(Guid companyId, Guid positionId, CancellationToken ct);
+    Task<PositionEditView?> GetByPositionIdAsync(Guid companyId, Guid positionId, CancellationToken ct);
     Task<IReadOnlyList<PositionOptions>> ListActivePositionForOptionsAsync(Guid companyId, string? search, int take, CancellationToken ct);
     Task<IReadOnlyList<PositionDetails>> ListAllPositionsByCompanyAsync(Guid companyId, CancellationToken ct);
 }

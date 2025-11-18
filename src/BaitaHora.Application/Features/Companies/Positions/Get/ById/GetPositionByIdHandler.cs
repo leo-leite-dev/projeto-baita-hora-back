@@ -22,7 +22,7 @@ public sealed class GetPositionByIdHandler
 
     public async Task<Result<PositionEditView>> Handle(GetPositionByIdQuery request, CancellationToken ct)
     {
-        var dto = await _positionRepository.GetByIdAsync(_currentCompany.Id, request.PositionId, ct);
+        var dto = await _positionRepository.GetByPositionIdAsync(_currentCompany.Id, request.PositionId, ct);
 
         return dto is null
             ? Result<PositionEditView>.NotFound("Cargo não encontrado.")

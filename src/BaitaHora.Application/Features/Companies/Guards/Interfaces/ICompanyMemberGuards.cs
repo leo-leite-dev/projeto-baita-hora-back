@@ -5,7 +5,7 @@ namespace BaitaHora.Application.Features.Companies.Guards.Interfaces;
 
 public interface ICompanyMemberGuards
 {
-    Task<Result<CompanyMember>> EnsureMemberExistsByMemberIdAsync(Guid companyId, Guid memberId, bool requireActive, CancellationToken ct);
+    Result<CompanyMember> ValidateMember(Company company, Guid memberId, bool requireActive);
     Task<Result<IReadOnlyCollection<CompanyMember>>> ValidateMembersForActivation(Guid companyId, IEnumerable<Guid>? positionIds, CancellationToken ct);
-    Task<Result<IReadOnlyCollection<CompanyMember>>> ValidateMembersForDeactivation(Guid companyId, IEnumerable<Guid>? employeeIds, CancellationToken ct);
+    Task<Result<IReadOnlyCollection<CompanyMember>>> ValidateMembersForDesactivation(Guid companyId, IEnumerable<Guid>? employeeIds, CancellationToken ct);
 }

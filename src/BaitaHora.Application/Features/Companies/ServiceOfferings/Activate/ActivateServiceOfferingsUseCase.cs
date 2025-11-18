@@ -21,13 +21,18 @@ public sealed class ActivateServiceOfferingsUseCase
         _currentCompany = currentCompany;
     }
 
-    public async Task<Result<Unit>> HandleAsync(ActivateServiceOfferingsCommand cmd, CancellationToken ct)
+    public async Task<Result<Unit>> HandleAsync(
+        ActivateServiceOfferingsCommand cmd,
+        CancellationToken ct)
     {
-        var companyRes = await _companyGuards.EnsureCompanyExists(_currentCompany.Id, ct);
+        var companyId = _currentCompany.Id;
+
+        var companyRes = await _companyGuards.EnsureCompanyExists(companyId, ct);
         if (companyRes.IsFailure)
             return Result<Unit>.FromError(companyRes);
 
-        var valRes = await _serviceOfferingGuards.ValidateServiceOfferingsForActivation(cmd.ServiceOfferingIds, ct);
+        var valRes = await _serviceOfferingGuards
+            .ValidateServiceOfferingsForActivation(companyId, cmd.ServiceOfferingIds, ct);
         if (valRes.IsFailure)
             return Result<Unit>.FromError(valRes);
 

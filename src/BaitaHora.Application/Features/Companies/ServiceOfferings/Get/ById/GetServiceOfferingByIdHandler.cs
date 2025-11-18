@@ -21,7 +21,7 @@ public sealed class GetServiceOfferingByIdHandler
 
     public async Task<Result<ServiceOfferingEditView>> Handle(GetServiceOfferingByIdQuery request, CancellationToken ct)
     {
-        var dto = await _serviceOfferingRepository.GetByIdAsync(_currentCompany.Id, request.ServiceOfferingId, ct);
+        var dto = await _serviceOfferingRepository.GetByServiceOfferingIdAsync(_currentCompany.Id, request.ServiceOfferingId, ct);
 
         return dto is null
             ? Result<ServiceOfferingEditView>.NotFound("Serviço não encontrado.")

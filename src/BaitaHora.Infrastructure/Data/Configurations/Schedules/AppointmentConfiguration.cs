@@ -33,6 +33,12 @@ public sealed class AppointmentConfiguration : IEntityTypeConfiguration<Appointm
          .HasColumnType("varchar(20)")
          .IsRequired();
 
+        b.Property(a => a.AttendanceStatus)
+         .HasColumnName("attendance_status")
+         .HasConversion<string>()
+         .HasColumnType("varchar(20)")
+         .IsRequired();
+
         b.HasMany(a => a.ServiceOfferings)
          .WithMany()
          .UsingEntity<Dictionary<string, object>>(
