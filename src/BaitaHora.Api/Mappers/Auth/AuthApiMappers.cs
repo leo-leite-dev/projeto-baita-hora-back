@@ -20,7 +20,7 @@ public static class AuthApiMappers
             result.UserId,
             result.MemberId,
             result.Username.Value,
-            result.Roles.Select(r => r.ToString()).ToList(),
+            result.Role.ToString(),
             result.Companies.Select(c => new AuthCompanyResponse(
                 c.CompanyId,
                 c.Name

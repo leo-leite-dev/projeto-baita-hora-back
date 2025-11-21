@@ -100,8 +100,8 @@ public sealed class JwtTokenService : ITokenService
             new Claim("memberId", memberId.ToString())
         };
 
-        foreach (var role in roles)
-            claims.Add(new Claim(ClaimTypes.Role, role));
+        foreach (var r in roles)
+            claims.Add(new Claim(ClaimTypes.Role, r));
 
         if (extraClaims is not null)
         {
@@ -157,15 +157,19 @@ public sealed class JwtTokenService : ITokenService
             }
         }
 
+        var role = roles is not null
+            ? Enum.Parse<CompanyRole>(roles.First())
+            : CompanyRole.Viewer;
+
         return new AuthResult(
             AccessToken: accessToken,
             RefreshToken: refreshToken,
             ExpiresAtUtc: accessExpires,
-            UserId: userId,  
-            MemberId: memberId, 
+            UserId: userId,
             Username: username,
-            Roles: roles.Select(r => Enum.Parse<CompanyRole>(r)).ToList(),
-            Companies: companySummaries
+            Role: role,
+            Companies: companySummaries,
+            MemberId: memberId
         );
     }
 

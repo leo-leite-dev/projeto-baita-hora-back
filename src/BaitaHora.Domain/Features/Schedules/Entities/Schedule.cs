@@ -1,7 +1,6 @@
 using BaitaHora.Domain.Features.Common;
 using BaitaHora.Domain.Features.Common.Exceptions;
 using BaitaHora.Domain.Features.Companies.Entities;
-using BaitaHora.Domain.Features.Customers;
 
 namespace BaitaHora.Domain.Features.Schedules.Entities;
 

@@ -1,9 +1,9 @@
 using BaitaHora.Application.Common.Results;
 using BaitaHora.Application.Features.Schedules.Guards.Interfaces;
-using BaitaHora.Application.IRepositories.Schedulings;
+using BaitaHora.Application.IRepositories.Schedules;
 using MediatR;
 
-namespace BaitaHora.Application.Features.Schedulings.Appointments.Cancel;
+namespace BaitaHora.Application.Features.Schedules.Appointments.Cancel;
 
 public sealed class CancelAppointmentUseCase
 {

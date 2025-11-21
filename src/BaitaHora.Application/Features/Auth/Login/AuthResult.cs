@@ -9,7 +9,7 @@ public sealed record AuthResult(
     DateTime ExpiresAtUtc,
     Guid UserId,
     Username Username,
-    IReadOnlyList<CompanyRole> Roles,
+    CompanyRole Role,                         
     IReadOnlyList<AuthCompanySummary> Companies,
     Guid? MemberId = null
 );

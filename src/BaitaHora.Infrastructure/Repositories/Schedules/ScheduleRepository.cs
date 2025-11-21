@@ -1,11 +1,11 @@
-using BaitaHora.Application.Features.Schedulings.Appointments.ReadModels;
-using BaitaHora.Application.Features.Schedulings.Get.ReadModels;
-using BaitaHora.Application.IRepositories.Schedulings;
+using BaitaHora.Application.Features.Schedules.Appointments.ReadModels;
+using BaitaHora.Application.Features.Schedules.Get.ReadModels;
+using BaitaHora.Application.IRepositories.Schedules;
 using BaitaHora.Domain.Features.Schedules.Entities;
-using BaitaHora.Infrastructure.Repositories;
+using BaitaHora.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
-namespace BaitaHora.Infrastructure.Data.Repositories.Schedulings;
+namespace BaitaHora.Infrastructure.Repositories.Schedules;
 
 public sealed class ScheduleRepository : GenericRepository<Schedule>, IScheduleRepository
 {
@@ -29,11 +29,10 @@ public sealed class ScheduleRepository : GenericRepository<Schedule>, IScheduleR
         return await _set
             .AsNoTracking()
             .Where(s => s.MemberId == memberId)
-            .Select(s => new ScheduleDetailsDto
-            {
-                ScheduleId = s.Id,
-                MemberId = s.MemberId,
-                Appointments = s.Appointments
+            .Select(s => new ScheduleDetailsDto(
+                s.Id,
+                s.MemberId,
+                s.Appointments
                     .Where(a =>
                         (!fromUtc.HasValue || a.StartsAtUtc >= fromUtc) &&
                         (!toUtc.HasValue || a.StartsAtUtc < toUtc))
@@ -48,7 +47,7 @@ public sealed class ScheduleRepository : GenericRepository<Schedule>, IScheduleR
                         Status = a.Status.ToString()
                     })
                     .ToList()
-            })
+            ))
             .SingleOrDefaultAsync(ct);
     }
 }

@@ -1,4 +1,4 @@
-namespace BaitaHora.Application.Features.Schedulings.Appointments.Reschedule;
+namespace BaitaHora.Application.Features.Schedules.Appointments.Reschedule;
 
 public sealed record RescheduleAppointmentResponse(
     Guid AppointmentId,

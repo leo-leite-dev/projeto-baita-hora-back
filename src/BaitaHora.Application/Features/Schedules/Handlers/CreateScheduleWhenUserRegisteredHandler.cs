@@ -1,5 +1,5 @@
 using BaitaHora.Application.Common.Events;
-using BaitaHora.Application.IRepositories.Schedulings;
+using BaitaHora.Application.IRepositories.Schedules;
 using BaitaHora.Domain.Features.Companies.Events;
 using BaitaHora.Domain.Features.Schedules.Entities;
 using MediatR;

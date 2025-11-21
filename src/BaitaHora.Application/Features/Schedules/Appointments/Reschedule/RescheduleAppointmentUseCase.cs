@@ -1,9 +1,9 @@
 using BaitaHora.Application.Common.Results;
 using BaitaHora.Application.Features.Schedules.Guards.Interfaces;
-using BaitaHora.Application.IRepositories.Schedulings;
+using BaitaHora.Application.IRepositories.Schedules;
 using BaitaHora.Domain.Features.Common.Exceptions;
 
-namespace BaitaHora.Application.Features.Schedulings.Appointments.Reschedule;
+namespace BaitaHora.Application.Features.Schedules.Appointments.Reschedule;
 
 public sealed class RescheduleAppointmentUseCase
 {

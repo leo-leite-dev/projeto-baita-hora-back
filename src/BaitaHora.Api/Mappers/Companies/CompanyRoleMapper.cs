@@ -1,6 +1,8 @@
 using CRole = BaitaHora.Contracts.Enums.CompanyRole;
 using DRole = BaitaHora.Domain.Features.Companies.Enums.CompanyRole;
 
+namespace BaitaHora.Api.Mappers.Companies;
+
 public static class CompanyRoleMapper
 {
     public static DRole ToDomain(this CRole role) => role switch

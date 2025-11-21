@@ -1,7 +1,7 @@
 using BaitaHora.Application.Common.Results;
 using BaitaHora.Application.IRepositories.Customers;
 using BaitaHora.Domain.Features.Common.ValueObjects;
-using BaitaHora.Domain.Features.Customers;
+using BaitaHora.Domain.Features.Schedules.Entities;
 using BaitaHora.Domain.Features.Users.ValueObjects;
 
 namespace BaitaHora.Application.Feature.Schedules.Customers.Create;

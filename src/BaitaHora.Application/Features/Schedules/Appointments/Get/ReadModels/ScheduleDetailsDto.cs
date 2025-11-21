@@ -1,10 +1,17 @@
-using BaitaHora.Application.Features.Schedulings.Appointments.ReadModels;
+using BaitaHora.Application.Features.Schedules.Appointments.ReadModels;
 
-namespace BaitaHora.Application.Features.Schedulings.Get.ReadModels;
+namespace BaitaHora.Application.Features.Schedules.Get.ReadModels;
 
-public sealed record ScheduleDetailsDto
-{
-    public Guid ScheduleId { get; init; }
-    public Guid MemberId { get; init; }
-    public IEnumerable<AppointmentDto> Appointments { get; init; } = [];
-}
+public record ScheduleDetailsDto(
+    Guid ScheduleId,
+    Guid MemberId,
+    IEnumerable<AppointmentDto> Appointments
+);
+
+public sealed record ScheduleByMemberDetailsDto(
+    Guid ScheduleId,
+    Guid MemberId,
+    IEnumerable<AppointmentDto> Appointments,
+    string MemberName,
+    string PositionName
+) : ScheduleDetailsDto(ScheduleId, MemberId, Appointments);

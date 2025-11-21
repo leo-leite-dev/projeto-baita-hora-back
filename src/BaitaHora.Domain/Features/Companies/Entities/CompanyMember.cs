@@ -14,8 +14,8 @@ public sealed class CompanyMember : EntityBase
     public User User { get; private set; } = null!;
     public CompanyRole Role { get; private set; }
 
-    public Guid? PrimaryPositionId { get; private set; }
-    public CompanyPosition? PrimaryPosition { get; private set; }
+    public Guid PrimaryPositionId { get; private set; }
+    public CompanyPosition PrimaryPosition { get; private set; } = null!;
 
     public CompanyPermission DirectPermissionMask { get; private set; } = CompanyPermission.None;
 
@@ -23,7 +23,7 @@ public sealed class CompanyMember : EntityBase
 
     private CompanyMember() { }
 
-    private CompanyMember(Guid companyId, Guid userId)
+    private CompanyMember(Guid companyId, Guid userId, Guid primaryPositionId)
     {
         if (companyId == Guid.Empty)
             throw new CompanyException("CompanyId inválido.");
@@ -31,29 +31,51 @@ public sealed class CompanyMember : EntityBase
         if (userId == Guid.Empty)
             throw new CompanyException("UserId inválido.");
 
+        if (primaryPositionId == Guid.Empty)
+            throw new CompanyException("PrimaryPositionId inválido.");
+
         CompanyId = companyId;
         UserId = userId;
+        PrimaryPositionId = primaryPositionId;
         JoinedAt = DateTime.UtcNow;
     }
 
-    internal static CompanyMember CreateFounder(Guid companyId, Guid userId)
+    internal static CompanyMember CreateFounder(Guid companyId, Guid userId, CompanyPosition position)
     {
-        var member = new CompanyMember(companyId, userId)
+        ValidatePosition(companyId, position);
+
+        var member = new CompanyMember(companyId, userId, position.Id)
         {
+            PrimaryPosition = position,
             Role = CompanyRole.Owner
         };
 
         return member;
     }
 
-    internal static CompanyMember CreateMember(Guid companyId, Guid userId, CompanyRole role)
+    internal static CompanyMember CreateMember(Guid companyId, Guid userId, CompanyRole role, CompanyPosition position)
     {
         if (role == CompanyRole.Owner)
             throw new CompanyException("Método inválido para criação de Owner.");
 
-        var member = new CompanyMember(companyId, userId);
-        member.Role = role;
+        ValidatePosition(companyId, position);
+
+        var member = new CompanyMember(companyId, userId, position.Id)
+        {
+            PrimaryPosition = position,
+            Role = role
+        };
+
         return member;
+    }
+
+    private static void ValidatePosition(Guid companyId, CompanyPosition position)
+    {
+        if (position.CompanyId != companyId)
+            throw new CompanyException("Cargo não pertence a esta empresa.");
+
+        if (!position.IsActive)
+            throw new CompanyException("Não é possível atribuir cargo inativo.");
     }
 
     public (bool changed, bool requiresSessionRefresh) ChangeRole(CompanyRole newRole)
@@ -76,11 +98,7 @@ public sealed class CompanyMember : EntityBase
 
     public void SetPrimaryPosition(CompanyPosition position)
     {
-        if (position.CompanyId != CompanyId)
-            throw new CompanyException("Cargo não pertence a esta empresa.");
-
-        if (!position.IsActive)
-            throw new CompanyException("Não é possível atribuir cargo inativo.");
+        ValidatePosition(CompanyId, position);
 
         PrimaryPositionId = position.Id;
         PrimaryPosition = position;

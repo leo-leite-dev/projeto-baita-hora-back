@@ -67,11 +67,11 @@ public sealed class AuthenticateUseCase
                 token.ExpiresAtUtc,
                 user.Id,
                 user.Username,
-                new List<CompanyRole> { company.Role },
+                company.Role,
                 new List<AuthCompanySummary> {
                     new(company.CompanyId, companyEntity?.Name ?? string.Empty)
                 },
-                MemberId: company.Id  
+                MemberId: company.Id
             );
 
             return Result<AuthResult>.Ok(result);
@@ -102,7 +102,7 @@ public sealed class AuthenticateUseCase
                 token.ExpiresAtUtc,
                 user.Id,
                 user.Username,
-                new List<CompanyRole> { membership.Role },
+                 membership.Role,
                 new List<AuthCompanySummary>
                 {
                     new(chosen, companyEntity?.Name ?? string.Empty)
@@ -125,7 +125,7 @@ public sealed class AuthenticateUseCase
             ExpiresAtUtc: DateTime.UtcNow,
             UserId: user.Id,
             Username: user.Username,
-            Roles: Array.Empty<CompanyRole>(),
+            Role: CompanyRole.Viewer,  
             Companies: companySummaries
         );
 

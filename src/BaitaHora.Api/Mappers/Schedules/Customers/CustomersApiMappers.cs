@@ -1,7 +1,7 @@
 using BaitaHora.Application.Feature.Schedules.Customers.Create;
-using BaitaHora.Contracts.DTOs.Customers;
+using BaitaHora.Contracts.DTOs.Schedules.Customers;
 
-namespace BaitaHora.Api.Mappers.Schedules;
+namespace BaitaHora.Api.Mappers.Schedules.Customers;
 
 public static class CustomersApiMappers
 {

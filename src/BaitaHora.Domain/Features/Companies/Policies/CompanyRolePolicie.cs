@@ -24,10 +24,11 @@ public static class CompanyRolePolicies
               | CompanyPermission.ManageCompany
               | CompanyPermission.EnableServiceOfferings
               | CompanyPermission.DisableServiceOfferings
-              | CompanyPermission.DisablePositions,
+              | CompanyPermission.DisablePositions
+              | CompanyPermission.ManageSchedule,
 
             [CompanyRole.Staff] =
-                CompanyPermission.ManageMember,
+                CompanyPermission.ManageSchedule,
 
             [CompanyRole.Viewer] =
                 CompanyPermission.None

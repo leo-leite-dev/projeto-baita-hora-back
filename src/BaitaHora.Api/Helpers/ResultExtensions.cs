@@ -16,7 +16,7 @@ public static class ResultExtensions
                 StatusCodes.Status204NoContent => c.NoContent(),
 
                 StatusCodes.Status201Created when !string.IsNullOrWhiteSpace(location)
-                    => c.Created(location, valueIfSuccess), // body puro (ou null)
+                    => c.Created(location, valueIfSuccess),
 
                 StatusCodes.Status201Created => c.StatusCode(StatusCodes.Status201Created, valueIfSuccess),
 

@@ -4,7 +4,7 @@ using BaitaHora.Application.Common.Results;
 using BaitaHora.Domain.Permissions;
 using MediatR;
 
-namespace BaitaHora.Application.Features.Schedulings.Appointments.Cancel;
+namespace BaitaHora.Application.Features.Schedules.Appointments.Cancel;
 
 public sealed record CancelAppointmentCommand
     : IRequest<Result<Unit>>, IAuthorizableRequest, ITransactionalRequest
@@ -15,6 +15,5 @@ public sealed record CancelAppointmentCommand
     public Guid CompanyId { get; init; }
     public Guid ResourceId => CompanyId;
 
-    public IEnumerable<CompanyPermission> RequiredPermissions
-        => [CompanyPermission.ManageCompany];
+    public IEnumerable<CompanyPermission> RequiredPermissions => [CompanyPermission.ManageSchedule];
 }

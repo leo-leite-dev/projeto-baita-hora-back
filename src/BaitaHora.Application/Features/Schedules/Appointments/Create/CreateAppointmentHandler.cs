@@ -1,7 +1,7 @@
 using BaitaHora.Application.Common.Results;
 using MediatR;
 
-namespace BaitaHora.Application.Features.Schedulings.Appointments.Create;
+namespace BaitaHora.Application.Features.Schedules.Appointments.Create;
 
 public sealed class CreateAppointmentHandler
     : IRequestHandler<CreateAppointmentCommand, Result<Guid>>

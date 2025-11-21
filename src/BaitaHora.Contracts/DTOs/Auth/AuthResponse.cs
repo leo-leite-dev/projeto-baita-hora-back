@@ -7,7 +7,7 @@ public sealed record AuthResponse(
     Guid UserId,
     Guid? MemberId, 
     string Username,
-    IReadOnlyList<string> Roles,
+    string Role,
     IReadOnlyList<AuthCompanyResponse> Companies
 );
 

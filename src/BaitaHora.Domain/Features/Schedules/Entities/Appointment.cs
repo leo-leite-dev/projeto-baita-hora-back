@@ -1,7 +1,6 @@
 using BaitaHora.Domain.Features.Common;
 using BaitaHora.Domain.Features.Common.Exceptions;
 using BaitaHora.Domain.Features.Companies.Entities;
-using BaitaHora.Domain.Features.Customers;
 using BaitaHora.Domain.Features.Schedules.Enums;
 
 namespace BaitaHora.Domain.Features.Schedules.Entities;
@@ -137,7 +136,7 @@ public sealed class Appointment : EntityBase
         return true;
     }
 
-    public bool MarkNoShow()
+    public bool MarkNoShow(Customer customer, decimal penaltyAmount)
     {
         if (Status == AppointmentStatus.Cancelled)
             throw new ScheduleException("Não é possível marcar falta em um agendamento cancelado.");
@@ -149,6 +148,8 @@ public sealed class Appointment : EntityBase
             Status = AppointmentStatus.Finished;
 
         AttendanceStatus = AttendanceStatus.NoShow;
+        customer.RegisterNoShow(penaltyAmount);
+
         Touch();
         return true;
     }

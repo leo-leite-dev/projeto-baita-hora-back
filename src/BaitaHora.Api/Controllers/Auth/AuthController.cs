@@ -39,7 +39,7 @@ public sealed class AuthController : ControllerBase
         if (!current.IsAuthenticated)
             return Unauthorized(new { message = "Usuário não autenticado." });
 
-        var roles = User.FindAll(ClaimTypes.Role).Select(r => r.Value);
+        var role = User.FindFirst(ClaimTypes.Role)?.Value;
         var companyId = User.FindFirst("companyId")?.Value;
         var memberId = User.FindFirst("memberId")?.Value;
 
@@ -47,7 +47,7 @@ public sealed class AuthController : ControllerBase
             IsAuthenticated: true,
             UserId: current.UserId.ToString(),
             Username: current.Username.Value,
-            Roles: roles,
+            Role: role ?? string.Empty,
             CompanyId: companyId,
             MemberId: memberId
         ));

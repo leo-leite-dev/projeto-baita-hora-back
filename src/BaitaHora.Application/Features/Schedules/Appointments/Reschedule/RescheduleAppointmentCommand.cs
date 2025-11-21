@@ -4,7 +4,7 @@ using BaitaHora.Application.Common.Results;
 using BaitaHora.Domain.Permissions;
 using MediatR;
 
-namespace BaitaHora.Application.Features.Schedulings.Appointments.Reschedule;
+namespace BaitaHora.Application.Features.Schedules.Appointments.Reschedule;
 
 public sealed record RescheduleAppointmentCommand
     : IRequest<Result<RescheduleAppointmentResponse>>, IAuthorizableRequest, ITransactionalRequest
@@ -17,5 +17,5 @@ public sealed record RescheduleAppointmentCommand
 
     public Guid CompanyId { get; init; }
     public Guid ResourceId => CompanyId;
-    public IEnumerable<CompanyPermission> RequiredPermissions => [CompanyPermission.ManageCompany];
+    public IEnumerable<CompanyPermission> RequiredPermissions => [CompanyPermission.ManageSchedule];
 }

@@ -4,7 +4,7 @@ public sealed record AuthenticateResponse(
     bool IsAuthenticated,
     string? UserId,
     string? Username,
-    IEnumerable<string> Roles,
+    string Role,
     string? CompanyId,
     string? MemberId
 );

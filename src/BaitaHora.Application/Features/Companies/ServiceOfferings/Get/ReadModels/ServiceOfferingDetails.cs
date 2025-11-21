@@ -1,3 +1,5 @@
+namespace BaitaHora.Application.Features.Companies.ServiceOffering.Get.ReadModels;
+
 public sealed record ServiceOfferingDetails : ServiceOfferingDetailsBase
 {
     public decimal Price { get; init; }

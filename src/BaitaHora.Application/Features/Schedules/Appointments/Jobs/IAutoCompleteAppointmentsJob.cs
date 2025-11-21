@@ -1,4 +1,4 @@
-namespace BaitaHora.Application.Features.Schedulings.Appointments.Jobs;
+namespace BaitaHora.Application.Features.Schedules.Appointments.Jobs;
 
 public interface IAutoCompleteAppointmentsJob
 {

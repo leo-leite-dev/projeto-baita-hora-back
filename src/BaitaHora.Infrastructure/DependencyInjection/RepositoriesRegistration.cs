@@ -1,15 +1,13 @@
 using BaitaHora.Application.IRepositories.Auth;
-using BaitaHora.Application.IRepositories.Users;
 using BaitaHora.Application.IRepositories.Companies;
-using BaitaHora.Application.IRepositories.Schedulings;
 using BaitaHora.Application.IRepositories.Customers;
+using BaitaHora.Application.IRepositories.Schedules;
+using BaitaHora.Application.IRepositories.Users;
 using BaitaHora.Infrastructure.Repositories.Auth;
-using BaitaHora.Infrastructure.Repositories.Users;
 using BaitaHora.Infrastructure.Repositories.Companies;
-using BaitaHora.Infrastructure.Repositories.Customers;
-using BaitaHora.Infrastructure.Data.Repositories.Schedulings;
-using Microsoft.Extensions.DependencyInjection;
 using BaitaHora.Infrastructure.Repositories.Schedules;
+using BaitaHora.Infrastructure.Repositories.Users;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace BaitaHora.Infrastructure.DependencyInjection;
 
@@ -29,6 +27,7 @@ public static class RepositoriesRegistration
         services.AddScoped<ICompanyMemberRepository, CompanyMemberRepository>();
         services.AddScoped<ICompanyPositionRepository, CompanyPositionRepository>();
         services.AddScoped<ICompanyServiceOfferingRepository, CompanyServiceOfferingRepository>();
+        services.AddScoped<ICompanyStatsReadRepository, CompanyStatsReadRepository>();
 
         // Scheduling
         services.AddScoped<IScheduleRepository, ScheduleRepository>();

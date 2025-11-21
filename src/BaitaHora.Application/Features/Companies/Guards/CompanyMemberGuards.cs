@@ -14,7 +14,7 @@ public sealed class CompanyMemberGuards : ICompanyMemberGuards
     public CompanyMemberGuards(ICompanyRepository companyRepository)
         => _companyRepository = companyRepository;
 
-    public Result<CompanyMember> ValidateMember( Company company, Guid memberId, bool requireActive)
+    public Result<CompanyMember> ValidateMember(Company company, Guid memberId, bool requireActive)
     {
         var member = company.Members.SingleOrDefault(m => m.Id == memberId);
 

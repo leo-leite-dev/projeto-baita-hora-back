@@ -13,7 +13,7 @@ public sealed class CompanyServiceOfferingGuards : ICompanyServiceOfferingGuards
     public CompanyServiceOfferingGuards(ICompanyRepository companyRepository)
         => _companyRepository = companyRepository;
 
-    public Result<CompanyServiceOffering> ValidateServiceOffering( Company company, Guid serviceOfferingId, bool requireActive)
+    public Result<CompanyServiceOffering> ValidateServiceOffering(Company company, Guid serviceOfferingId, bool requireActive)
     {
         var service = company.ServiceOfferings
             .SingleOrDefault(s => s.Id == serviceOfferingId);

@@ -1,7 +1,7 @@
 using BaitaHora.Application.Common.Persistence;
-using BaitaHora.Application.IRepositories.Schedulings;
+using BaitaHora.Application.IRepositories.Schedules;
 
-namespace BaitaHora.Application.Features.Schedulings.Appointments.Jobs;
+namespace BaitaHora.Application.Features.Schedules.Appointments.Jobs;
 
 public sealed class AutoCompleteAppointmentsJob : IAutoCompleteAppointmentsJob
 {

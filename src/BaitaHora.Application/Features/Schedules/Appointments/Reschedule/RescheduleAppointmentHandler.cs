@@ -1,7 +1,7 @@
 using BaitaHora.Application.Common.Results;
 using MediatR;
 
-namespace BaitaHora.Application.Features.Schedulings.Appointments.Reschedule;
+namespace BaitaHora.Application.Features.Schedules.Appointments.Reschedule;
 
 public sealed class RescheduleAppointmentHandler
     : IRequestHandler<RescheduleAppointmentCommand, Result<RescheduleAppointmentResponse>>

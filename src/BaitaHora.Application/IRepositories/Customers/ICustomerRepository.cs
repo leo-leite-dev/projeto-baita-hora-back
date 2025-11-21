@@ -1,5 +1,5 @@
 using BaitaHora.Application.Features.Customers.Get.ReadModels;
-using BaitaHora.Domain.Features.Customers;
+using BaitaHora.Domain.Features.Schedules.Entities;
 
 namespace BaitaHora.Application.IRepositories.Customers
 {

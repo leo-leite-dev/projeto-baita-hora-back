@@ -1,10 +1,10 @@
 using BaitaHora.Application.Abstractions.Auth;
 using BaitaHora.Application.Common.Results;
 using BaitaHora.Application.Features.Companies.Guards.Interfaces;
-using BaitaHora.Application.Features.Schedulings.Appointments.Create;
+using BaitaHora.Application.Features.Schedules.Appointments.Create;
 using BaitaHora.Application.IRepositories.Companies;
 using BaitaHora.Application.IRepositories.Customers;
-using BaitaHora.Application.IRepositories.Schedulings;
+using BaitaHora.Application.IRepositories.Schedules;
 using BaitaHora.Domain.Features.Schedules.Entities;
 
 public sealed class CreateAppointmentUseCase

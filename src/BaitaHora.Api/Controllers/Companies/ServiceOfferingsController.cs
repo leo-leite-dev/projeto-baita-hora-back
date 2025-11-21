@@ -4,11 +4,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using BaitaHora.Contracts.DTOs.Companies.ServiceOfferings;
 using BaitaHora.Application.Features.Companies.ServiceOffering.Get.List;
-using BaitaHora.Application.Features.Companies.ServiceOffering.Get.ById;
 using BaitaHora.Application.Features.Companies.ServiceOffering.Get.Combo;
 using MediatR;
 using BaitaHora.Application.Features.Companies.ServiceOffering.Get.Options;
 using BaitaHora.Application.Abstractions.Auth;
+using BaitaHora.Application.Features.Companies.ServiceOffering.Get.ById;
 
 namespace BaitaHora.Api.Controllers.Companies;
 
@@ -90,7 +90,7 @@ public sealed class ServiceOfferingsController : ControllerBase
     [HttpGet("{serviceOfferingId:guid}")]
     public async Task<IActionResult> GetById(Guid serviceOfferingId, CancellationToken ct)
     {
-        var query = new GetServiceOfferingByIdQuery(serviceOfferingId);
+        var query = new ListServiceOfferingByIdQuery(serviceOfferingId);
         var result = await _mediator.Send(query, ct);
         return result.ToActionResult(this);
     }
@@ -106,7 +106,7 @@ public sealed class ServiceOfferingsController : ControllerBase
         return result.ToActionResult(this);
     }
 
-    [HttpGet("options/my")]
+    [HttpGet("my-options")]
     public async Task<IActionResult> ListActiveOptionsForCurrentMember(
         [FromQuery] string? search,
         [FromQuery] int take = 20,

@@ -1,7 +1,7 @@
 using MediatR;
 using BaitaHora.Application.Common.Results;
 
-namespace BaitaHora.Application.Features.Schedulings.Appointments.Cancel;
+namespace BaitaHora.Application.Features.Schedules.Appointments.Cancel;
 
 public sealed class CancelAppointmentHandler
     : IRequestHandler<CancelAppointmentCommand, Result<Unit>>

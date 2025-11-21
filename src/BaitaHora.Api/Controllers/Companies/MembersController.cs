@@ -1,12 +1,13 @@
 using BaitaHora.Api.Helpers;
 using BaitaHora.Api.Mappers.Companies;
 using BaitaHora.Contracts.DTOs.Companies.Members;
-using BaitaHora.Application.Features.Companies.ListMembers.Get.List;
+using BaitaHora.Application.Features.Companies.ListMembers.Get.ListAll;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using BaitaHora.Api.Mappers.Onboarding;
 using BaitaHora.Application.Features.Companies.Members.Get.ByUserId;
 using MediatR;
+using BaitaHora.Application.Features.Companies.Members.Get.Options;
 
 namespace BaitaHora.Api.Controllers.Companies;
 
@@ -110,6 +111,17 @@ public sealed class MembersController : ControllerBase
     public async Task<IActionResult> GetById(Guid memberId, CancellationToken ct)
     {
         var query = new GetMemberAdminEditByUserIdQuery(memberId);
+        var result = await _mediator.Send(query, ct);
+        return result.ToActionResult(this);
+    }
+
+    [HttpGet("options")]
+    public async Task<IActionResult> ListAllMemberOptions(
+        [FromQuery] string? search,
+        [FromQuery] int take = 20,
+        CancellationToken ct = default)
+    {
+        var query = new ListMembersOptionsQuery(search, take);
         var result = await _mediator.Send(query, ct);
         return result.ToActionResult(this);
     }

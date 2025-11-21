@@ -135,16 +135,15 @@ public sealed class Company : Entity
         if (_members.Any(m => m.Role == CompanyRole.Owner && m.IsActive))
             throw new CompanyException("Já existe um Owner para esta empresa.");
 
-        var member = CompanyMember.CreateFounder(Id, userId);
-        _members.Add(member);
-
         var founder = EnsurePositionByName(
             positionName: "Fundador",
             accessLevel: CompanyRole.Owner,
             isSystem: true
         );
 
-        member.SetPrimaryPosition(founder);
+        var member = CompanyMember.CreateFounder(Id, userId, founder);
+
+        _members.Add(member);
 
         return member;
     }
@@ -167,8 +166,7 @@ public sealed class Company : Entity
         if (_members.Any(m => m.UserId == userId && m.IsActive))
             throw new CompanyException("Usuário já é membro ativo da empresa.");
 
-        var member = CompanyMember.CreateMember(Id, userId, position.AccessLevel);
-        member.SetPrimaryPosition(position);
+        var member = CompanyMember.CreateMember(Id, userId, position.AccessLevel, position);
 
         _members.Add(member);
         return member;

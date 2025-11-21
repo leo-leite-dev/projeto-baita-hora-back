@@ -1,6 +1,6 @@
 using FluentValidation;
 
-namespace BaitaHora.Application.Features.Schedulings.Appointments.Create;
+namespace BaitaHora.Application.Features.Schedules.Appointments.Create;
 
 public sealed class CreateAppointmentCommandValidator : AbstractValidator<CreateAppointmentCommand>
 {

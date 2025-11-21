@@ -1,6 +1,6 @@
 using FluentValidation;
 
-namespace BaitaHora.Application.Features.Schedulings.Appointments.Reschedule;
+namespace BaitaHora.Application.Features.Schedules.Appointments.Reschedule;
 
 public sealed class RescheduleAppointmentCommandValidator : AbstractValidator<RescheduleAppointmentCommand>
 {

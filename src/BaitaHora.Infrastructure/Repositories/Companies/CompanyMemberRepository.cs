@@ -39,7 +39,6 @@ public sealed class CompanyMemberRepository : GenericRepository<CompanyMember>, 
             .ToListAsync(ct);
     }
 
-
     public async Task<MemberProfileDetails?> GetMemberFullDetailsAsync(
         Guid companyId, Guid memberId, CancellationToken ct)
     {
@@ -116,11 +115,39 @@ public sealed class CompanyMemberRepository : GenericRepository<CompanyMember>, 
             .ToListAsync(ct);
     }
 
-    public async Task<CompanyMember?> GetByIdWithPositionAsync(Guid companyId, Guid memberId, CancellationToken ct = default)
+    public async Task<CompanyMember?> GetByIdWithPositionAsync(
+        Guid companyId, Guid memberId, CancellationToken ct = default)
     {
         return await _set
             .AsNoTracking()
+            .Include(m => m.User)
+                .ThenInclude(u => u.Profile)
             .Include(m => m.PrimaryPosition)
-            .SingleOrDefaultAsync(m => m.CompanyId == companyId && m.Id == memberId, ct);
+            .SingleOrDefaultAsync(
+                m => m.CompanyId == companyId && m.Id == memberId, ct);
+    }
+
+    public async Task<IReadOnlyList<MemberOptions>> ListMemberOptionsAsync(
+        Guid companyId, string? search, int take, CancellationToken ct = default)
+    {
+        var query = _context.Members
+            .AsNoTracking()
+            .Where(m => m.CompanyId == companyId && m.IsActive);
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var term = search.Trim();
+            query = query.Where(m =>
+                m.User.Profile.Name.Contains(term));
+        }
+
+        return await query
+            .OrderBy(m => m.User.Profile.Name)
+            .Take(take)
+            .Select(m => new MemberOptions(
+                m.Id,
+                m.User.Profile.Name
+            ))
+            .ToListAsync(ct);
     }
 }

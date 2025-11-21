@@ -1,14 +1,14 @@
 using MediatR;
 using BaitaHora.Api.Helpers;
-using BaitaHora.Contracts.DTOs.Schedulings;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using BaitaHora.Contracts.DTOs.Schedulings.Appointments;
-using BaitaHora.Application.Features.Schedulings.Appointments.List;
+using BaitaHora.Application.Features.Schedules.Appointments.List;
 using BaitaHora.Application.Abstractions.Auth;
-using BaitaHora.Api.Mappers.Schedules;
+using BaitaHora.Contracts.DTOs.Schedules.Appointments;
+using BaitaHora.Api.Mappers.Schedules.Appointments;
+using BaitaHora.Application.Features.Schedules.Appointments.ListByMember;
 
-namespace BaitaHora.Api.Controllers.Schedulings;
+namespace BaitaHora.Api.Controllers.Schedules;
 
 [ApiController]
 [Route(ApiRoutes.SchedulesPrefix + "/appointments")]
@@ -56,11 +56,11 @@ public sealed class AppointmentsController : ControllerBase
         return result.ToActionResult(this);
     }
 
-    [HttpPut("{appointmentId:guid}/no-show")]
-    public async Task<IActionResult> NoShowAppointment(
-    [FromRoute] Guid appointmentId,
-    [FromBody] NoShowAppointmentRequest req,
-    CancellationToken ct)
+    [HttpPut("{appointmentId:guid}/attendance")]
+    public async Task<IActionResult> UpdateAttendance(
+        [FromRoute] Guid appointmentId,
+        [FromBody] UpdateAttendanceStatusRequest req,
+        CancellationToken ct)
     {
         var cmd = req.ToCommand(appointmentId, _currentCompany.Id);
         var result = await _mediator.Send(cmd, ct);
@@ -73,6 +73,17 @@ public sealed class AppointmentsController : ControllerBase
          CancellationToken ct)
     {
         var result = await _mediator.Send(new ListAppointmentsQuery(dateUtc), ct);
+        return result.ToActionResult(this, result.Value);
+    }
+
+    [HttpGet("member/{memberId:guid}")]
+    public async Task<IActionResult> GetMemberAppointments(
+        [FromRoute] Guid memberId,
+        [FromQuery] DateTime? dateUtc,
+        CancellationToken ct)
+    {
+        var query = new ListByMemberQuery(memberId, dateUtc);
+        var result = await _mediator.Send(query, ct);
         return result.ToActionResult(this, result.Value);
     }
 }

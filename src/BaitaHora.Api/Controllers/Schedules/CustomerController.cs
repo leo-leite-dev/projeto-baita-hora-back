@@ -2,11 +2,11 @@ using MediatR;
 using BaitaHora.Api.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using BaitaHora.Contracts.DTOs.Customers;
 using BaitaHora.Application.Features.Customers.Get.List;
-using BaitaHora.Api.Mappers.Schedules;
+using BaitaHora.Contracts.DTOs.Schedules.Customers;
+using BaitaHora.Api.Mappers.Schedules.Customers;
 
-namespace BaitaHora.Api.Controllers.Schedulings;
+namespace BaitaHora.Api.Controllers.Schedules;
 
 [ApiController]
 [Route(ApiRoutes.SchedulesPrefix + "/customers")]
@@ -26,7 +26,7 @@ public sealed class CustomersController : ControllerBase
         return result.ToActionResult(this);
     }
 
-    [HttpGet("options")]
+    [HttpGet("customer-options")]
     public async Task<IActionResult> GetCustomerOptions(
     [FromQuery] string? search,
     CancellationToken ct)

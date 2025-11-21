@@ -4,7 +4,7 @@ using BaitaHora.Application.Common.Results;
 using BaitaHora.Domain.Permissions;
 using MediatR;
 
-namespace BaitaHora.Application.Features.Schedulings.Appointments.Create;
+namespace BaitaHora.Application.Features.Schedules.Appointments.Create;
 
 public sealed class CreateAppointmentCommand
     : IRequest<Result<Guid>>, IAuthorizableRequest, ITransactionalRequest
@@ -19,5 +19,5 @@ public sealed class CreateAppointmentCommand
     public Guid CompanyId { get; init; }
     public Guid ResourceId => CompanyId;
 
-    public IEnumerable<CompanyPermission> RequiredPermissions => [CompanyPermission.ManageCompany];
+    public IEnumerable<CompanyPermission> RequiredPermissions => [CompanyPermission.ManageSchedule];
 }

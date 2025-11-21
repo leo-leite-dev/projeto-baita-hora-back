@@ -22,8 +22,11 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Hangfire.PostgreSql;
-using BaitaHora.Application.Features.Schedulings.Appointments.Jobs;
+using BaitaHora.Application.Features.Schedules.Appointments.Jobs;
 using Hangfire;
+
+using System.Linq;
+using BaitaHora.Application.IRepositories.Companies;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,6 +34,13 @@ builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddBotInfrastructure(builder.Configuration);
 builder.Services.AddSecurityInfrastructure();
+
+// DEBUG: verificar se o repositório está registrado
+var hasRepo = builder.Services.Any(d => d.ServiceType == typeof(ICompanyStatsReadRepository));
+if (!hasRepo)
+{
+    throw new Exception("DEBUG: ICompanyStatsReadRepository NÃO está registrado no IServiceCollection.");
+}
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IUserIdentityPort, HttpContextUserIdentityAdapter>();

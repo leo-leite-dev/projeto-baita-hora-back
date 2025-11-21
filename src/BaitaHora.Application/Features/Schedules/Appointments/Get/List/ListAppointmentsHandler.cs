@@ -1,10 +1,10 @@
 using BaitaHora.Application.Abstractions.Auth;
 using BaitaHora.Application.Common.Results;
-using BaitaHora.Application.Features.Schedulings.Get.ReadModels;
-using BaitaHora.Application.IRepositories.Schedulings;
+using BaitaHora.Application.Features.Schedules.Get.ReadModels;
+using BaitaHora.Application.IRepositories.Schedules;
 using MediatR;
 
-namespace BaitaHora.Application.Features.Schedulings.Appointments.List;
+namespace BaitaHora.Application.Features.Schedules.Appointments.List;
 
 public sealed class ListAppointmentsHandler
     : IRequestHandler<ListAppointmentsQuery, Result<ScheduleDetailsDto>>
@@ -57,12 +57,11 @@ public sealed class ListAppointmentsHandler
                 .ToList();
         }
 
-        var dto = new ScheduleDetailsDto
-        {
-            ScheduleId = schedule.Id,
-            MemberId = memberId,
-            Appointments = appointments
-        };
+        var dto = new ScheduleDetailsDto(
+            schedule.Id,
+            memberId,
+            appointments
+        );
 
         return Result<ScheduleDetailsDto>.Ok(dto);
     }

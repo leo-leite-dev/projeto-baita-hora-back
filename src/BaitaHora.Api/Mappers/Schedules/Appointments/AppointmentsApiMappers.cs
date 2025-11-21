@@ -1,11 +1,11 @@
-using BaitaHora.Application.Features.Schedulings.Appointments.Cancel;
-using BaitaHora.Application.Features.Schedulings.Appointments.Create;
-using BaitaHora.Application.Features.Schedulings.Appointments.NoShow;
-using BaitaHora.Application.Features.Schedulings.Appointments.Reschedule;
-using BaitaHora.Contracts.DTOs.Schedulings;
-using BaitaHora.Contracts.DTOs.Schedulings.Appointments;
+using BaitaHora.Application.Features.Schedules.Appointments.Reschedule;
+using BaitaHora.Application.Features.Schedules.Appointments.UpdateStatus;
+using BaitaHora.Application.Features.Schedules.Appointments.Cancel;
+using BaitaHora.Application.Features.Schedules.Appointments.Create;
+using BaitaHora.Contracts.DTOs.Schedules.Appointments;
+using DomainAttendanceStatus = BaitaHora.Domain.Features.Schedules.Enums.AttendanceStatus;
 
-namespace BaitaHora.Api.Mappers.Schedules;
+namespace BaitaHora.Api.Mappers.Schedules.Appointments;
 
 public static class AppointmentsApiMappers
 {
@@ -54,15 +54,16 @@ public static class AppointmentsApiMappers
             AppointmentId = appointmentId,
             CompanyId = companyId
         };
-        
-    public static NoShowAppointmentCommand ToCommand(
-        this NoShowAppointmentRequest r,
+
+    public static UpdateAttendanceStatusCommand ToCommand(
+        this UpdateAttendanceStatusRequest r,
         Guid appointmentId,
         Guid companyId)
-        => new NoShowAppointmentCommand
+        => new UpdateAttendanceStatusCommand
         {
             MemberId = r.MemberId,
             AppointmentId = appointmentId,
+            AttendanceStatus = (DomainAttendanceStatus)r.AttendanceStatus,
             CompanyId = companyId
         };
 }

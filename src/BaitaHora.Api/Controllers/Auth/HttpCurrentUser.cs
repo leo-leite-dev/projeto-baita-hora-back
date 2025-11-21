@@ -2,7 +2,7 @@ using System.Security.Claims;
 using BaitaHora.Application.Abstractions.Auth;
 using BaitaHora.Domain.Features.Common.ValueObjects;
 
-namespace BaitaHora.Api.Auth;
+namespace BaitaHora.Api.Controllers.Auth;
 
 public sealed class HttpCurrentUser : ICurrentUser
 {

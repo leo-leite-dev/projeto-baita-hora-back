@@ -14,5 +14,5 @@ public sealed record CreateCustomerCommand
     public required string CustomerCpf { get; init; }
 
     public Guid ResourceId { get; init; }
-    public IEnumerable<CompanyPermission> RequiredPermissions => [CompanyPermission.ManageCompany];
+    public IEnumerable<CompanyPermission> RequiredPermissions => [CompanyPermission.ManageSchedule];
 }

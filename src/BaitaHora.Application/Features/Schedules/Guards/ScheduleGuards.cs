@@ -1,6 +1,6 @@
 using BaitaHora.Application.Common.Results;
 using BaitaHora.Application.Features.Schedules.Guards.Interfaces;
-using BaitaHora.Application.IRepositories.Schedulings;
+using BaitaHora.Application.IRepositories.Schedules;
 using BaitaHora.Domain.Features.Schedules.Entities;
 
 namespace BaitaHora.Application.Features.Schedules.Guards;
